@@ -7,6 +7,8 @@
  *      Author: andrew
  */
 
+#include "image.h"
+
 #ifndef COLOURS_H_
 #define COLOURS_H_
 
