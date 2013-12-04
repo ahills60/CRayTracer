@@ -1,0 +1,7 @@
+# Eclipse settings
+.settings/
+
+.cproject
+
+# Built files
+Debug/*
