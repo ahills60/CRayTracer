@@ -6,13 +6,20 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
+
+// Program defines
 #include "craytracer.h"
+
+// Colour defines
+#include "colours.h"
+
+// Define basic datatypes
+#include "datatypes.h"
 
 // Define default dimensions
 int width = 1024;
 int height = 768;
-
-#define NO_KEYWORDS 2
 
 int main(int argc, char *argv[])
 {
