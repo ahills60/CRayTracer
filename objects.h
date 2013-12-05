@@ -25,7 +25,8 @@ typedef struct Material
     float diffusivity;          // Diffusive constant
     float specular;             // How specular
     float shininess;            // How shiny
-}Material;
+}
+Material;
 
 /* Define an object */
 typedef struct Object
@@ -190,4 +191,22 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
     (*camera).width = width;
     (*camera).height = height;
 }
+
+/* Transform object by transformation matrix T */
+void transformObject(Object *object, Matrix T)
+{
+    int i;
+    Triangle temp;
+    for (i = 0; i < (*object).noTriangles; i++)
+    {
+        temp.u = matVecMult(T, (*object).triangle[i].u);
+        temp.v = matVecMult(T, (*object).triangle[i].v);
+        temp.w = matVecMult(T, (*object).triangle[i].w);
+        
+        (*object).triangle[i].u = temp.u;
+        (*object).triangle[i].v = temp.v;
+        (*object).triangle[i].w = temp.w;
+    }
+}
+
 #endif
