@@ -214,6 +214,8 @@ void createSphere(Object *object, Material material, float radius, int resolutio
     {
         subdivideTriangles(resolution, baseTriangle[n], triangle, n * noTriangles / 8, radius);
     }
+    
+    // Bring these triangles together and create the object
+    setObject(object, material, noTriangles, triangle);
 }
-
 #endif
