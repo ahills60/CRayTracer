@@ -29,6 +29,14 @@ typedef struct Matrix
 }
 Matrix;
 
+typedef struct Triangle
+{
+    Vector v0;
+    Vector v1;
+    Vector v2;
+}
+Triangle;
+
 /* Set the coordinates of a vector */
 void setVector(Vector *v, float x, float y, float z)
 {
