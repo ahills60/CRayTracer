@@ -93,12 +93,12 @@ void createCube(Object *object, Material material, float size)
     /* Top side (fixed in y) */
     // Triangle 1:
     setVector(&u, minBound.x, maxBound.y, minBound.z);
-    setVector(&v, minBound.x, maxBound.y, maxBound.z);
+    setVector(&v, maxBound.x, maxBound.y, minBound.z);
     setVector(&w, maxBound.x, maxBound.y, maxBound.z);
     setTriangle(&triangle[10], u, v, w);
     // Triangle 2:
     setVector(&u, maxBound.x, maxBound.y, maxBound.z);
-    setVector(&v, maxBound.x, maxBound.y, minBound.z);
+    setVector(&v, minBound.x, maxBound.y, maxBound.z);
     setVector(&w, minBound.x, maxBound.y, minBound.z);
     setTriangle(&triangle[11], u, v, w);
     
