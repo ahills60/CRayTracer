@@ -45,6 +45,13 @@ void setVector(Vector *v, float x, float y, float z)
     (*v).z = z;
 }
 
+void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w)
+{
+    (*triangle).u = u;
+    (*triangle).v = v;
+    (*triangle).w = w;
+}
+
 /* Fast convert of list to matrix */
 void setMatrix(Matrix *F, float *m)
 {
