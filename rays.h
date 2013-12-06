@@ -100,7 +100,7 @@ float triangleIntersection(Ray ray, Triangle triangle)
 }
 
 /* Go through the triangles within an object and find one that intersects with this ray */
-Hit objectIntersection(Ray ray, Object object, int objectIdx)
+Hit objectIntersection(Ray ray, Object object, int objectIndex)
 {
     float intersectionPoint, nearestIntersection = 0.0;
     int n, nearestIdx;
@@ -119,7 +119,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIdx)
         if (intersectionPoint > 0.0 && intersectionPoint < nearestIntersection)
         {
             // Ensure that only front facing triangles reply
-            if (dot(vecNormalise(cross(vecSub(object.triangle[n].v, object.triangle[n].u), vecSub(object.triangle[n].w, object.triangle[n].u))), ray.direction) < EPS)
+            if (dot(vecNormalised(cross(vecSub(object.triangle[n].v, object.triangle[n].u), vecSub(object.triangle[n].w, object.triangle[n].u))), ray.direction) < EPS)
             {
                 nearestIdx = n;
                 nearestIntersection = intersectionPoint;
@@ -133,15 +133,15 @@ Hit objectIntersection(Ray ray, Object object, int objectIdx)
         nearestTriangle = object.triangle[nearestIdx];
         hit.location = vecAdd(ray.source, scalarVecMult(nearestIntersection, ray.direction));
         
-        hit.normal = vecNormalise(cross(vecSub(nearestTriangle.v, nearestTriangle.u), vecSub(nearestTriangle.w, nearestTriangle.u)));
+        hit.normal = vecNormalised(cross(vecSub(nearestTriangle.v, nearestTriangle.u), vecSub(nearestTriangle.w, nearestTriangle.u)));
         hit.ray = ray;
-        hit.objectIdx = objectIdx;
+        hit.objectIndex = objectIndex;
         hit.distance = nearestIntersection;
         return hit;
     }
     
-    // There wasn't a collision, so we set the objectIdx to be -1
-    hit.objectIdx = -1;
+    // There wasn't a collision, so we set the objectIndex to be -1
+    hit.objectIndex = -1;
     return hit;
 }
 
@@ -165,7 +165,7 @@ Hit sceneIntersection(Ray ray, Scene scene)
     
     // If there wasn't a collosition or it was too far away, then:
     if (nearestHit.distance <= 0 || nearestHit.distance >= FURTHEST_RAY)
-        nearestHit.objectIdx = -1;
+        nearestHit.objectIndex = -1;
     return nearestHit;
 }
 
@@ -174,11 +174,10 @@ float traceShadow(Hit hit, Scene scene, Light light)
 {
     Vector direction;
     Ray shadow;
-    float distance = 0;
     int n, m;
     
-    direction = vecNormalise(vecSub(light.location, hit.location));
-    setRay(&shadow, hit.position, direction);
+    direction = vecNormalised(vecSub(light.location, hit.location));
+    setRay(&shadow, hit.location, direction);
     
     // Now send the shadow ray back to the light. If it intersects, then the ray is a shadow
     for (m = 0; m < scene.noObjects; m++)
@@ -188,7 +187,7 @@ float traceShadow(Hit hit, Scene scene, Light light)
         {
             // Is this significant?
             if (triangleIntersection(shadow, scene.object[m].triangle[n]) > EPS)
-                return light.shadow;
+                return light.shadowFactor;
         }
     }
     // No intersection so no shadow.
@@ -216,11 +215,11 @@ Ray refractRay(Hit hit, float refractivity)
     Ray refraction;
     
     float c = dot(incidence, hit.normal);
-    float inverseRef = 1 / refraction;
+    float inverseRef = 1 / refractivity;
     float s = inverseRef * c - sqrt(1 - inverseRef * (1 - c * c));
     
     // Direction of refractive ray
-    refraction.direction = vecNormalise(vecSub(scalarVecMult(s, hit.normal), scalarVecMult(inverseRef, incidence)));
+    refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal), scalarVecMult(inverseRef, incidence)));
     
     // The refraction occurs from the point where it hit the object
     refraction.source = hit.location;
