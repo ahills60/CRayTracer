@@ -37,10 +37,28 @@ typedef struct Colour
 Colour vec2Colour(Vector u)
 {
     Colour col;
-    col.r = (int)((u.x * 255)) & 255;
-    col.g = (int)((u.y * 255)) & 255;
-    col.b = (int)((u.z * 255)) & 255;
+    col.r = (int)((u.x * 255.0)) & 255;
+    col.g = (int)((u.y * 255.0)) & 255;
+    col.b = (int)((u.z * 255.0)) & 255;
     return col;
+}
+
+Colour int2Colour(int *array)
+{
+    Colour col;
+    col.r = (float)array[0] / 255.0;
+    col.g = (float)array[1] / 255.0;
+    col.b = (float)array[2] / 255.0;
+    return col;
+}
+
+Vector int2Vector(int *array)
+{
+    Vector u;
+    u.x = (float)array[0] / 255.0;
+    u.y = (float)array[1] / 255.0;
+    u.z = (float)array[2] / 255.0;
+    return u;
 }
 
 /* Allocate space for the image in memory */
@@ -50,15 +68,19 @@ void initialiseImage(Image *img, int width, int height)
     (*img).height = height;
     // Reserve the necessary space in memory to hold the image. Note that we use a
     // multiplier here as there's rgb.
-    (*img).data = (int *)malloc(sizeof(int) * (*img).width * (*img).height * 3);
+    (*img).data = (int *)malloc(sizeof(int) * width * height * 3);
+    memset((*img).data, 0, sizeof(int) * width * height * 3);
 }
 
 /* Set a pixel for a specific image */
 void setPixel(Image *img, int x, int y, Colour col)
 {
+    int height = (*img).height;
+    int width = (*img).width;
+    
     // Get location of pixel given that image is RGB and the dimensions are given
     // Note that we do (height - y) as the image would otherwise be upside down!
-    int idx = ((*img).width * ((*img).height - y) + x) * 3;
+    int idx = ((height - y - 1) * width + x) * 3;// (((*img).width * ((*img).height - y)) + x) * 3;
     // First do R
     (*img).data[idx] = col.r;
     // Then offset for G and B

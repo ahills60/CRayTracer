@@ -35,72 +35,72 @@ void createCube(Object *object, Material material, float size)
     setVector(&u, minBound.x, minBound.y, minBound.z);
     setVector(&v, maxBound.x, minBound.y, minBound.z);
     setVector(&w, maxBound.x, maxBound.y, minBound.z);
-    setTriangle(&triangle[0], u, v, w);
+    setTriangle(&triangle[0], w, v, u);
     // Triangle 2:
     setVector(&u, maxBound.x, maxBound.y, minBound.z);
     setVector(&v, minBound.x, maxBound.y, minBound.z);
     setVector(&w, minBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[1], u, v, w);
+    setTriangle(&triangle[1], w, v, u);
     
     /* Right side (fixed in x) */
     // Triangle 1:
     setVector(&u, maxBound.x, minBound.y, minBound.z);
     setVector(&v, maxBound.x, minBound.y, maxBound.z);
     setVector(&w, maxBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[2], u, v, w);
+    setTriangle(&triangle[2], w, v, u);
     // Triangle 2:
     setVector(&u, maxBound.x, maxBound.y, maxBound.z);
     setVector(&v, maxBound.x, maxBound.y, minBound.z);
     setVector(&w, maxBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[3], u, v, w);
+    setTriangle(&triangle[3], w, v, u);
     
     /* Back side of cube (fixed in z) */
     // Triangle 1:
-    setVector(&u, minBound.x, minBound.y, maxBound.z);
-    setVector(&v, maxBound.x, minBound.y, maxBound.z);
-    setVector(&w, maxBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[4], u, v, w);
+    setVector(&u, maxBound.x, minBound.y, maxBound.z);
+    setVector(&v, minBound.x, minBound.y, maxBound.z);
+    setVector(&w, minBound.x, maxBound.y, maxBound.z);
+    setTriangle(&triangle[4], w, v, u);
     // Triangle 2:
-    setVector(&u, maxBound.x, maxBound.y, maxBound.z);
-    setVector(&v, minBound.x, maxBound.y, maxBound.z);
-    setVector(&w, minBound.x, minBound.y, maxBound.z);
-    setTriangle(&triangle[5], u, v, w);
+    setVector(&u, minBound.x, maxBound.y, maxBound.z);
+    setVector(&v, maxBound.x, maxBound.y, maxBound.z);
+    setVector(&w, maxBound.x, minBound.y, maxBound.z);
+    setTriangle(&triangle[5], w, v, u);
     
     /* Left side (fixed in x) */
     // Triangle 1:
-    setVector(&u, minBound.x, minBound.y, minBound.z);
-    setVector(&v, minBound.x, minBound.y, maxBound.z);
-    setVector(&w, minBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[6], u, v, w);
+    setVector(&u, minBound.x, minBound.y, maxBound.z);
+    setVector(&v, minBound.x, minBound.y, minBound.z);
+    setVector(&w, minBound.x, maxBound.y, minBound.z);
+    setTriangle(&triangle[6], w, v, u);
     // Triangle 2:
-    setVector(&u, minBound.x, maxBound.y, maxBound.z);
-    setVector(&v, minBound.x, maxBound.y, minBound.z);
-    setVector(&w, minBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[7], u, v, w);
+    setVector(&u, minBound.x, maxBound.y, minBound.z);
+    setVector(&v, minBound.x, maxBound.y, maxBound.z);
+    setVector(&w, minBound.x, minBound.y, maxBound.z);
+    setTriangle(&triangle[7], w, v, u);
     
     /* Bottom side (fixed in y) */
     // Triangle 1:
     setVector(&u, minBound.x, minBound.y, minBound.z);
     setVector(&v, minBound.x, minBound.y, maxBound.z);
     setVector(&w, maxBound.x, minBound.y, maxBound.z);
-    setTriangle(&triangle[8], u, v, w);
+    setTriangle(&triangle[8], w, v, u);
     // Triangle 2:
     setVector(&u, maxBound.x, minBound.y, maxBound.z);
     setVector(&v, maxBound.x, minBound.y, minBound.z);
     setVector(&w, minBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[9], u, v, w);
+    setTriangle(&triangle[9], w, v, u);
     
     /* Top side (fixed in y) */
     // Triangle 1:
     setVector(&u, minBound.x, maxBound.y, minBound.z);
     setVector(&v, maxBound.x, maxBound.y, minBound.z);
     setVector(&w, maxBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[10], u, v, w);
+    setTriangle(&triangle[10], w, v, u);
     // Triangle 2:
     setVector(&u, maxBound.x, maxBound.y, maxBound.z);
     setVector(&v, minBound.x, maxBound.y, maxBound.z);
     setVector(&w, minBound.x, maxBound.y, minBound.z);
-    setTriangle(&triangle[11], u, v, w);
+    setTriangle(&triangle[11], w, v, u);
     
     // Now create the object
     setObject(object, material, 12, triangle);
@@ -125,7 +125,7 @@ void createPlaneXZ(Object *object, Material material, float size)
     setVector(&u, size, 0.0, size);
     setVector(&v, -size, 0.0, size);
     setVector(&w, -size, 0.0, -size);
-    setTriangle(&triangle[1], u, v, w);
+    setTriangle(&triangle[1], w, v, u);
     
     // Now create the object
     setObject(object, material, 2, triangle);

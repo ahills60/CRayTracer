@@ -16,19 +16,36 @@
 
 // Define basic datatypes
 #include "datatypes.h"
+#include "image.h"
+#include "objects.h"
+#include "shapes.h"
+#include "rays.h"
+#include "lighting.h"
 
-// Define default dimensions
-int width = 1024;
-int height = 768;
+// Define the construction instructions
+#include "construct.h"
 
 int main(int argc, char *argv[])
 {
+    Scene scene;
+    Light light;
+    Camera camera;
 	char *currObj;
 	int isParam;
 	char *parVal;
 	int i, n, a;
+    Vector lightColour, lightLocation, cameraLocation, cameraDirection;
+    Image image;
+    Ray ray;
+    Colour outputColour;
+    char *filename;
+
+    int width = 1024;
+    int height = 768;
+    int recursions = 2;
 
 	parVal = "";
+    filename = "output.ppm";
 
 	// Version information:
 	printf("\nRayTracer ");
@@ -68,12 +85,63 @@ int main(int argc, char *argv[])
 					if (strcmp(parVal, "height") == 0)
 						height = atoi(currObj) == 0 ? 768 : atoi(currObj);
 					else
-						printf("Unrecognised input \"%s\"\n", parVal);
+					{
+                        if (strcmp(parVal, "recursions") == 0)
+                            recursions = (atoi(currObj) == 0) ? 2 : atoi(currObj);
+                        else
+                        {
+                            if (strcmp(parVal, "filename") == 0)
+                                filename = currObj;
+                            else
+                                printf("Unrecognised input \"%s\"\n", parVal);
+                        }
+                    }
 				}
 			}
 		}
 	}
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
+    
+    // Build scene
+    populateScene(&scene);
+    printf("Scene initialised.\n");
+    
+    // Define lighting:
+    setVector(&lightColour, 1, 1, 1);
+    setVector(&lightLocation, -1, 4, 4);
+    setLight(&light, lightLocation, lightColour, 0.3);
+    printf("Lighting defined.\n");
+    
+    // Camera configuration
+    setVector(&cameraLocation, 1, 2, 4);
+    setVector(&cameraDirection, 1, 0, -6);
+    setCamera(&camera, cameraLocation, cameraDirection, 45, width, height);
+    printf("Camera is ready.\n");
+    
+    // Configure image
+    initialiseImage(&image, width, height);
+    printf("Image is initialised.\n");
+    
+    // Now go through every pixel
+    for (i = 0; i < height; i++)
+    {
+        for (n = 0; n < width; n++)
+        {
+//             printf("Drawing pixel at row %i and column %i:\n", i, n);
+//             printf("Creating ray... ");
+            ray = createRay(n, i, camera);
+//             printf("Created.\nStarting to draw... ");
+            outputColour = vec2Colour(draw(ray, scene, light, recursions));
+//             printf("Draw complete.\nSetting pixel... ");
+            setPixel(&image, n, i, outputColour);
+//             printf("Pixel set at row %i and column %i.\n", i, n);
+        }
+    }
+    printf("Writing image... ");
+    writeImageASC(image, filename);
+    printf("Complete.\nResetting scene...");
+    resetScene(&scene);
+    printf("Complete.\n\n");
 	// Exit cleanly
 	return 0;
 }

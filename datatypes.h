@@ -60,7 +60,7 @@ void setMatrix(Matrix *F, float *m)
     {
         for (p = 0; p < 4; p++)
         {
-            (*F).m[n][p] = m[p + 4 * n];
+            (*F).m[p][n] = m[n + 4 * p];
         }
     }
 }
@@ -68,7 +68,7 @@ void setMatrix(Matrix *F, float *m)
 /* Convert from degrees to radians */
 float deg2rad(float deg)
 {
-    return deg * M_PI_2;
+    return deg * M_PI / 180.0;
 }
 
 /* Vector multiply */
@@ -128,7 +128,7 @@ Vector negVec(Vector u)
 /* Get the length of a vector */
 float vecLength(Vector u)
 {
-    return sqrt(u.x * u.x + u.y * u.y + u.z * u.z);
+    return sqrtf(u.x * u.x + u.y * u.y + u.z * u.z);
 }
 
 /* Normalised vector */
@@ -142,7 +142,7 @@ Vector vecNormalised(Vector u)
         return u;
     
     // setVector(&w, u.x / a, u.y / a, u.z / a);
-    return scalarVecMult(1 / a, u);
+    return scalarVecMult(1.0 / a, u);
 }
 
 /* Matrix multiplied by a vector */
@@ -167,12 +167,12 @@ Matrix matMult(Matrix F, Matrix G)
         for (n = 0; n < 4; n++)
         {
             // Initialise new matrix first
-            H.m[m][n] = 0.0;
+            H.m[n][m] = 0.0;
             
             // Now populate with the multiplication
             for (p = 0; p < 4; p++)
             {
-                 H.m[m][n] += F.m[m][p] * F.m[p][n];
+                 H.m[n][m] += F.m[n][p] * G.m[p][m];
             }
         }
     }
@@ -212,7 +212,7 @@ Matrix genYRotateMat(float a)
     float cosa = cos(deg2rad(a)), sina = sin(deg2rad(a));
     
     float m[16] = {cosa, 0.0, sina, 0.0,
-                   0.0, 1.0, 1.0, 0.0,
+                   0.0, 1.0, 0.0, 0.0,
                    -sina, 0.0, cosa, 0.0,
                    0.0, 0.0, 0.0, 1.0};
    setMatrix(&H, m);

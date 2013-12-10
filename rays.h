@@ -44,8 +44,10 @@ void setRay(Ray *ray, Vector source, Vector direction)
 /* Create a ray at this point from this camera */
 Ray createRay(int x, int y, Camera camera)
 {
-    float sx = (2 * ((float)x / (float)camera.width) - 1) * camera.ar;
-    float sy = (2 * ((float)y / (float)camera.height) - 1);
+//    printf("Establishing dimensions... ");
+    float sx = (2.0 * ((float)x / (float)camera.width) - 1.0) * camera.ar;
+    float sy = 2.0 * ((float)y / (float)camera.height) - 1.0;
+//    printf("Dimensions established.\nSetting views...");
     
     Vector shorizontal, svertical, sview;
     
@@ -55,8 +57,9 @@ Ray createRay(int x, int y, Camera camera)
     svertical = scalarVecMult(sy * camera.fov, camera.vertical);
     sview = vecAdd(vecAdd(shorizontal, svertical), camera.view);
     
+//    printf("Views established.\nCreating ray...");
     setRay(&ray, camera.location, vecNormalised(sview));
-    
+//    printf("Ray created.\n");
     return ray;
 }
 
@@ -85,7 +88,7 @@ float triangleIntersection(Ray ray, Triangle triangle)
         return 0; // no intersection
     
     w = cross(v, edge1);
-    c = dot(ray.direction, v) * arecip;
+    c = dot(ray.direction, w) * arecip;
     if (c < 0 || b + c > 1.0)
         return 0; // no intersection
     
@@ -102,13 +105,13 @@ float triangleIntersection(Ray ray, Triangle triangle)
 /* Go through the triangles within an object and find one that intersects with this ray */
 Hit objectIntersection(Ray ray, Object object, int objectIndex)
 {
-    float intersectionPoint, nearestIntersection = 0.0;
+    float intersectionPoint, nearestIntersection = FURTHEST_RAY;
     int n, nearestIdx;
     Triangle nearestTriangle;
     Hit hit;
     
     // Default distance is 0 just in case there's no hit
-    hit.distance = 0;
+    hit.distance = 0.0;
     
     for (n = 0; n < object.noTriangles; n++)
     {
@@ -154,17 +157,17 @@ Hit sceneIntersection(Ray ray, Scene scene)
     nearestHit.distance = FURTHEST_RAY;
     
     // Go through all objects within this scene
-    for (n = 1; n < scene.noObjects; n++)
+    for (n = 0; n < scene.noObjects; n++)
     {
         hit = objectIntersection(ray, scene.object[n], n);
         
         // determine if there was an intersection and that it's the closest one
-        if (hit.distance > 0 && hit.distance < nearestHit.distance)
+        if (hit.distance > 0.0 && hit.distance < nearestHit.distance)
             nearestHit = hit;
     }
     
     // If there wasn't a collosition or it was too far away, then:
-    if (nearestHit.distance <= 0 || nearestHit.distance >= FURTHEST_RAY)
+    if (nearestHit.distance <= 0.0 || nearestHit.distance >= FURTHEST_RAY)
         nearestHit.objectIndex = -1;
     return nearestHit;
 }
@@ -202,7 +205,7 @@ Ray reflectRay(Hit hit)
     
     // 2 (n . v) * n - v
     viewDirection = negVec(hit.ray.direction);
-    reflection.direction = vecSub(scalarVecMult(2 * dot(hit.normal, viewDirection), hit.normal), viewDirection);
+    reflection.direction = vecSub(scalarVecMult(2.0 * dot(hit.normal, viewDirection), hit.normal), viewDirection);
     reflection.source = hit.location;
     
     return reflection;
@@ -215,8 +218,8 @@ Ray refractRay(Hit hit, float refractivity)
     Ray refraction;
     
     float c = dot(incidence, hit.normal);
-    float inverseRef = 1 / refractivity;
-    float s = inverseRef * c - sqrt(1 - inverseRef * (1 - c * c));
+    float inverseRef = 1.0/ refractivity;
+    float s = inverseRef * c - sqrtf(1.0 - inverseRef * inverseRef * (1.0 - c * c));
     
     // Direction of refractive ray
     refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal), scalarVecMult(inverseRef, incidence)));

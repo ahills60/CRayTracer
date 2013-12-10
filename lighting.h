@@ -12,8 +12,8 @@
 
 #include "rays.h"
 
-/* Creates ambience effect given a hit, a scene and some light */
-Vector ambience(Hit hit, Scene scene, Light light)
+/* Creates ambiance effect given a hit, a scene and some light */
+Vector ambiance(Hit hit, Scene scene, Light light)
 {
     return scalarVecMult(scene.object[hit.objectIndex].material.ambiance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour));
 }

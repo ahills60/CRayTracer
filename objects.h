@@ -170,7 +170,7 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
     Vector up, viewNorm, horizontal;
     
     // Standard up vector
-    setVector(&up, 0, 1, 0);
+    setVector(&up, 0.0, 1.0, 0.0);
     (*camera).up = up;
     
     // Location and Normalised view
