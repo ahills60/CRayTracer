@@ -24,3 +24,31 @@ void initStats(MathStat *m)
     (*m).multiply = 0;
     (*m).divide = 0;
 }
+
+void statPlus(Mathstat *m, int a)
+{
+    (*m).plus += a;
+}
+
+void statSubtract(Mathstat *m, int a)
+{
+    (*m).subtract += a
+}
+
+void statMultiply(Mathstat *m, int a)
+{
+    (*m).multiply += a;
+}
+
+void statDivide(Mathstat *m, int a)
+{
+    (*m).divide += a;
+}
+
+void statGroup(Mathstat *m, int p, int s, int m, int d)
+{
+    (*m).plus += p;
+    (*m).subtract += s;
+    (*m).multiply += m;
+    (*m).divide += d;
+}
