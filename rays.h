@@ -15,6 +15,9 @@
 #include "datatypes.h"
 #include "objects.h"
 
+// Add math stats
+#include "mathstats.h"
+
 /* Define a ray */
 typedef struct Ray
 {

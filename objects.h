@@ -13,6 +13,9 @@
 #include "datatypes.h"
 #include "colours.h"
 
+// Add math stats
+# include "mathstats.h"
+
 /* Define materials */
 typedef struct Material
 {

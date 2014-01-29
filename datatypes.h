@@ -8,6 +8,9 @@
  */
 #include <math.h>
 
+// Include math stats
+#include "mathstats.h"
+
 #ifndef DATATYPES_H_
 #define DATATYPES_H_
 

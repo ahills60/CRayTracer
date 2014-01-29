@@ -19,6 +19,9 @@
 #include "colours.h"
 #include "shapes.h"
 
+// Add math stats
+#include "mathstats.h"
+
 /* Populate a scene with set items */
 void populateScene(Scene *scene)
 {

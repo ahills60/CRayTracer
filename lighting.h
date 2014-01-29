@@ -12,6 +12,9 @@
 
 #include "rays.h"
 
+// Add math stats
+#include "mathstats.h"
+
 /* Creates ambiance effect given a hit, a scene and some light */
 Vector ambiance(Hit hit, Scene scene, Light light)
 {

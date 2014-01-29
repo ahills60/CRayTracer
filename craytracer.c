@@ -25,6 +25,9 @@
 // Define the construction instructions
 #include "construct.h"
 
+// Add math stats
+#include "mathstats.h"
+
 int main(int argc, char *argv[])
 {
     Scene scene;
@@ -39,6 +42,7 @@ int main(int argc, char *argv[])
     Ray ray;
     Colour outputColour;
     char *filename;
+    MathStats ms;
 
     int width = 1024;
     int height = 768;
@@ -51,7 +55,10 @@ int main(int argc, char *argv[])
 	printf("\nRayTracer ");
 	printf("Version: %i.%i.%i (%s)\n", VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_DATE);
 	printf("Author: Andrew Hills (a.hills@sheffield.ac.uk)\n\n");
-
+    
+    // Initialise stats
+    initStats(&ms);
+    
 	for (i = 1; i<argc; i++)
 	{
 		currObj = argv[i];
