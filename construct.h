@@ -23,7 +23,7 @@
 #include "mathstats.h"
 
 /* Populate a scene with set items */
-void populateScene(Scene *scene)
+void populateScene(Scene *scene, MathStat *m)
 {
     Object cube, planeBase, planeLeft, planeRight, planeTop, planeBack, mirrCube;
     Material redGlass, nonreflBlue, nonreflGreen, nonreflPurple, mirror;
@@ -50,13 +50,13 @@ void populateScene(Scene *scene)
     createCube(&mirrCube, mirror, 1.5);
     
     // Arrange
-    transformObject(&cube, matMult(genTransMatrix(2, 0.5, -1), genYRotateMat(45)));
-    transformObject(&planeBase, genTransMatrix(1, 0, -4));
-    transformObject(&planeLeft, matMult(genTransMatrix(-2, 0, -4), genZRotateMat(-90)));
-    transformObject(&planeRight, matMult(genTransMatrix(4, 0, -4), genZRotateMat(90)));
-    transformObject(&planeBack, matMult(genTransMatrix(1, 0, -6), genXRotateMat(90)));
-    transformObject(&planeTop, matMult(genTransMatrix(1, 5, -4), genZRotateMat(180)));
-    transformObject(&mirrCube, matMult(genTransMatrix(0, 0.9, -2.7), genYRotateMat(20)));
+    transformObject(&cube, matMult(genTransMatrix(2, 0.5, -1, m), genYRotateMat(45, m), m), m);
+    transformObject(&planeBase, genTransMatrix(1, 0, -4, m), m);
+    transformObject(&planeLeft, matMult(genTransMatrix(-2, 0, -4, m), genZRotateMat(-90, m), m), m);
+    transformObject(&planeRight, matMult(genTransMatrix(4, 0, -4, m), genZRotateMat(90, m), m), m);
+    transformObject(&planeBack, matMult(genTransMatrix(1, 0, -6, m), genXRotateMat(90, m), m), m);
+    transformObject(&planeTop, matMult(genTransMatrix(1, 5, -4, m), genZRotateMat(180, m), m), m);
+    transformObject(&mirrCube, matMult(genTransMatrix(0, 0.9, -2.7, m), genYRotateMat(20, m), m), m);
     
     // Create the scene
     initialiseScene(scene, 6);
@@ -69,7 +69,7 @@ void populateScene(Scene *scene)
     // addObject(scene, planeTop);
 }
 
-Vector draw(Ray ray, Scene scene, Light light, int recursion)
+Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m)
 {
     Hit hit;
     Vector outputColour, reflectiveColour, refractiveColour;
@@ -79,32 +79,34 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion)
     // or just return it (if there's no object)
     setVector(&outputColour, 0, 0, 0);
     
-    hit = sceneIntersection(ray, scene);
+    hit = sceneIntersection(ray, scene, m);
     
     // Determine whether there was a hit. Otherwise default.
     if (hit.objectIndex >= 0)
     {
         // There was a hit.
         
-        outputColour = vecAdd(ambiance(hit, scene, light), vecAdd(diffusion(hit, scene, light), specular(hit, scene, light)));
+        outputColour = vecAdd(ambiance(hit, scene, light, m), vecAdd(diffusion(hit, scene, light, m), specular(hit, scene, light, m), m), m);
         
         // Should we go deeper?
         if (recursion > 0)
         {
             // Yes, we should
             // Get the reflection
-            reflectiveColour = draw(reflectRay(hit), scene, light, recursion - 1);
+            reflectiveColour = draw(reflectRay(hit, m), scene, light, recursion - 1, m);
+            statSubtractInt(m, 1);
             reflection = scene.object[hit.objectIndex].material.reflectivity;
-            outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour));
+            outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour, m), m);
             
             // Get the refraction
-            refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.refractivity), scene, light, recursion - 1);
+            refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.refractivity, m), scene, light, recursion - 1, m);
             refraction = scene.object[hit.objectIndex].material.opacity;
-            outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour));
+            outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m), m);
         }
         
         // We've got what we needed after the hit, so return
-        return scalarVecMult(1.0 - traceShadow(hit, scene, light), outputColour);
+        statSubtractFlt(m, 1);
+        return scalarVecMult(1.0 - traceShadow(hit, scene, light, m), outputColour, m);
     }
     
     // No hit, return black.

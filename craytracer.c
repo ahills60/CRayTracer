@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     Ray ray;
     Colour outputColour;
     char *filename;
-    MathStats ms;
+    MathStat m;
 
     int width = 1024;
     int height = 768;
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	printf("Author: Andrew Hills (a.hills@sheffield.ac.uk)\n\n");
     
     // Initialise stats
-    initStats(&ms);
+    initStats(&m);
     
 	for (i = 1; i<argc; i++)
 	{
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
     
     // Build scene
-    populateScene(&scene);
+    populateScene(&scene, &m);
     printf("Scene initialised.\n");
     
     // Define lighting:
@@ -122,12 +122,22 @@ int main(int argc, char *argv[])
     // Camera configuration
     setVector(&cameraLocation, 1, 2, 4);
     setVector(&cameraDirection, 1, 0, -6);
-    setCamera(&camera, cameraLocation, cameraDirection, 45, width, height);
+    setCamera(&camera, cameraLocation, cameraDirection, 45, width, height, &m);
     printf("Camera is ready.\n");
     
     // Configure image
     initialiseImage(&image, width, height);
     printf("Image is initialised.\n");
+    
+    printf("Initialisation Stats:\n\n");
+    printf("Floating Point Operations:\n");
+    printf("+: %lld\t-: %lld\t*: %lld\t/:%lld\n", m.plusFlt, m.subtractFlt, m.multiplyFlt, m.divideFlt);
+    printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt:%lld\n", m.cosine, m.sine, m.power, m.sqrtFlt);
+    printf("Integer Operations:\n");
+    printf("+: %lld\t-: %lld\t*: %lld\t/:%lld\n\n", m.plusInt, m.subtractInt, m.multiplyInt, m.divideInt);
+    
+    // Now reset the stats
+    initStats(&m);
     
     // Now go through every pixel
     for (i = 0; i < height; i++)
@@ -136,9 +146,9 @@ int main(int argc, char *argv[])
         {
 //             printf("Drawing pixel at row %i and column %i:\n", i, n);
 //             printf("Creating ray... ");
-            ray = createRay(n, i, camera);
+            ray = createRay(n, i, camera, &m);
 //             printf("Created.\nStarting to draw... ");
-            outputColour = vec2Colour(draw(ray, scene, light, recursions));
+            outputColour = vec2Colour(draw(ray, scene, light, recursions, &m));
 //             printf("Draw complete.\nSetting pixel... ");
             setPixel(&image, n, i, outputColour);
 //             printf("Pixel set at row %i and column %i.\n", i, n);
@@ -149,6 +159,13 @@ int main(int argc, char *argv[])
     printf("Complete.\nResetting scene...");
     resetScene(&scene);
     printf("Complete.\n\n");
+    
+    printf("Stats:\n\n");
+    printf("Floating Point Operations:\n");
+    printf("+: %lld\t-: %lld\t*: %lld\t/:%lld\n", m.plusFlt, m.subtractFlt, m.multiplyFlt, m.divideFlt);
+    printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt:%lld\n", m.cosine, m.sine, m.power, m.sqrtFlt);
+    printf("Integer Operations:\n");
+    printf("+: %lld\t-: %lld\t*: %lld\t/:%lld\n\n", m.plusInt, m.subtractInt, m.multiplyInt, m.divideInt);
 	// Exit cleanly
 	return 0;
 }
