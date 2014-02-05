@@ -11,6 +11,9 @@
 // Include math stats
 #include "mathstats.h"
 
+// Add function stats
+#include "funcstats.h"
+
 #ifndef DATATYPES_H_
 #define DATATYPES_H_
 
@@ -44,17 +47,19 @@ typedef struct Triangle
 Triangle;
 
 /* Set the coordinates of a vector */
-void setVector(Vector *v, float x, float y, float z)
+void setVector(Vector *v, float x, float y, float z, FuncStat *f)
 {
+    (*f).setVector++;
     (*v).x = x;
     (*v).y = y;
     (*v).z = z;
 }
 
 /* Fast convert of list to matrix */
-void setMatrix(Matrix *F, float *m, MathStat *ma)
+void setMatrix(Matrix *F, float *m, MathStat *ma, FuncStat *f)
 {
     int n, p;
+    (*f).setMatrix++;
     for (n = 0; n < 4; n++)
     {
         statPlusInt(ma, 1); // for the loop
@@ -69,84 +74,94 @@ void setMatrix(Matrix *F, float *m, MathStat *ma)
 }
 
 /* Convert from degrees to radians */
-float deg2rad(float deg, MathStat *m)
+float deg2rad(float deg, MathStat *m, FuncStat *f)
 {
+    (*f).deg2rad++;
     statGroupFlt(m, 0, 0, 1, 1);
     return deg * M_PI / 180.0;
 }
 
 /* Vector multiply */
-Vector vecMult(Vector u, Vector v, MathStat *m)
+Vector vecMult(Vector u, Vector v, MathStat *m, FuncStat *f)
 {
     Vector w;
-    setVector(&w, u.x * v.x, u.y * v.y, u.z * v.z);
+    (*f).vecMult++;
+    setVector(&w, u.x * v.x, u.y * v.y, u.z * v.z, f);
     statMultiplyFlt(m, 3);
     return w;
 }
 
 /* Dot product of two vectors */
-float dot(Vector u, Vector v, MathStat *m)
+float dot(Vector u, Vector v, MathStat *m, FuncStat *f)
 {
+    (*f).dot++;
     statGroupFlt(m, 2, 0, 3, 0);
     return u.x * v.x + u.y * v.y + u.z * v.z;
 }
 
 /* Cross product of two vectors */
-Vector cross(Vector u, Vector v, MathStat *m)
+Vector cross(Vector u, Vector v, MathStat *m, FuncStat *f)
 {
     Vector w;
-    setVector(&w, (u.y * v.z) - (v.y * u.z), (u.z * v.x) - (v.z * u.x), (u.x * v.y) - (v.x * u.y));
+    (*f).cross++;
+    setVector(&w, (u.y * v.z) - (v.y * u.z), (u.z * v.x) - (v.z * u.x), (u.x * v.y) - (v.x * u.y), f);
     statGroupFlt(m, 0, 3, 6, 0);
     return w;
 }
 
 /* Scalar multiplication with a vector */
-Vector scalarVecMult(float a, Vector u, MathStat *m)
+Vector scalarVecMult(float a, Vector u, MathStat *m, FuncStat *f)
 {
     Vector w;
-    setVector(&w, a * u.x, a * u.y, a * u.z);
+    (*f).scalarVecMult++;
+    setVector(&w, a * u.x, a * u.y, a * u.z, f);
     statMultiplyFlt(m, 3);
     return w;
 }
 
 /* Vector addition */
-Vector vecAdd(Vector u, Vector v, MathStat *m)
+Vector vecAdd(Vector u, Vector v, MathStat *m, FuncStat *f)
 {
     Vector w;
-    setVector(&w, u.x + v.x, u.y + v.y, u.z + v.z);
+    (*f).vecAdd++;
+    setVector(&w, u.x + v.x, u.y + v.y, u.z + v.z, f);
     statPlusFlt(m, 3);
     return w;
 }
 
 /* Vector subtraction */
-Vector vecSub(Vector u, Vector v, MathStat *m)
+Vector vecSub(Vector u, Vector v, MathStat *m, FuncStat *f)
 {
     Vector w;
-    setVector(&w, u.x - v.x, u.y - v.y, u.z - v.z);
+    (*f).vecSub++;
+    setVector(&w, u.x - v.x, u.y - v.y, u.z - v.z, f);
     statSubtractFlt(m, 3);
     return w;
 }
 
 /* -1 * vector */
-Vector negVec(Vector u)
+Vector negVec(Vector u, FuncStat *f)
 {
     Vector w;
-    setVector(&w, -u.x, -u.y, -u.z);
+    (*f).negVec++;
+    setVector(&w, -u.x, -u.y, -u.z, f);
     return w;
 }
 
 /* Get the length of a vector */
-float vecLength(Vector u, MathStat *m)
+float vecLength(Vector u, MathStat *m, FuncStat *f)
 {
+    (*f).vecLength++;
     statGroupFlt(m, 2, 0, 3, 0);
     statSqrtFlt(m, 1);
     return sqrtf(u.x * u.x + u.y * u.y + u.z * u.z);
 }
 
 /* Normalised vector */
-Vector vecNormalised(Vector u, MathStat *m)
+Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
 {
-    float a = vecLength(u, m);
+    (*f).vecNormalised++;
+    float a = vecLength(u, m, f);
     // Vector w;
     
     // Assume anything less than epsilon is zero
@@ -155,24 +170,26 @@ Vector vecNormalised(Vector u, MathStat *m)
     
     // setVector(&w, u.x / a, u.y / a, u.z / a);
     statDivideFlt(m, 1);
-    return scalarVecMult(1.0 / a, u, m);
+    return scalarVecMult(1.0 / a, u, m, f);
 }
 
 /* Matrix multiplied by a vector */
-Vector matVecMult(Matrix F, Vector u, MathStat *m)
+Vector matVecMult(Matrix F, Vector u, MathStat *m, FuncStat *f)
 {
+    (*f).matVecMult++;
     Vector w;
     // Note that we don't consider the last row within the matrix. This is discarded deliberately.
     setVector(&w, F.m[0][0] * u.x + F.m[0][1] * u.y + F.m[0][2] * u.z + F.m[0][3],
                   F.m[1][0] * u.x + F.m[1][1] * u.y + F.m[1][2] * u.z + F.m[1][3],
-                  F.m[2][0] * u.x + F.m[2][1] * u.y + F.m[2][2] * u.z + F.m[2][3]);
+                  F.m[2][0] * u.x + F.m[2][1] * u.y + F.m[2][2] * u.z + F.m[2][3], f);
     statGroupFlt(m, 9, 0, 9, 0);
     return w;
 }
 
 /* Matrix multiplied by a matrix */
-Matrix matMult(Matrix F, Matrix G, MathStat *ma)
+Matrix matMult(Matrix F, Matrix G, MathStat *ma, FuncStat *f)
 {
+    (*f).matMult++;
     Matrix H;
     int m, n, p;
     
@@ -198,22 +215,24 @@ Matrix matMult(Matrix F, Matrix G, MathStat *ma)
 }
 
 /* Create an identity matrix */
-Matrix genIdentMat(MathStat *ma)
+Matrix genIdentMat(MathStat *ma, FuncStat *f)
 {
+    (*f).genIdentMat++;
     Matrix H;
     float m[16] =  {1.0, 0.0, 0.0, 0.0,
                     0.0, 1.0, 0.0, 0.0,
                     0.0, 0.0, 1.0, 0.0,
                     0.0, 0.0, 0.0, 1.0};
-    setMatrix(&H, m, ma);
+    setMatrix(&H, m, ma, f);
     return H;
 }
 
 /* Create a rotation matrix for X-axis rotations */
-Matrix genXRotateMat(float a, MathStat *ma)
+Matrix genXRotateMat(float a, MathStat *ma, FuncStat *f)
 {
+    (*f).genXRotateMat++;
     Matrix H;
-    float cosa = cos(deg2rad(a, ma)), sina = sin(deg2rad(a, ma));
+    float cosa = cos(deg2rad(a, ma, f)), sina = sin(deg2rad(a, ma, f));
     statSine(ma, 1);
     statCosine(ma, 1);
     
@@ -221,15 +240,16 @@ Matrix genXRotateMat(float a, MathStat *ma)
                    0.0, cosa, -sina, 0.0,
                    0.0, sina, cosa, 0.0,
                    0.0, 0.0, 0.0, 1.0};
-   setMatrix(&H, m, ma);
+   setMatrix(&H, m, ma, f);
    return H;
 }
 
 /* Create a rotation matrix for Y-axis rotations */
-Matrix genYRotateMat(float a, MathStat *ma)
+Matrix genYRotateMat(float a, MathStat *ma, FuncStat *f)
 {
+    (*f).genYRotateMat++;
     Matrix H;
-    float cosa = cos(deg2rad(a, ma)), sina = sin(deg2rad(a, ma));
+    float cosa = cos(deg2rad(a, ma, f)), sina = sin(deg2rad(a, ma, f));
     statSine(ma, 1);
     statCosine(ma, 1);
     
@@ -237,15 +257,16 @@ Matrix genYRotateMat(float a, MathStat *ma)
                    0.0, 1.0, 0.0, 0.0,
                    -sina, 0.0, cosa, 0.0,
                    0.0, 0.0, 0.0, 1.0};
-   setMatrix(&H, m, ma);
+   setMatrix(&H, m, ma, f);
    return H;
 }
 
 /* Create a rotation matrix for Z-axis rotations */
-Matrix genZRotateMat(float a, MathStat *ma)
+Matrix genZRotateMat(float a, MathStat *ma, FuncStat *f)
 {
+    (*f).genZRotateMat++;
     Matrix H;
-    float cosa = cos(deg2rad(a, ma)), sina = sin(deg2rad(a, ma));
+    float cosa = cos(deg2rad(a, ma, f)), sina = sin(deg2rad(a, ma, f));
     statSine(ma, 1);
     statCosine(ma, 1);
     
@@ -253,46 +274,50 @@ Matrix genZRotateMat(float a, MathStat *ma)
                    sina, cosa, 0.0, 0.0,
                    0.0, 0.0, 1.0, 0.0,
                    0.0, 0.0, 0.0, 1.0};
-   setMatrix(&H, m, ma);
+   setMatrix(&H, m, ma, f);
    return H;
 }
 
 /* Combine the three matrix rotations to give a single rotation matrix */
-Matrix getRotateMatrix(float ax, float ay, float az, MathStat *ma)
+Matrix getRotateMatrix(float ax, float ay, float az, MathStat *ma, FuncStat *f)
 {
-    return matMult(matMult(genXRotateMat(ax, ma), genYRotateMat(ay, ma), ma), genZRotateMat(az, ma), ma);
+    (*f).getRotateMatrix++;
+    return matMult(matMult(genXRotateMat(ax, ma, f), genYRotateMat(ay, ma, f), ma, f), genZRotateMat(az, ma, f), ma, f);
 }
 
-Matrix genTransMatrix(float tx, float ty, float tz, MathStat *ma)
+Matrix genTransMatrix(float tx, float ty, float tz, MathStat *ma, FuncStat *f)
 {
+    (*f).genTransMatrix++;
     Matrix H;
     float m[16] = {1.0, 0.0, 0.0, tx,
                    0.0, 1.0, 0.0, ty,
                    0.0, 0.0, 1.0, tz,
                    0.0, 0.0, 0.0, 1.0};
-   setMatrix(&H, m, ma);
+   setMatrix(&H, m, ma, f);
    return H;
 }
 
-Matrix genScaleMatrix(float sx, float sy, float sz, MathStat *ma)
+Matrix genScaleMatrix(float sx, float sy, float sz, MathStat *ma, FuncStat *f)
 {
+    (*f).genScaleMatrix++;
     Matrix H;
     float m[16] = {sx, 0.0, 0.0, 0.0,
                    0.0, sy, 0.0, 0.0,
                    0.0, 0.0, sz, 0.0,
                    0.0, 0.0, 0.0, 1.0};
-    setMatrix(&H, m, ma);
+    setMatrix(&H, m, ma, f);
     return H;
 }
 
-void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m)
+void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m, FuncStat *f)
 {
+    (*f).setTriangle++;
     (*triangle).u = u;
     (*triangle).v = v;
     (*triangle).w = w;
-    (*triangle).vmu = vecSub(v, u, m);
-    (*triangle).wmu = vecSub(w, u, m);
-    (*triangle).normcrvmuwmu = vecNormalised(cross((*triangle).vmu, (*triangle).wmu, m), m);
+    (*triangle).vmu = vecSub(v, u, m, f);
+    (*triangle).wmu = vecSub(w, u, m, f);
+    (*triangle).normcrvmuwmu = vecNormalised(cross((*triangle).vmu, (*triangle).wmu, m, f), m, f);
 }
 
 #endif /* DATATYPES_H_ */

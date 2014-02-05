@@ -16,7 +16,7 @@
 #include "objects.h"
 
 /* Define a cube */
-void createCube(Object *object, Material material, float size, MathStat *m)
+void createCube(Object *object, Material material, float size, MathStat *m, FuncStat *f)
 {
     Vector u, v, w, minBound, maxBound;
     Triangle *triangle;
@@ -27,87 +27,87 @@ void createCube(Object *object, Material material, float size, MathStat *m)
     // Define the bounds of the object. Note that this is prior
     // to translating the object to a specific position
     size *= 0.5;
-    setVector(&minBound, -size, -size, -size);
-    setVector(&maxBound, size, size, size);
+    setVector(&minBound, -size, -size, -size, f);
+    setVector(&maxBound, size, size, size, f);
     
     /* Start with the front of the cube (fixed in z) */
     // Triangle 1:
-    setVector(&u, minBound.x, minBound.y, minBound.z);
-    setVector(&v, maxBound.x, minBound.y, minBound.z);
-    setVector(&w, maxBound.x, maxBound.y, minBound.z);
-    setTriangle(&triangle[0], w, v, u, m);
+    setVector(&u, minBound.x, minBound.y, minBound.z, f);
+    setVector(&v, maxBound.x, minBound.y, minBound.z, f);
+    setVector(&w, maxBound.x, maxBound.y, minBound.z, f);
+    setTriangle(&triangle[0], w, v, u, m, f);
     // Triangle 2:
-    setVector(&u, maxBound.x, maxBound.y, minBound.z);
-    setVector(&v, minBound.x, maxBound.y, minBound.z);
-    setVector(&w, minBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[1], w, v, u, m);
+    setVector(&u, maxBound.x, maxBound.y, minBound.z, f);
+    setVector(&v, minBound.x, maxBound.y, minBound.z, f);
+    setVector(&w, minBound.x, minBound.y, minBound.z, f);
+    setTriangle(&triangle[1], w, v, u, m, f);
     
     /* Right side (fixed in x) */
     // Triangle 1:
-    setVector(&u, maxBound.x, minBound.y, minBound.z);
-    setVector(&v, maxBound.x, minBound.y, maxBound.z);
-    setVector(&w, maxBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[2], w, v, u, m);
+    setVector(&u, maxBound.x, minBound.y, minBound.z, f);
+    setVector(&v, maxBound.x, minBound.y, maxBound.z, f);
+    setVector(&w, maxBound.x, maxBound.y, maxBound.z, f);
+    setTriangle(&triangle[2], w, v, u, m, f);
     // Triangle 2:
-    setVector(&u, maxBound.x, maxBound.y, maxBound.z);
-    setVector(&v, maxBound.x, maxBound.y, minBound.z);
-    setVector(&w, maxBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[3], w, v, u, m);
+    setVector(&u, maxBound.x, maxBound.y, maxBound.z, f);
+    setVector(&v, maxBound.x, maxBound.y, minBound.z, f);
+    setVector(&w, maxBound.x, minBound.y, minBound.z, f);
+    setTriangle(&triangle[3], w, v, u, m, f);
     
     /* Back side of cube (fixed in z) */
     // Triangle 1:
-    setVector(&u, maxBound.x, minBound.y, maxBound.z);
-    setVector(&v, minBound.x, minBound.y, maxBound.z);
-    setVector(&w, minBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[4], w, v, u, m);
+    setVector(&u, maxBound.x, minBound.y, maxBound.z, f);
+    setVector(&v, minBound.x, minBound.y, maxBound.z, f);
+    setVector(&w, minBound.x, maxBound.y, maxBound.z, f);
+    setTriangle(&triangle[4], w, v, u, m, f);
     // Triangle 2:
-    setVector(&u, minBound.x, maxBound.y, maxBound.z);
-    setVector(&v, maxBound.x, maxBound.y, maxBound.z);
-    setVector(&w, maxBound.x, minBound.y, maxBound.z);
-    setTriangle(&triangle[5], w, v, u, m);
+    setVector(&u, minBound.x, maxBound.y, maxBound.z, f);
+    setVector(&v, maxBound.x, maxBound.y, maxBound.z, f);
+    setVector(&w, maxBound.x, minBound.y, maxBound.z, f);
+    setTriangle(&triangle[5], w, v, u, m, f);
     
     /* Left side (fixed in x) */
     // Triangle 1:
-    setVector(&u, minBound.x, minBound.y, maxBound.z);
-    setVector(&v, minBound.x, minBound.y, minBound.z);
-    setVector(&w, minBound.x, maxBound.y, minBound.z);
-    setTriangle(&triangle[6], w, v, u, m);
+    setVector(&u, minBound.x, minBound.y, maxBound.z, f);
+    setVector(&v, minBound.x, minBound.y, minBound.z, f);
+    setVector(&w, minBound.x, maxBound.y, minBound.z, f);
+    setTriangle(&triangle[6], w, v, u, m, f);
     // Triangle 2:
-    setVector(&u, minBound.x, maxBound.y, minBound.z);
-    setVector(&v, minBound.x, maxBound.y, maxBound.z);
-    setVector(&w, minBound.x, minBound.y, maxBound.z);
-    setTriangle(&triangle[7], w, v, u, m);
+    setVector(&u, minBound.x, maxBound.y, minBound.z, f);
+    setVector(&v, minBound.x, maxBound.y, maxBound.z, f);
+    setVector(&w, minBound.x, minBound.y, maxBound.z, f);
+    setTriangle(&triangle[7], w, v, u, m, f);
     
     /* Bottom side (fixed in y) */
     // Triangle 1:
-    setVector(&u, minBound.x, minBound.y, minBound.z);
-    setVector(&v, minBound.x, minBound.y, maxBound.z);
-    setVector(&w, maxBound.x, minBound.y, maxBound.z);
-    setTriangle(&triangle[8], w, v, u, m);
+    setVector(&u, minBound.x, minBound.y, minBound.z, f);
+    setVector(&v, minBound.x, minBound.y, maxBound.z, f);
+    setVector(&w, maxBound.x, minBound.y, maxBound.z, f);
+    setTriangle(&triangle[8], w, v, u, m, f);
     // Triangle 2:
-    setVector(&u, maxBound.x, minBound.y, maxBound.z);
-    setVector(&v, maxBound.x, minBound.y, minBound.z);
-    setVector(&w, minBound.x, minBound.y, minBound.z);
-    setTriangle(&triangle[9], w, v, u, m);
+    setVector(&u, maxBound.x, minBound.y, maxBound.z, f);
+    setVector(&v, maxBound.x, minBound.y, minBound.z, f);
+    setVector(&w, minBound.x, minBound.y, minBound.z, f);
+    setTriangle(&triangle[9], w, v, u, m, f);
     
     /* Top side (fixed in y) */
     // Triangle 1:
-    setVector(&u, minBound.x, maxBound.y, minBound.z);
-    setVector(&v, maxBound.x, maxBound.y, minBound.z);
-    setVector(&w, maxBound.x, maxBound.y, maxBound.z);
-    setTriangle(&triangle[10], w, v, u, m);
+    setVector(&u, minBound.x, maxBound.y, minBound.z, f);
+    setVector(&v, maxBound.x, maxBound.y, minBound.z, f);
+    setVector(&w, maxBound.x, maxBound.y, maxBound.z, f);
+    setTriangle(&triangle[10], w, v, u, m, f);
     // Triangle 2:
-    setVector(&u, maxBound.x, maxBound.y, maxBound.z);
-    setVector(&v, minBound.x, maxBound.y, maxBound.z);
-    setVector(&w, minBound.x, maxBound.y, minBound.z);
-    setTriangle(&triangle[11], w, v, u, m);
+    setVector(&u, maxBound.x, maxBound.y, maxBound.z, f);
+    setVector(&v, minBound.x, maxBound.y, maxBound.z, f);
+    setVector(&w, minBound.x, maxBound.y, minBound.z, f);
+    setTriangle(&triangle[11], w, v, u, m, f);
     
     // Now create the object
-    setObject(object, material, 12, triangle);
+    setObject(object, material, 12, triangle, f);
 }
 
 /* Define a plane that lies on the X-Z axis */
-void createPlaneXZ(Object *object, Material material, float size, MathStat *m)
+void createPlaneXZ(Object *object, Material material, float size, MathStat *m, FuncStat *f)
 {
     Triangle *triangle;
     Vector u, v, w;
@@ -116,51 +116,51 @@ void createPlaneXZ(Object *object, Material material, float size, MathStat *m)
     size *= 0.5;
     
     // Triangle 1:
-    setVector(&u, size, 0.0, size);
-    setVector(&v, size, 0.0, -size);
-    setVector(&w, -size, 0.0, -size);
-    setTriangle(&triangle[0], u, v, w, m);
+    setVector(&u, size, 0.0, size, f);
+    setVector(&v, size, 0.0, -size, f);
+    setVector(&w, -size, 0.0, -size, f);
+    setTriangle(&triangle[0], u, v, w, m, f);
     
     // Triangle 2:
-    setVector(&u, size, 0.0, size);
-    setVector(&v, -size, 0.0, size);
-    setVector(&w, -size, 0.0, -size);
-    setTriangle(&triangle[1], w, v, u, m);
+    setVector(&u, size, 0.0, size, f);
+    setVector(&v, -size, 0.0, size, f);
+    setVector(&w, -size, 0.0, -size, f);
+    setTriangle(&triangle[1], w, v, u, m, f);
     
     // Now create the object
-    setObject(object, material, 2, triangle);
+    setObject(object, material, 2, triangle, f);
 }
 
 /* Divides triangles given a triangle */
-void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius, MathStat *m){
+void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius, MathStat *m, FuncStat *f){
     Vector u, v, w;
     
     // Compute the centre of triangle edges
-    u = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.u, baseTriangle.v, m), m), m);
-    v = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.v, baseTriangle.w, m), m), m);
-    w = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.w, baseTriangle.u, m), m), m);
+    u = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.u, baseTriangle.v, m, f), m, f), m, f);
+    v = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.v, baseTriangle.w, m, f), m, f), m, f);
+    w = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.w, baseTriangle.u, m, f), m, f), m, f);
     
     // Now create triangles from these vectors
-    setTriangle(&triangle[0], u, v, w, m);
-    setTriangle(&triangle[1], baseTriangle.u, u, w, m);
-    setTriangle(&triangle[2], u, baseTriangle.v, v, m);
-    setTriangle(&triangle[3], w, v, baseTriangle.w, m);
+    setTriangle(&triangle[0], u, v, w, m, f);
+    setTriangle(&triangle[1], baseTriangle.u, u, w, m, f);
+    setTriangle(&triangle[2], u, baseTriangle.v, v, m, f);
+    setTriangle(&triangle[3], w, v, baseTriangle.w, m, f);
 }
 
 /* Subdivides triangles and calls divisions when necessary */
-void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangle, int noTriangles, float radius, MathStat *m)
+void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangle, int noTriangles, float radius, MathStat *m, FuncStat *f)
 {
     Triangle subTriangle[4];
     int n, noSubTriangles = (int)pow(4, (float)resolution - 1);
     
     if (resolution > 0)
     {
-        divideTriangles(baseTriangle, subTriangle, radius, m);
+        divideTriangles(baseTriangle, subTriangle, radius, m, f);
         
         // Decrement resolution and resume subdivision
         for (n = 0; n < 4; n++)
         {
-            subdivideTriangles(resolution - 1, subTriangle[n], triangle, noTriangles + n * noSubTriangles, radius, m);
+            subdivideTriangles(resolution - 1, subTriangle[n], triangle, noTriangles + n * noSubTriangles, radius, m, f);
         }
     }
     else
@@ -171,7 +171,7 @@ void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangl
 }
 
 /* Create a sphere using triangles. The resolution should be a power of 4 */
-void createSphere(Object *object, Material material, float radius, int resolution, MathStat *m)
+void createSphere(Object *object, Material material, float radius, int resolution, MathStat *m, FuncStat *f)
 {
     Vector v[6];
     Triangle baseTriangle[8];
@@ -190,32 +190,32 @@ void createSphere(Object *object, Material material, float radius, int resolutio
     triangle = (Triangle *)malloc(sizeof(Triangle) * noTriangles);
     
     // Create base vectors
-    setVector(&v[0], 0, 0, -radius);
-    setVector(&v[1], 0, -radius, 0);
-    setVector(&v[2], -radius, 0, 0);
-    setVector(&v[3], 0, 0, radius);
-    setVector(&v[4], 0, radius, 0);
-    setVector(&v[5], radius, 0, 0);
+    setVector(&v[0], 0, 0, -radius, f);
+    setVector(&v[1], 0, -radius, 0, f);
+    setVector(&v[2], -radius, 0, 0, f);
+    setVector(&v[3], 0, 0, radius, f);
+    setVector(&v[4], 0, radius, 0, f);
+    setVector(&v[5], radius, 0, 0, f);
     
     // Form top triangles:
-    setTriangle(&baseTriangle[0], v[5], v[4], v[3], m);
-    setTriangle(&baseTriangle[1], v[3], v[4], v[2], m);
-    setTriangle(&baseTriangle[2], v[2], v[4], v[0], m);
-    setTriangle(&baseTriangle[3], v[0], v[4], v[5], m);
+    setTriangle(&baseTriangle[0], v[5], v[4], v[3], m, f);
+    setTriangle(&baseTriangle[1], v[3], v[4], v[2], m, f);
+    setTriangle(&baseTriangle[2], v[2], v[4], v[0], m, f);
+    setTriangle(&baseTriangle[3], v[0], v[4], v[5], m, f);
     
     // For bottom triangles:
-    setTriangle(&baseTriangle[4], v[3], v[1], v[5], m);
-    setTriangle(&baseTriangle[5], v[5], v[1], v[0], m);
-    setTriangle(&baseTriangle[6], v[0], v[1], v[2], m);
-    setTriangle(&baseTriangle[7], v[2], v[1], v[3], m);
+    setTriangle(&baseTriangle[4], v[3], v[1], v[5], m, f);
+    setTriangle(&baseTriangle[5], v[5], v[1], v[0], m, f);
+    setTriangle(&baseTriangle[6], v[0], v[1], v[2], m, f);
+    setTriangle(&baseTriangle[7], v[2], v[1], v[3], m, f);
     
     // Subdivide for each of the triangles
     for (n = 0; n < 8; n++)
     {
-        subdivideTriangles(resolution, baseTriangle[n], triangle, n * noTriangles / 8, radius, m);
+        subdivideTriangles(resolution, baseTriangle[n], triangle, n * noTriangles / 8, radius, m, f);
     }
     
     // Bring these triangles together and create the object
-    setObject(object, material, noTriangles, triangle);
+    setObject(object, material, noTriangles, triangle, f);
 }
 #endif

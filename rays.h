@@ -18,6 +18,9 @@
 // Add math stats
 #include "mathstats.h"
 
+// Add function stats
+#include "funcstats.h"
+
 /* Define a ray */
 typedef struct Ray
 {
@@ -38,15 +41,17 @@ typedef struct Hit
 Hit;
 
 /* Set the parameters of a ray */
-void setRay(Ray *ray, Vector source, Vector direction)
+void setRay(Ray *ray, Vector source, Vector direction, FuncStat *f)
 {
     (*ray).source = source;
     (*ray).direction = direction;
+    (*f).setRay++;
 }
 
 /* Create a ray at this point from this camera */
-Ray createRay(int x, int y, Camera camera, MathStat *m)
+Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 {
+    (*f).createRay++;
 //    printf("Establishing dimensions... ");
     float sx = (float)x * camera.dfovardw - camera.fovar;
     statGroupFlt(m, 0, 1, 1, 0);
@@ -58,29 +63,31 @@ Ray createRay(int x, int y, Camera camera, MathStat *m)
     
     Ray ray;
     
-    shorizontal = scalarVecMult(sx, camera.horizontal, m);
-    svertical = scalarVecMult(sy, camera.vertical, m);
-    sview = vecAdd(vecAdd(shorizontal, svertical, m), camera.view, m);
+    shorizontal = scalarVecMult(sx, camera.horizontal, m, f);
+    svertical = scalarVecMult(sy, camera.vertical, m, f);
+    sview = vecAdd(vecAdd(shorizontal, svertical, m, f), camera.view, m, f);
     
 //    printf("Views established.\nCreating ray...");
-    setRay(&ray, camera.location, vecNormalised(sview, m));
+    setRay(&ray, camera.location, vecNormalised(sview, m, f), f);
 //    printf("Ray created.\n");
     return ray;
 }
 
 /* Compute the intersection of a triangle */
-float triangleIntersection(Ray ray, Triangle triangle, MathStat *m)
+float triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f)
 {
     float intersection, a, b, c, arecip;
     Vector edge1, edge2, u, v, w;
+    
+    (*f).triangleIntersection++;
     
     // Compute the edges of the triangle
     edge1 = triangle.vmu;
     edge2 = triangle.wmu;
     
     // Determine if there's an intersection (within tolerance)
-    u = cross(ray.direction, edge2, m);
-    a = dot(edge1, u, m);
+    u = cross(ray.direction, edge2, m, f);
+    a = dot(edge1, u, m, f);
     if (a > -EPS && a < EPS)
         return 0; // No intersection
     
@@ -88,20 +95,20 @@ float triangleIntersection(Ray ray, Triangle triangle, MathStat *m)
     arecip = 1.0 / a;
     statDivideFlt(m, 1);
     
-    v = vecSub(ray.source, triangle.u, m);
-    b = dot(v, u, m) * arecip;
+    v = vecSub(ray.source, triangle.u, m, f);
+    b = dot(v, u, m, f) * arecip;
     statMultiplyFlt(m, 1);
     if (b < 0 || b > 1.0)
         return 0; // no intersection
     
-    w = cross(v, edge1, m);
-    c = dot(ray.direction, w, m) * arecip;
+    w = cross(v, edge1, m, f);
+    c = dot(ray.direction, w, m, f) * arecip;
     statMultiplyFlt(m, 1);
     statPlusFlt(m, 1);
     if (c < 0 || b + c > 1.0)
         return 0; // no intersection
     
-    intersection = dot(edge2, w, m) * arecip;
+    intersection = dot(edge2, w, m, f) * arecip;
     
     statMultiplyFlt(m, 1);
     
@@ -114,11 +121,13 @@ float triangleIntersection(Ray ray, Triangle triangle, MathStat *m)
 }
 
 /* Go through the triangles within an object and find one that intersects with this ray */
-Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
+Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, FuncStat *f)
 {
     float intersectionPoint, nearestIntersection = FURTHEST_RAY;
     int n, nearestIdx;
     Hit hit;
+    
+    (*f).objectIntersection++;
     
     // Default distance is 0 just in case there's no hit
     hit.distance = 0.0;
@@ -126,14 +135,14 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
     for (n = 0; n < object.noTriangles; n++)
     {
         statPlusInt(m, 1); // For the loop
-        intersectionPoint = triangleIntersection(ray, object.triangle[n], m);
+        intersectionPoint = triangleIntersection(ray, object.triangle[n], m, f);
         
         // Determine whether there was an intersection and whether this was
         // the closest intersection to the camera for this object
         if (intersectionPoint > 0.0 && intersectionPoint < nearestIntersection)
         {
             // Ensure that only front facing triangles reply
-            if (dot(object.triangle[n].normcrvmuwmu, ray.direction, m) < EPS)
+            if (dot(object.triangle[n].normcrvmuwmu, ray.direction, m, f) < EPS)
             {
                 nearestIdx = n;
                 nearestIntersection = intersectionPoint;
@@ -144,7 +153,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
     // Only fill in the parameters if there was an intersection and that it isn't far away
     if (nearestIntersection > 0.0 && nearestIntersection < FURTHEST_RAY)
     {
-        hit.location = vecAdd(ray.source, scalarVecMult(nearestIntersection, ray.direction, m), m);
+        hit.location = vecAdd(ray.source, scalarVecMult(nearestIntersection, ray.direction, m, f), m, f);
         
         hit.normal = object.triangle[nearestIdx].normcrvmuwmu;
         hit.ray = ray;
@@ -159,18 +168,20 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
 }
 
 /* Go through scene to detect whether a ray intersects an object within the scene */
-Hit sceneIntersection(Ray ray, Scene scene, MathStat *m)
+Hit sceneIntersection(Ray ray, Scene scene, MathStat *m, FuncStat *f)
 {
     int n;
     Hit hit;
     Hit nearestHit;
     nearestHit.distance = FURTHEST_RAY;
     
+    (*f).sceneIntersection++;
+    
     // Go through all objects within this scene
     for (n = 0; n < scene.noObjects; n++)
     {
         statPlusInt(m, 1); // For the loop
-        hit = objectIntersection(ray, scene.object[n], n, m);
+        hit = objectIntersection(ray, scene.object[n], n, m, f);
         
         // determine if there was an intersection and that it's the closest one
         if (hit.distance > 0.0 && hit.distance < nearestHit.distance)
@@ -184,14 +195,16 @@ Hit sceneIntersection(Ray ray, Scene scene, MathStat *m)
 }
 
 /* Trace a ray back and find the shadow for a particular light source*/
-float traceShadow(Hit hit, Scene scene, Light light, MathStat *ma)
+float traceShadow(Hit hit, Scene scene, Light light, MathStat *ma, FuncStat *f)
 {
     Vector direction;
     Ray shadow;
     int n, m;
     
-    direction = vecNormalised(vecSub(light.location, hit.location, ma), ma);
-    setRay(&shadow, hit.location, direction);
+    (*f).traceShadow++;
+    
+    direction = vecNormalised(vecSub(light.location, hit.location, ma, f), ma, f);
+    setRay(&shadow, hit.location, direction, f);
     
     // Now send the shadow ray back to the light. If it intersects, then the ray is a shadow
     for (m = 0; m < scene.noObjects; m++)
@@ -202,7 +215,7 @@ float traceShadow(Hit hit, Scene scene, Light light, MathStat *ma)
         {
             statPlusInt(ma, 1); // For the loop
             // Is this significant?
-            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma) > EPS)
+            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma, f) > EPS)
                 return light.shadowFactor;
         }
     }
@@ -211,14 +224,16 @@ float traceShadow(Hit hit, Scene scene, Light light, MathStat *ma)
 }
 
 /* Compute a reflection for a ray */
-Ray reflectRay(Hit hit, MathStat *m)
+Ray reflectRay(Hit hit, MathStat *m, FuncStat *f)
 {
     Vector viewDirection;
     Ray reflection;
     
+    (*f).reflectRay++;
+    
     // 2 (n . v) * n - v
-    viewDirection = negVec(hit.ray.direction);
-    reflection.direction = vecSub(scalarVecMult(2.0 * dot(hit.normal, viewDirection, m), hit.normal, m), viewDirection, m);
+    viewDirection = negVec(hit.ray.direction, f);
+    reflection.direction = vecSub(scalarVecMult(2.0 * dot(hit.normal, viewDirection, m, f), hit.normal, m, f), viewDirection, m, f);
     statMultiplyFlt(m, 1);
     reflection.source = hit.location;
     
@@ -226,18 +241,20 @@ Ray reflectRay(Hit hit, MathStat *m)
 }
 
 /* Compute a refraction ray */
-Ray refractRay(Hit hit, float inverserefractivity, float squareinverserefractivity, MathStat *m)
+Ray refractRay(Hit hit, float inverserefractivity, float squareinverserefractivity, MathStat *m, FuncStat *f)
 {
-    Vector incidence = negVec(hit.ray.direction);
+    (*f).refractRay++;
+    
+    Vector incidence = negVec(hit.ray.direction, f);
     Ray refraction;
     
-    float c = dot(incidence, hit.normal, m);
+    float c = dot(incidence, hit.normal, m, f);
     float s = inverserefractivity * c - sqrtf(1.0 - squareinverserefractivity * (1.0 - c * c));
     statGroupFlt(m, 0, 3, 3, 0);
     statSqrtFlt(m, 1);
     
     // Direction of refractive ray
-    refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal, m), scalarVecMult(inverserefractivity, incidence, m), m), m);
+    refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal, m, f), scalarVecMult(inverserefractivity, incidence, m, f), m, f), m, f);
     
     // The refraction occurs from the point where it hit the object
     refraction.source = hit.location;

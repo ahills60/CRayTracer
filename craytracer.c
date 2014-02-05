@@ -28,6 +28,9 @@
 // Add math stats
 #include "mathstats.h"
 
+// Add function stats
+#include "funcstats.h"
+
 int main(int argc, char *argv[])
 {
     Scene scene;
@@ -43,6 +46,7 @@ int main(int argc, char *argv[])
     Colour outputColour;
     char *filename;
     MathStat m;
+    FuncStat f;
 
     int width = 1024;
     int height = 768;
@@ -58,6 +62,7 @@ int main(int argc, char *argv[])
     
     // Initialise stats
     initStats(&m);
+    initFuncStats(&f);
     
 	for (i = 1; i<argc; i++)
 	{
@@ -110,19 +115,19 @@ int main(int argc, char *argv[])
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
     
     // Build scene
-    populateScene(&scene, &m);
+    populateScene(&scene, &m, &f);
     printf("Scene initialised.\n");
     
     // Define lighting:
-    setVector(&lightColour, 1, 1, 1);
-    setVector(&lightLocation, -1, 4, 4);
-    setLight(&light, lightLocation, lightColour, 0.3);
+    setVector(&lightColour, 1, 1, 1, &f);
+    setVector(&lightLocation, -1, 4, 4, &f);
+    setLight(&light, lightLocation, lightColour, 0.3, &f);
     printf("Lighting defined.\n");
     
     // Camera configuration
-    setVector(&cameraLocation, 1, 2, 4);
-    setVector(&cameraDirection, 1, 0, -6);
-    setCamera(&camera, cameraLocation, cameraDirection, 45, width, height, &m);
+    setVector(&cameraLocation, 1, 2, 4, &f);
+    setVector(&cameraDirection, 1, 0, -6, &f);
+    setCamera(&camera, cameraLocation, cameraDirection, 45, width, height, &m, &f);
     printf("Camera is ready.\n");
     
     // Configure image
@@ -138,6 +143,7 @@ int main(int argc, char *argv[])
     
     // Now reset the stats
     initStats(&m);
+    initFuncStats(&f);
     
     // Now go through every pixel
     for (i = 0; i < height; i++)
@@ -146,9 +152,9 @@ int main(int argc, char *argv[])
         {
 //             printf("Drawing pixel at row %i and column %i:\n", i, n);
 //             printf("Creating ray... ");
-            ray = createRay(n, i, camera, &m);
+            ray = createRay(n, i, camera, &m, &f);
 //             printf("Created.\nStarting to draw... ");
-            outputColour = vec2Colour(draw(ray, scene, light, recursions, &m));
+            outputColour = vec2Colour(draw(ray, scene, light, recursions, &m, &f));
 //             printf("Draw complete.\nSetting pixel... ");
             setPixel(&image, n, i, outputColour);
 //             printf("Pixel set at row %i and column %i.\n", i, n);
@@ -157,7 +163,7 @@ int main(int argc, char *argv[])
     printf("Writing image... ");
     writeImageASC(image, filename);
     printf("Complete.\nResetting scene...");
-    resetScene(&scene);
+    resetScene(&scene, &f);
     printf("Complete.\n\n");
     
     printf("Stats:\n\n");
@@ -166,6 +172,55 @@ int main(int argc, char *argv[])
     printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt:%lld\n", m.cosine, m.sine, m.power, m.sqrtFlt);
     printf("Integer Operations:\n");
     printf("+: %lld\t-: %lld\t*: %lld\t/:%lld\n\n", m.plusInt, m.subtractInt, m.multiplyInt, m.divideInt);
+    
+    
+    
+    printf("Function stats:\n\n");
+    printf("setVector: %lld\n", f.setVector);
+    printf("setMatrix: %lld\n", f.setMatrix);
+    printf("deg2rad: %lld\n", f.deg2rad);
+    printf("vecMult: %lld\n", f.vecMult);
+    printf("dot: %lld\n", f.dot);
+    printf("cross: %lld\n", f.cross);
+    printf("scalarVecMult: %lld\n", f.scalarVecMult);
+    printf("vecAdd: %lld\n", f.vecAdd);
+    printf("vecSub: %lld\n", f.vecSub);
+    printf("negVec: %lld\n", f.negVec);
+    printf("vecLength: %lld\n", f.vecLength);
+    printf("vecNormalised: %lld\n", f.vecNormalised);
+    printf("matVecMult: %lld\n", f.matVecMult);
+    printf("matMult: %lld\n", f.matMult);
+    printf("genIdentMat: %lld\n", f.genIdentMat);
+    printf("genXRotateMat: %lld\n", f.genXRotateMat);
+    printf("genYRotateMat: %lld\n", f.genYRotateMat);
+    printf("genZRotateMat: %lld\n", f.genZRotateMat);
+    printf("getRotateMatrix: %lld\n", f.getRotateMatrix);
+    printf("genTransMatrix: %lld\n", f.genTransMatrix);
+    printf("genScaleMatrix: %lld\n", f.genScaleMatrix);
+    printf("setTriangle: %lld\n", f.setTriangle);
+    printf("ambiance: %lld\n", f.ambiance);
+    printf("diffusion: %lld\n", f.diffusion);
+    printf("specular: %lld\n", f.specular);
+    printf("setMaterial: %lld\n", f.setMaterial);
+    printf("setObject: %lld\n", f.setObject);
+    printf("initialiseScene: %lld\n", f.initialiseScene);
+    printf("getTriangleTotal: %lld\n", f.getTriangleTotal);
+    printf("addObject: %lld\n", f.addObject);
+    printf("deleteObject: %lld\n", f.deleteObject);
+    printf("resetScene: %lld\n", f.resetScene);
+    printf("setLight: %lld\n", f.setLight);
+    printf("setCamera: %lld\n", f.setCamera);
+    printf("transformObject: %lld\n", f.transformObject);
+    printf("setRay: %lld\n", f.setRay);
+    printf("createRay: %lld\n", f.createRay);
+    printf("triangleIntersection: %lld\n", f.triangleIntersection);
+    printf("objectIntersection: %lld\n", f.objectIntersection);
+    printf("sceneIntersection: %lld\n", f.sceneIntersection);
+    printf("traceShadow: %lld\n", f.traceShadow);
+    printf("reflectRay: %lld\n", f.reflectRay);
+    printf("refractRay: %lld\n", f.refractRay);
+    printf("draw: %lld\n", f.draw);
+    
 	// Exit cleanly
 	return 0;
 }

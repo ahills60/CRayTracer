@@ -16,6 +16,9 @@
 // Add math stats
 # include "mathstats.h"
 
+// Add function stats
+#include "funcstats.h"
+
 /* Define materials */
 typedef struct Material
 {
@@ -79,8 +82,9 @@ typedef struct Camera
 Camera;
 
 /* Set the material */
-void setMaterial(Material *matObj, Vector colour, float ambiance, float diffusivity, float specular, float shininess, float reflectivity, float opacity, float refractivity)
+void setMaterial(Material *matObj, Vector colour, float ambiance, float diffusivity, float specular, float shininess, float reflectivity, float opacity, float refractivity, FuncStat *f)
 {
+    (*f).setMaterial++;
     (*matObj).colour = colour;
     (*matObj).reflectivity = reflectivity;
     (*matObj).opacity = opacity;
@@ -94,16 +98,18 @@ void setMaterial(Material *matObj, Vector colour, float ambiance, float diffusiv
 }
 
 /* Set the object */
-void setObject(Object *object, Material material, int noTriangles, Triangle *triangle)
+void setObject(Object *object, Material material, int noTriangles, Triangle *triangle, FuncStat *f)
 {
     (*object).material = material;
     (*object).noTriangles = noTriangles;
     (*object).triangle = triangle;
+    (*f).setObject++;
 }
 
 /* Initialise the scene */
-void initialiseScene(Scene *scene, int maxObjects)
+void initialiseScene(Scene *scene, int maxObjects, FuncStat *f)
 {
+    (*f).initialiseScene++;
     (*scene).noObjects = 0;
     (*scene).maxObjects = maxObjects;
     // Allocate memory for the maximum number of objects
@@ -111,8 +117,9 @@ void initialiseScene(Scene *scene, int maxObjects)
 }
 
 /* Get the total number triangles in a scene */
-int getTriangleTotal(Scene scene)
+int getTriangleTotal(Scene scene, FuncStat *f)
 {
+    (*f).getTriangleTotal++;
     int n, total = 0;
     
     for (n = 0; n < scene.noObjects; n++)
@@ -123,8 +130,10 @@ int getTriangleTotal(Scene scene)
 }
 
 /* Add an object to a scene */
-void addObject(Scene *scene, Object object)
+void addObject(Scene *scene, Object object, FuncStat *f)
 {
+    (*f).addObject++;
+    
     // Make sure we have enough memory to allocate the object
     if ((*scene).noObjects < (*scene).maxObjects)
     {
@@ -138,8 +147,9 @@ void addObject(Scene *scene, Object object)
 }
 
 /* Delete a specific object and free memory */
-void deleteObject(Object *object)
+void deleteObject(Object *object, FuncStat *f)
 {
+    (*f).deleteObject++;
     // Clear memory
     free((*object).triangle);
     
@@ -148,14 +158,16 @@ void deleteObject(Object *object)
 }
 
 /* Reset a scene and free memory */
-void resetScene(Scene *scene)
+void resetScene(Scene *scene, FuncStat *f)
 {
     int n;
+    
+    (*f).resetScene++;
 
     // Go through each object and delete the object
     for (n = 0; n < (*scene).maxObjects; n++)
     {
-        deleteObject(&(*scene).object[n]);
+        deleteObject(&(*scene).object[n], f);
     }
     
     // Free memory
@@ -167,34 +179,37 @@ void resetScene(Scene *scene)
 }
 
 /* Set a light */
-void setLight(Light *light, Vector location, Vector colour, float shadowFactor)
+void setLight(Light *light, Vector location, Vector colour, float shadowFactor, FuncStat *f)
 {
+    (*f).setLight++;
     (*light).location = location;
     (*light).colour = colour;
     (*light).shadowFactor = shadowFactor;
 }
 
 /* Set a camera */
-void setCamera(Camera *camera, Vector location, Vector view, float fov, int width, int height, MathStat *m)
+void setCamera(Camera *camera, Vector location, Vector view, float fov, int width, int height, MathStat *m, FuncStat *f)
 {
     Vector up, viewNorm, horizontal;
     
+    (*f).setCamera++;
+    
     // Standard up vector
-    setVector(&up, 0.0, 1.0, 0.0);
+    setVector(&up, 0.0, 1.0, 0.0, f);
     (*camera).up = up;
     
     // Location and Normalised view
     (*camera).location = location;
-    viewNorm = vecNormalised(vecSub(view, location, m), m);
+    viewNorm = vecNormalised(vecSub(view, location, m, f), m, f);
     (*camera).view = viewNorm;
     
     // Set horizontal and vertical
-    horizontal = cross(viewNorm, up, m);
+    horizontal = cross(viewNorm, up, m, f);
     (*camera).horizontal = horizontal;
-    (*camera).vertical = cross(horizontal, viewNorm, m);
+    (*camera).vertical = cross(horizontal, viewNorm, m, f);
     
     // Field of view and aspect ratio
-    (*camera).fov = deg2rad(fov * 0.5, m);
+    (*camera).fov = deg2rad(fov * 0.5, m, f);
     (*camera).ar = (float)width / (float)height;
     
     // Height and width
@@ -208,24 +223,27 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
 }
 
 /* Transform object by transformation matrix T */
-void transformObject(Object *object, Matrix T, MathStat *m)
+void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
 {
     int i;
     Triangle temp;
+    
+    (*f).transformObject++;
+    
     for (i = 0; i < (*object).noTriangles; i++)
     {
-        temp.u = matVecMult(T, (*object).triangle[i].u, m);
-        temp.v = matVecMult(T, (*object).triangle[i].v, m);
-        temp.w = matVecMult(T, (*object).triangle[i].w, m);
+        temp.u = matVecMult(T, (*object).triangle[i].u, m, f);
+        temp.v = matVecMult(T, (*object).triangle[i].v, m, f);
+        temp.w = matVecMult(T, (*object).triangle[i].w, m, f);
         
         (*object).triangle[i].u = temp.u;
         (*object).triangle[i].v = temp.v;
         (*object).triangle[i].w = temp.w;
         
         // Update vmu, wmu and normcrvmuwmu
-        (*object).triangle[i].vmu = vecSub(temp.v, temp.u, m);
-        (*object).triangle[i].wmu = vecSub(temp.w, temp.u, m);
-        (*object).triangle[i].normcrvmuwmu = vecNormalised(cross((*object).triangle[i].vmu, (*object).triangle[i].wmu, m), m);
+        (*object).triangle[i].vmu = vecSub(temp.v, temp.u, m, f);
+        (*object).triangle[i].wmu = vecSub(temp.w, temp.u, m, f);
+        (*object).triangle[i].normcrvmuwmu = vecNormalised(cross((*object).triangle[i].vmu, (*object).triangle[i].wmu, m, f), m, f);
     }
 }
 
