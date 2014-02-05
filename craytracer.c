@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 					else
 					{
                         if (strcmp(parVal, "recursions") == 0)
-                            recursions = (atoi(currObj) == 0) ? 2 : atoi(currObj);
+                            recursions = (atoi(currObj) < 0) ? 2 : atoi(currObj);
                         else
                         {
                             if (strcmp(parVal, "filename") == 0)
