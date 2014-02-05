@@ -48,19 +48,18 @@ void setRay(Ray *ray, Vector source, Vector direction)
 Ray createRay(int x, int y, Camera camera, MathStat *m)
 {
 //    printf("Establishing dimensions... ");
-    float sx = (2.0 * ((float)x / (float)camera.width) - 1.0) * camera.ar;
-    statGroupFlt(m, 0, 1, 2, 1);
-    float sy = 2.0 * ((float)y / (float)camera.height) - 1.0;
-    statGroupFlt(m, 0, 1, 1, 1);
+    float sx = (float)x * camera.dfovardw - camera.fovar;
+    statGroupFlt(m, 0, 1, 1, 0);
+    float sy = (float)y * camera.dfovdh - camera.fov;
+    statGroupFlt(m, 0, 1, 1, 0);
 //    printf("Dimensions established.\nSetting views...");
     
     Vector shorizontal, svertical, sview;
     
     Ray ray;
     
-    shorizontal = scalarVecMult(sx * camera.fov, camera.horizontal, m);
-    svertical = scalarVecMult(sy * camera.fov, camera.vertical, m);
-    statMultiplyFlt(m, 2);
+    shorizontal = scalarVecMult(sx, camera.horizontal, m);
+    svertical = scalarVecMult(sy, camera.vertical, m);
     sview = vecAdd(vecAdd(shorizontal, svertical, m), camera.view, m);
     
 //    printf("Views established.\nCreating ray...");

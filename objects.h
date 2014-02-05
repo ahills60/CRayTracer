@@ -72,6 +72,9 @@ typedef struct Camera
     float ar;                   // Aspect ratio
     int width;
     int height;
+    float dfovardw;             // 2 * camerafov / width
+    float fovar;                // camerafov * cameraar
+    float dfovdh;               // 2 * camerafov / height
 }
 Camera;
 
@@ -197,6 +200,11 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
     // Height and width
     (*camera).width = width;
     (*camera).height = height;
+    
+    // Compute the coefficients used in creating a ray:
+    (*camera).dfovardw = 2.0 * (*camera).fov / ((float) width) * (*camera).ar;
+    (*camera).fovar = (*camera).fov * (*camera).ar;
+    (*camera).dfovdh = 2.0 * (*camera).fov / ((float) height);
 }
 
 /* Transform object by transformation matrix T */
