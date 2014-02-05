@@ -100,6 +100,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m)
             
             // Get the refraction
             refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.inverserefractivity, scene.object[hit.objectIndex].material.squareinverserefractivity, m), scene, light, recursion - 1, m);
+            statSubtractInt(m, 1);
             refraction = scene.object[hit.objectIndex].material.opacity;
             outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m), m);
         }
