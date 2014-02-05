@@ -97,10 +97,9 @@ float triangleIntersection(Ray ray, Triangle triangle, MathStat *m)
     w = cross(v, edge1, m);
     c = dot(ray.direction, w, m) * arecip;
     statMultiplyFlt(m, 1);
+    statPlusFlt(m, 1);
     if (c < 0 || b + c > 1.0)
         return 0; // no intersection
-    
-    statPlusFlt(m, 1);
     
     intersection = dot(edge2, w, m) * arecip;
     
