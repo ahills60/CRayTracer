@@ -16,7 +16,7 @@
 #include "objects.h"
 
 /* Define a cube */
-void createCube(Object *object, Material material, float size)
+void createCube(Object *object, Material material, float size, MathStat *m)
 {
     Vector u, v, w, minBound, maxBound;
     Triangle *triangle;

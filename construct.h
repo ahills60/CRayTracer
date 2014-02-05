@@ -41,13 +41,13 @@ void populateScene(Scene *scene, MathStat *m)
     setMaterial(&mirror, white, 0.1, 0.0, 0.9, 32.0, 0.6, 0.0, 1.4);
     
     // Create objects
-    createCube(&cube, redGlass, 1.0);
+    createCube(&cube, redGlass, 1.0, m);
     createPlaneXZ(&planeBase, nonreflPurple, 10.0);
     createPlaneXZ(&planeTop, nonreflPurple, 10.0);
     createPlaneXZ(&planeLeft, nonreflGreen, 10.0);
     createPlaneXZ(&planeRight, nonreflGreen, 10.0);
     createPlaneXZ(&planeBack, nonreflBlue, 10.0);
-    createCube(&mirrCube, mirror, 1.5);
+    createCube(&mirrCube, mirror, 1.5, m);
     
     // Arrange
     transformObject(&cube, matMult(genTransMatrix(2, 0.5, -1, m), genYRotateMat(45, m), m), m);
