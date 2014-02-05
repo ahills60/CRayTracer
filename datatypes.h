@@ -37,6 +37,9 @@ typedef struct Triangle
     Vector u;
     Vector v;
     Vector w;
+    Vector vmu;             // v - u
+    Vector wmu;             // w - u
+    Vector normcrvmuwmu;    // vecNormalised(cross(vmu, wmu))
 }
 Triangle;
 
@@ -46,13 +49,6 @@ void setVector(Vector *v, float x, float y, float z)
     (*v).x = x;
     (*v).y = y;
     (*v).z = z;
-}
-
-void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w)
-{
-    (*triangle).u = u;
-    (*triangle).v = v;
-    (*triangle).w = w;
 }
 
 /* Fast convert of list to matrix */
@@ -287,6 +283,16 @@ Matrix genScaleMatrix(float sx, float sy, float sz, MathStat *ma)
                    0.0, 0.0, 0.0, 1.0};
     setMatrix(&H, m, ma);
     return H;
+}
+
+void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m)
+{
+    (*triangle).u = u;
+    (*triangle).v = v;
+    (*triangle).w = w;
+    (*triangle).vmu = vecSub(v, u, m);
+    (*triangle).wmu = vecSub(w, u, m);
+    (*triangle).normcrvmuwmu = vecNormalised(cross((*triangle).vmu, (*triangle).wmu, m), m);
 }
 
 #endif /* DATATYPES_H_ */

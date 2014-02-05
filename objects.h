@@ -221,6 +221,11 @@ void transformObject(Object *object, Matrix T, MathStat *m)
         (*object).triangle[i].u = temp.u;
         (*object).triangle[i].v = temp.v;
         (*object).triangle[i].w = temp.w;
+        
+        // Update vmu, wmu and normcrvmuwmu
+        (*object).triangle[i].vmu = vecSub(temp.v, temp.u, m);
+        (*object).triangle[i].wmu = vecSub(temp.w, temp.u, m);
+        (*object).triangle[i].normcrvmuwmu = vecNormalised(cross((*object).triangle[i].vmu, (*object).triangle[i].wmu, m), m);
     }
 }
 

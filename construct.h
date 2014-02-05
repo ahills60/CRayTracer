@@ -42,11 +42,11 @@ void populateScene(Scene *scene, MathStat *m)
     
     // Create objects
     createCube(&cube, redGlass, 1.0, m);
-    createPlaneXZ(&planeBase, nonreflPurple, 10.0);
-    createPlaneXZ(&planeTop, nonreflPurple, 10.0);
-    createPlaneXZ(&planeLeft, nonreflGreen, 10.0);
-    createPlaneXZ(&planeRight, nonreflGreen, 10.0);
-    createPlaneXZ(&planeBack, nonreflBlue, 10.0);
+    createPlaneXZ(&planeBase, nonreflPurple, 10.0, m);
+    createPlaneXZ(&planeTop, nonreflPurple, 10.0, m);
+    createPlaneXZ(&planeLeft, nonreflGreen, 10.0, m);
+    createPlaneXZ(&planeRight, nonreflGreen, 10.0, m);
+    createPlaneXZ(&planeBack, nonreflBlue, 10.0, m);
     createCube(&mirrCube, mirror, 1.5, m);
     
     // Arrange

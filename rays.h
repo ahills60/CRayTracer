@@ -75,8 +75,8 @@ float triangleIntersection(Ray ray, Triangle triangle, MathStat *m)
     Vector edge1, edge2, u, v, w;
     
     // Compute the edges of the triangle
-    edge1 = vecSub(triangle.v, triangle.u, m);
-    edge2 = vecSub(triangle.w, triangle.u, m);
+    edge1 = triangle.vmu;
+    edge2 = triangle.wmu;
     
     // Determine if there's an intersection (within tolerance)
     u = cross(ray.direction, edge2, m);
@@ -119,7 +119,6 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
 {
     float intersectionPoint, nearestIntersection = FURTHEST_RAY;
     int n, nearestIdx;
-    Triangle nearestTriangle;
     Hit hit;
     
     // Default distance is 0 just in case there's no hit
@@ -135,7 +134,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
         if (intersectionPoint > 0.0 && intersectionPoint < nearestIntersection)
         {
             // Ensure that only front facing triangles reply
-            if (dot(vecNormalised(cross(vecSub(object.triangle[n].v, object.triangle[n].u, m), vecSub(object.triangle[n].w, object.triangle[n].u, m), m), m), ray.direction, m) < EPS)
+            if (dot(object.triangle[n].normcrvmuwmu, ray.direction, m) < EPS)
             {
                 nearestIdx = n;
                 nearestIntersection = intersectionPoint;
@@ -146,10 +145,9 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m)
     // Only fill in the parameters if there was an intersection and that it isn't far away
     if (nearestIntersection > 0.0 && nearestIntersection < FURTHEST_RAY)
     {
-        nearestTriangle = object.triangle[nearestIdx];
         hit.location = vecAdd(ray.source, scalarVecMult(nearestIntersection, ray.direction, m), m);
         
-        hit.normal = vecNormalised(cross(vecSub(nearestTriangle.v, nearestTriangle.u, m), vecSub(nearestTriangle.w, nearestTriangle.u, m), m), m);
+        hit.normal = object.triangle[nearestIdx].normcrvmuwmu;
         hit.ray = ray;
         hit.objectIndex = objectIndex;
         hit.distance = nearestIntersection;
