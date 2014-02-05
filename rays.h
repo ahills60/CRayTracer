@@ -230,19 +230,18 @@ Ray reflectRay(Hit hit, MathStat *m)
 }
 
 /* Compute a refraction ray */
-Ray refractRay(Hit hit, float refractivity, MathStat *m)
+Ray refractRay(Hit hit, float inverserefractivity, float squareinverserefractivity, MathStat *m)
 {
     Vector incidence = negVec(hit.ray.direction);
     Ray refraction;
     
     float c = dot(incidence, hit.normal, m);
-    float inverseRef = 1.0/ refractivity;
-    float s = inverseRef * c - sqrtf(1.0 - inverseRef * inverseRef * (1.0 - c * c));
-    statGroupFlt(m, 0, 3, 4, 1);
+    float s = inverserefractivity * c - sqrtf(1.0 - squareinverserefractivity * (1.0 - c * c));
+    statGroupFlt(m, 0, 3, 3, 0);
     statSqrtFlt(m, 1);
     
     // Direction of refractive ray
-    refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal, m), scalarVecMult(inverseRef, incidence, m), m), m);
+    refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal, m), scalarVecMult(inverserefractivity, incidence, m), m), m);
     
     // The refraction occurs from the point where it hit the object
     refraction.source = hit.location;

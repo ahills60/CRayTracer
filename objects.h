@@ -24,6 +24,8 @@ typedef struct Material
     float reflectivity;         // How reflective
     float opacity;              // How opaque an object is: 
     float refractivity;         // How refractive
+    float inverserefractivity;   // Inverse of the refractive index
+    float squareinverserefractivity; // The square of the inverse of refractivity
     float ambiance;             // Ambiance constant
     float diffusivity;          // Diffusive constant
     float specular;             // How specular
@@ -80,6 +82,8 @@ void setMaterial(Material *matObj, Vector colour, float ambiance, float diffusiv
     (*matObj).reflectivity = reflectivity;
     (*matObj).opacity = opacity;
     (*matObj).refractivity = refractivity;
+    (*matObj).inverserefractivity = 1.0 / refractivity;
+    (*matObj).squareinverserefractivity = 1.0 / (refractivity * refractivity);
     (*matObj).ambiance = ambiance;
     (*matObj).diffusivity = diffusivity;
     (*matObj).specular = specular;
