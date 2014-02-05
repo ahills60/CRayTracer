@@ -13,6 +13,9 @@
 #include "datatypes.h"
 #include "colours.h"
 
+// Add math stats
+# include "mathstats.h"
+
 /* Define materials */
 typedef struct Material
 {
@@ -165,7 +168,7 @@ void setLight(Light *light, Vector location, Vector colour, float shadowFactor)
 }
 
 /* Set a camera */
-void setCamera(Camera *camera, Vector location, Vector view, float fov, int width, int height)
+void setCamera(Camera *camera, Vector location, Vector view, float fov, int width, int height, MathStat *m)
 {
     Vector up, viewNorm, horizontal;
     
@@ -175,16 +178,16 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
     
     // Location and Normalised view
     (*camera).location = location;
-    viewNorm = vecNormalised(vecSub(view, location));
+    viewNorm = vecNormalised(vecSub(view, location, m), m);
     (*camera).view = viewNorm;
     
     // Set horizontal and vertical
-    horizontal = cross(viewNorm, up);
+    horizontal = cross(viewNorm, up, m);
     (*camera).horizontal = horizontal;
-    (*camera).vertical = cross(horizontal, viewNorm);
+    (*camera).vertical = cross(horizontal, viewNorm, m);
     
     // Field of view and aspect ratio
-    (*camera).fov = deg2rad(fov * 0.5);
+    (*camera).fov = deg2rad(fov * 0.5, m);
     (*camera).ar = (float)width / (float)height;
     
     // Height and width
@@ -193,15 +196,15 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
 }
 
 /* Transform object by transformation matrix T */
-void transformObject(Object *object, Matrix T)
+void transformObject(Object *object, Matrix T, MathStat *m)
 {
     int i;
     Triangle temp;
     for (i = 0; i < (*object).noTriangles; i++)
     {
-        temp.u = matVecMult(T, (*object).triangle[i].u);
-        temp.v = matVecMult(T, (*object).triangle[i].v);
-        temp.w = matVecMult(T, (*object).triangle[i].w);
+        temp.u = matVecMult(T, (*object).triangle[i].u, m);
+        temp.v = matVecMult(T, (*object).triangle[i].v, m);
+        temp.w = matVecMult(T, (*object).triangle[i].w, m);
         
         (*object).triangle[i].u = temp.u;
         (*object).triangle[i].v = temp.v;

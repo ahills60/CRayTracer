@@ -132,13 +132,13 @@ void createPlaneXZ(Object *object, Material material, float size)
 }
 
 /* Divides triangles given a triangle */
-void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius){
+void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius, MathStat *m){
     Vector u, v, w;
     
     // Compute the centre of triangle edges
-    u = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.u, baseTriangle.v)));
-    v = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.v, baseTriangle.w)));
-    w = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.w, baseTriangle.u)));
+    u = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.u, baseTriangle.v, m), m), m);
+    v = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.v, baseTriangle.w, m), m), m);
+    w = scalarVecMult(radius, vecNormalised(vecAdd(baseTriangle.w, baseTriangle.u, m), m), m);
     
     // Now create triangles from these vectors
     setTriangle(&triangle[0], u, v, w);
@@ -148,19 +148,19 @@ void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius){
 }
 
 /* Subdivides triangles and calls divisions when necessary */
-void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangle, int noTriangles, float radius)
+void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangle, int noTriangles, float radius, MathStat *m)
 {
     Triangle subTriangle[4];
     int n, noSubTriangles = (int)pow(4, (float)resolution - 1);
     
     if (resolution > 0)
     {
-        divideTriangles(baseTriangle, subTriangle, radius);
+        divideTriangles(baseTriangle, subTriangle, radius, m);
         
         // Decrement resolution and resume subdivision
         for (n = 0; n < 4; n++)
         {
-            subdivideTriangles(resolution - 1, subTriangle[n], triangle, noTriangles + n * noSubTriangles, radius);
+            subdivideTriangles(resolution - 1, subTriangle[n], triangle, noTriangles + n * noSubTriangles, radius, m);
         }
     }
     else
@@ -171,7 +171,7 @@ void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangl
 }
 
 /* Create a sphere using triangles. The resolution should be a power of 4 */
-void createSphere(Object *object, Material material, float radius, int resolution)
+void createSphere(Object *object, Material material, float radius, int resolution, MathStat *m)
 {
     Vector v[6];
     Triangle baseTriangle[8];
@@ -212,7 +212,7 @@ void createSphere(Object *object, Material material, float radius, int resolutio
     // Subdivide for each of the triangles
     for (n = 0; n < 8; n++)
     {
-        subdivideTriangles(resolution, baseTriangle[n], triangle, n * noTriangles / 8, radius);
+        subdivideTriangles(resolution, baseTriangle[n], triangle, n * noTriangles / 8, radius, m);
     }
     
     // Bring these triangles together and create the object
