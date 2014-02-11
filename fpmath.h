@@ -249,3 +249,97 @@ fixedp fp_pow(fixedp a, fixedp b)
         return 0;
     return fp_exp((fixedp) (((int64) log(a) * b) >> 16));
 }
+
+fixedp fp_sqrt(fixedp a)
+{
+    if (a <= 0)
+    {
+        return 0;
+    }
+    
+    // Get MSB
+    int i = a, im, k = 0; p = -16;
+    
+    if ((i & 0xFFFF0000) > 0)
+    {
+        i = i >> 16;
+        p += 16;
+    }
+    if ((i & 0x0000FF00) > 0)
+    {
+        i = i >> 8;
+        p += 8;
+    }
+    if ((i & 0x000000F0) > 0)
+    {
+        i = i >> 4;
+        p += 4;
+    }
+    if ((i & 0x0000000C) > 0)
+    {
+        i = i >> 2;
+        p += 2;
+    }
+    if ((i & 0x00000002) > 0)
+    {
+        i = i >> 1;
+        p += 1;
+    }
+    
+    // Lookup the sqrt multiplier based on bits MSB + 0 to MSB + 3 then
+    // correct odd MSB positions using sqrt(2)
+    if (p >= - 11)
+    {
+        i = a >> (11 + p);
+    }
+    else
+    {
+        i = a << (-11 - p);
+    }
+    
+    im = (i & 31) - 1;
+    if (im >= 0)
+    {
+        k = ((fixedp) LOOKUP_SQRT[im] & 0xFFFF);
+        if ((p & 1) > 0)
+        {
+            k = ((k * 92682) >> 16);
+        }
+    }
+    
+    if ((p & 1) > 0)
+    {
+        k += 92682;
+    }
+    else
+    {
+        k += 0x10000;
+    }
+    
+    // Shift the square root estimate based on the halved MSB position
+    if (p >= 0)
+    {
+        k = k << (p >> 1);
+    }
+    else
+    {
+        k = k >> ((1 - p) >> 1);
+    }
+    
+    // Do two Newtonian square root iteration steps to increase precision
+    int64 longNum = (int64)(a) << 16;
+    k += (fixedp) (longNum / k);
+    k = (k + (fixedp) ((longNum << 2) / k) + 2) >> 2;
+    
+    return k;
+}
+
+fixedp fp_toFP(int integer)
+{
+    return integer << 16;
+}
+
+int fp_toInt(fixedp fp)
+{
+    return fp >> 16;
+}
