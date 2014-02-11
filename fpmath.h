@@ -17,6 +17,10 @@ typedef int int32;
 typedef long long int int64;
 typedef int32 fixedp;
 
+#define fp_Int2FP(a) ((int32)((a) * (1<<16)))
+#define fp_Flt2FP(a) ((int32)((a) * (1<<16)))
+
+
 #define MAX_VAL = 0x7FFFFFFF;
 #define MIN_VAL = 0x80000000;
 
@@ -332,14 +336,4 @@ fixedp fp_sqrt(fixedp a)
     k = (k + (fixedp) ((longNum << 2) / k) + 2) >> 2;
     
     return k;
-}
-
-fixedp fp_toFP(int integer)
-{
-    return integer << 16;
-}
-
-int fp_toInt(fixedp fp)
-{
-    return fp >> 16;
 }
