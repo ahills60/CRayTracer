@@ -20,7 +20,7 @@
 #define DATATYPES_H_
 
 // Define some constants
-#define EPS         1 // Was 0.00001
+#define EPS         31 // Was 0.00001
 
 /* A 3D vector */
 typedef struct Vector
