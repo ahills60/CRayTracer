@@ -10,6 +10,8 @@
 #ifndef OBJECTS_H_
 #define OBJECTS_H_
 
+#include "fpmath.h"
+
 #include "datatypes.h"
 #include "colours.h"
 
@@ -24,15 +26,15 @@ typedef struct Material
 {
     // Colour is defined as a vector as it's easier to convert
     Vector colour;              // Colour of object
-    float reflectivity;         // How reflective
-    float opacity;              // How opaque an object is: 
-    float refractivity;         // How refractive
-    float inverserefractivity;   // Inverse of the refractive index
-    float squareinverserefractivity; // The square of the inverse of refractivity
-    float ambiance;             // Ambiance constant
-    float diffusivity;          // Diffusive constant
-    float specular;             // How specular
-    float shininess;            // How shiny
+    fixedp reflectivity;         // How reflective
+    fixedp opacity;              // How opaque an object is: 
+    fixedp refractivity;         // How refractive
+    fixedp inverserefractivity;   // Inverse of the refractive index
+    fixedp squareinverserefractivity; // The square of the inverse of refractivity
+    fixedp ambiance;             // Ambiance constant
+    fixedp diffusivity;          // Diffusive constant
+    fixedp specular;             // How specular
+    fixedp shininess;            // How shiny
 }
 Material;
 
@@ -59,7 +61,7 @@ typedef struct Light
 {
     Vector location;            // Location of light source
     Vector colour;              // Colour of light
-    float shadowFactor;         // Shadow factor
+    fixedp shadowFactor;         // Shadow factor
 }
 Light;
 
@@ -71,26 +73,26 @@ typedef struct Camera
     Vector horizontal;          // Horizontal unit vector
     Vector vertical;             // Vertical unit vector
     Vector up;                  // General up unit vector (0, 1, 0)
-    float fov;                  // Field of view in radians
-    float ar;                   // Aspect ratio
+    fixedp fov;                  // Field of view in radians
+    fixedp ar;                   // Aspect ratio
     int width;
     int height;
-    float dfovardw;             // 2 * camerafov / width
-    float fovar;                // camerafov * cameraar
-    float dfovdh;               // 2 * camerafov / height
+    fixedp dfovardw;             // 2 * camerafov / width
+    fixedp fovar;                // camerafov * cameraar
+    fixedp dfovdh;               // 2 * camerafov / height
 }
 Camera;
 
 /* Set the material */
-void setMaterial(Material *matObj, Vector colour, float ambiance, float diffusivity, float specular, float shininess, float reflectivity, float opacity, float refractivity, FuncStat *f)
+void setMaterial(Material *matObj, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, FuncStat *f)
 {
     (*f).setMaterial++;
     (*matObj).colour = colour;
     (*matObj).reflectivity = reflectivity;
     (*matObj).opacity = opacity;
     (*matObj).refractivity = refractivity;
-    (*matObj).inverserefractivity = 1.0 / refractivity;
-    (*matObj).squareinverserefractivity = 1.0 / (refractivity * refractivity);
+    (*matObj).inverserefractivity = fp_div(fp_fp1, refractivity);
+    (*matObj).squareinverserefractivity = fp_div(fp_fp1, fp_mult(refractivity, refractivity));
     (*matObj).ambiance = ambiance;
     (*matObj).diffusivity = diffusivity;
     (*matObj).specular = specular;
@@ -179,7 +181,7 @@ void resetScene(Scene *scene, FuncStat *f)
 }
 
 /* Set a light */
-void setLight(Light *light, Vector location, Vector colour, float shadowFactor, FuncStat *f)
+void setLight(Light *light, Vector location, Vector colour, fixedp shadowFactor, FuncStat *f)
 {
     (*f).setLight++;
     (*light).location = location;
@@ -188,14 +190,14 @@ void setLight(Light *light, Vector location, Vector colour, float shadowFactor, 
 }
 
 /* Set a camera */
-void setCamera(Camera *camera, Vector location, Vector view, float fov, int width, int height, MathStat *m, FuncStat *f)
+void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int width, int height, MathStat *m, FuncStat *f)
 {
     Vector up, viewNorm, horizontal;
     
     (*f).setCamera++;
     
     // Standard up vector
-    setVector(&up, 0.0, 1.0, 0.0, f);
+    setVector(&up, 0, fp_fp1, 0, f);
     (*camera).up = up;
     
     // Location and Normalised view
@@ -209,17 +211,20 @@ void setCamera(Camera *camera, Vector location, Vector view, float fov, int widt
     (*camera).vertical = cross(horizontal, viewNorm, m, f);
     
     // Field of view and aspect ratio
-    (*camera).fov = deg2rad(fov * 0.5, m, f);
-    (*camera).ar = (float)width / (float)height;
+    (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fp_div(fov, fp_fp2)), m, f));
+    (*camera).ar = fp_div(fp_Int2FP(width), fp_Int2FP(height));
     
     // Height and width
     (*camera).width = width;
     (*camera).height = height;
     
     // Compute the coefficients used in creating a ray:
-    (*camera).dfovardw = 2.0 * (*camera).fov / ((float) width) * (*camera).ar;
-    (*camera).fovar = (*camera).fov * (*camera).ar;
-    (*camera).dfovdh = 2.0 * (*camera).fov / ((float) height);
+    (*camera).dfovardw = fp_div(fp_mult(fp_mult(fp_fp2, (*camera).ar), (*camera).fov), fp_Int2FP(width));
+    (*camera).fovar = fp_mult((*camera).fov, (*camera).ar);
+    (*camera).dfovdh = fp_div(fp_mult(fp_fp2, (*camera).fov), fp_Int2FP(height));
+    printf("dfovardw: 0x%X\n", (*camera).dfovardw);
+    printf("fovar: 0x%X\n", (*camera).fovar);
+    printf("dfovdh: 0x%X\n", (*camera).dfovdh);
 }
 
 /* Transform object by transformation matrix T */

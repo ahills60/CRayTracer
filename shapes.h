@@ -16,7 +16,7 @@
 #include "objects.h"
 
 /* Define a cube */
-void createCube(Object *object, Material material, float size, MathStat *m, FuncStat *f)
+void createCube(Object *object, Material material, fixedp size, MathStat *m, FuncStat *f)
 {
     Vector u, v, w, minBound, maxBound;
     Triangle *triangle;
@@ -26,7 +26,7 @@ void createCube(Object *object, Material material, float size, MathStat *m, Func
     
     // Define the bounds of the object. Note that this is prior
     // to translating the object to a specific position
-    size *= 0.5;
+    size = fp_div(size, fp_fp2); // Halve it (was size *= 0.5) Note: could do >> 1 but this doesn't round.
     setVector(&minBound, -size, -size, -size, f);
     setVector(&maxBound, size, size, size, f);
     
@@ -107,24 +107,24 @@ void createCube(Object *object, Material material, float size, MathStat *m, Func
 }
 
 /* Define a plane that lies on the X-Z axis */
-void createPlaneXZ(Object *object, Material material, float size, MathStat *m, FuncStat *f)
+void createPlaneXZ(Object *object, Material material, fixedp size, MathStat *m, FuncStat *f)
 {
     Triangle *triangle;
     Vector u, v, w;
     triangle = (Triangle *)malloc(sizeof(Triangle) * 2);
     
-    size *= 0.5;
+    size = fp_div(size, fp_fp2); // Halve it (was size *= 0.5)
     
     // Triangle 1:
-    setVector(&u, size, 0.0, size, f);
-    setVector(&v, size, 0.0, -size, f);
-    setVector(&w, -size, 0.0, -size, f);
+    setVector(&u, size, 0, size, f);
+    setVector(&v, size, 0, -size, f);
+    setVector(&w, -size, 0, -size, f);
     setTriangle(&triangle[0], u, v, w, m, f);
     
     // Triangle 2:
-    setVector(&u, size, 0.0, size, f);
-    setVector(&v, -size, 0.0, size, f);
-    setVector(&w, -size, 0.0, -size, f);
+    setVector(&u, size, 0, size, f);
+    setVector(&v, -size, 0, size, f);
+    setVector(&w, -size, 0, -size, f);
     setTriangle(&triangle[1], w, v, u, m, f);
     
     // Now create the object
@@ -132,7 +132,7 @@ void createPlaneXZ(Object *object, Material material, float size, MathStat *m, F
 }
 
 /* Divides triangles given a triangle */
-void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius, MathStat *m, FuncStat *f){
+void divideTriangles(Triangle baseTriangle, Triangle *triangle, fixedp radius, MathStat *m, FuncStat *f){
     Vector u, v, w;
     
     // Compute the centre of triangle edges
@@ -148,10 +148,10 @@ void divideTriangles(Triangle baseTriangle, Triangle *triangle, float radius, Ma
 }
 
 /* Subdivides triangles and calls divisions when necessary */
-void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangle, int noTriangles, float radius, MathStat *m, FuncStat *f)
+void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangle, int noTriangles, fixedp radius, MathStat *m, FuncStat *f)
 {
     Triangle subTriangle[4];
-    int n, noSubTriangles = (int)pow(4, (float)resolution - 1);
+    int n, noSubTriangles = fp_powi(4, resolution - 1);
     
     if (resolution > 0)
     {
@@ -171,20 +171,21 @@ void subdivideTriangles(int resolution, Triangle baseTriangle, Triangle *triangl
 }
 
 /* Create a sphere using triangles. The resolution should be a power of 4 */
-void createSphere(Object *object, Material material, float radius, int resolution, MathStat *m, FuncStat *f)
+void createSphere(Object *object, Material material, fixedp radius, int resolution, MathStat *m, FuncStat *f)
 {
     Vector v[6];
     Triangle baseTriangle[8];
     Triangle *triangle;
     
-    int noTriangles, n;
+    int noTriangles, n, tempTri;
     
     /*
         The sphere will start as an octohedron formed from base triangles. The product
         is then smoothed by subdividing into smaller triangles.
     */
     // Calculate the number of triangles:
-    noTriangles = 8 * (int)pow(4, resolution);
+    tempTri = fp_powi(4, resolution);
+    noTriangles = 8 * tempTri;
     
     // Allocate memory for the necessary number of triangles
     triangle = (Triangle *)malloc(sizeof(Triangle) * noTriangles);
@@ -212,7 +213,7 @@ void createSphere(Object *object, Material material, float radius, int resolutio
     // Subdivide for each of the triangles
     for (n = 0; n < 8; n++)
     {
-        subdivideTriangles(resolution, baseTriangle[n], triangle, n * noTriangles / 8, radius, m, f);
+        subdivideTriangles(resolution, baseTriangle[n], triangle, n * tempTri, radius, m, f);
     }
     
     // Bring these triangles together and create the object

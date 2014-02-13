@@ -10,6 +10,8 @@
 #ifndef CONSTRUCT_H_
 #define CONSTRUCT_H_
 
+#include "fpmath.h"
+
 #include "craytracer.h"
 #include "datatypes.h"
 #include "rays.h"
@@ -37,29 +39,30 @@ void populateScene(Scene *scene, MathStat *m, FuncStat *f)
     Vector white = int2Vector(WHITE);
     
     // Set material types
-    setMaterial(&redGlass, red, 0.0, 0.5, 0.0, 0.0, 0.0, 0.8, 1.4, f);
-    setMaterial(&nonreflBlue, blue, 0.1, 0.5, 0.4, 2.0, 0.0, 0.0, 1.4, f);
-    setMaterial(&nonreflGreen, green, 0.1, 0.5, 0.4, 2.0, 0.0, 0.0, 1.4, f);
-    setMaterial(&nonreflPurple, purple, 0.1, 0.5, 0.4, 2.0, 0.0, 0.0, 1.4, f);
-    setMaterial(&mirror, white, 0.1, 0.0, 0.9, 32.0, 0.6, 0.0, 1.4, f);
+    //setMaterial(*matObj, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity)
+    setMaterial(&redGlass, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), f);
+    setMaterial(&nonreflBlue, blue, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
+    setMaterial(&nonreflGreen, green, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
+    setMaterial(&nonreflPurple, purple, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
+    setMaterial(&mirror, white, fp_Flt2FP(0.1), fp_Flt2FP(0.0), fp_Flt2FP(0.9), fp_Flt2FP(32.0), fp_Flt2FP(0.6), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
     
     // Create objects
-    createCube(&cube, redGlass, 1.0, m, f);
-    createPlaneXZ(&planeBase, nonreflPurple, 10.0, m, f);
-    createPlaneXZ(&planeTop, nonreflPurple, 10.0, m, f);
-    createPlaneXZ(&planeLeft, nonreflGreen, 10.0, m, f);
-    createPlaneXZ(&planeRight, nonreflGreen, 10.0, m, f);
-    createPlaneXZ(&planeBack, nonreflBlue, 10.0, m, f);
-    createCube(&mirrCube, mirror, 1.5, m, f);
+    createCube(&cube, redGlass, fp_Flt2FP(1.0), m, f);
+    createPlaneXZ(&planeBase, nonreflPurple, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeTop, nonreflPurple, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeLeft, nonreflGreen, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeRight, nonreflGreen, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeBack, nonreflBlue, fp_Flt2FP(10.0), m, f);
+    createCube(&mirrCube, mirror, fp_Flt2FP(1.5), m, f);
     
     // Arrange
-    transformObject(&cube, matMult(genTransMatrix(2, 0.5, -1, m, f), genYRotateMat(45, m, f), m, f), m, f);
-    transformObject(&planeBase, genTransMatrix(1, 0, -4, m, f), m, f);
-    transformObject(&planeLeft, matMult(genTransMatrix(-2, 0, -4, m, f), genZRotateMat(-90, m, f), m, f), m, f);
-    transformObject(&planeRight, matMult(genTransMatrix(4, 0, -4, m, f), genZRotateMat(90, m, f), m, f), m, f);
-    transformObject(&planeBack, matMult(genTransMatrix(1, 0, -6, m, f), genXRotateMat(90, m, f), m, f), m, f);
-    transformObject(&planeTop, matMult(genTransMatrix(1, 5, -4, m, f), genZRotateMat(180, m, f), m, f), m, f);
-    transformObject(&mirrCube, matMult(genTransMatrix(0, 0.9, -2.7, m, f), genYRotateMat(20, m, f), m, f), m, f);
+    transformObject(&cube, matMult(genTransMatrix(fp_Flt2FP(2), fp_Flt2FP(0.5), -fp_Flt2FP(1), m, f), genYRotateMat(fp_Flt2FP(45), m, f), m, f), m, f);
+    transformObject(&planeBase, genTransMatrix(fp_Flt2FP(1), 0, -fp_Flt2FP(4), m, f), m, f);
+    transformObject(&planeLeft, matMult(genTransMatrix(-fp_Flt2FP(2), 0, -fp_Flt2FP(4), m, f), genZRotateMat(-fp_Flt2FP(90), m, f), m, f), m, f);
+    transformObject(&planeRight, matMult(genTransMatrix(fp_Flt2FP(4), 0, -fp_Flt2FP(4), m, f), genZRotateMat(fp_Flt2FP(90), m, f), m, f), m, f);
+    transformObject(&planeBack, matMult(genTransMatrix(fp_Flt2FP(1), 0, -fp_Flt2FP(6), m, f), genXRotateMat(fp_Flt2FP(90), m, f), m, f), m, f);
+    transformObject(&planeTop, matMult(genTransMatrix(fp_Flt2FP(1), fp_Flt2FP(5), -fp_Flt2FP(4), m, f), genZRotateMat(fp_Flt2FP(180), m, f), m, f), m, f);
+    transformObject(&mirrCube, matMult(genTransMatrix(fp_Flt2FP(0), fp_Flt2FP(0.9), -fp_Flt2FP(2.7), m, f), genYRotateMat(fp_Flt2FP(20), m, f), m, f), m, f);
     
     // Create the scene
     initialiseScene(scene, 6, f);
@@ -76,7 +79,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
 {
     Hit hit;
     Vector outputColour, reflectiveColour, refractiveColour;
-    float reflection, refraction;
+    fixedp reflection, refraction;
     
     (*f).draw++;
     
@@ -90,7 +93,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
     if (hit.objectIndex >= 0)
     {
         // There was a hit.
-        
+        // outputColour = vecAdd(ambiance(hit, scene, light, m, f), diffusion(hit, scene, light, m, f), m, f);
         outputColour = vecAdd(ambiance(hit, scene, light, m, f), vecAdd(diffusion(hit, scene, light, m, f), specular(hit, scene, light, m, f), m, f), m, f);
         
         // Should we go deeper?
@@ -112,7 +115,8 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
         
         // We've got what we needed after the hit, so return
         statSubtractFlt(m, 1);
-        return scalarVecMult(1.0 - traceShadow(hit, scene, light, m, f), outputColour, m, f);
+        // return outputColour;
+        return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, m, f), outputColour, m, f);
     }
     
     // No hit, return black.

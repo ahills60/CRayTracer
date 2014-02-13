@@ -6,7 +6,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <math.h>
+// #include <math.h>
+
+// Fixed point math functions
+#include "fpmath.h"
 
 // Program defines
 #include "craytracer.h"
@@ -119,15 +122,15 @@ int main(int argc, char *argv[])
     printf("Scene initialised.\n");
     
     // Define lighting:
-    setVector(&lightColour, 1, 1, 1, &f);
-    setVector(&lightLocation, -1, 4, 4, &f);
-    setLight(&light, lightLocation, lightColour, 0.3, &f);
+    setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &f);
+    setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(4), &f);
+    setLight(&light, lightLocation, lightColour, fp_Flt2FP(0.3), &f);
     printf("Lighting defined.\n");
     
     // Camera configuration
-    setVector(&cameraLocation, 1, 2, 4, &f);
-    setVector(&cameraDirection, 1, 0, -6, &f);
-    setCamera(&camera, cameraLocation, cameraDirection, 45, width, height, &m, &f);
+    setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &f);
+    setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &f);
+    setCamera(&camera, cameraLocation, cameraDirection, fp_Int2FP(45), width, height, &m, &f);
     printf("Camera is ready.\n");
     
     // Configure image
@@ -144,6 +147,7 @@ int main(int argc, char *argv[])
     // Now reset the stats
     initStats(&m);
     initFuncStats(&f);
+    
     
     // Now go through every pixel
     for (i = 0; i < height; i++)

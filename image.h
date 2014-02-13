@@ -37,27 +37,27 @@ typedef struct Colour
 Colour vec2Colour(Vector u)
 {
     Colour col;
-    col.r = (int)((u.x * 255.0)) & 255;
-    col.g = (int)((u.y * 255.0)) & 255;
-    col.b = (int)((u.z * 255.0)) & 255;
+    col.r = fp_FP2Int(fp_mult(u.x, fp_Int2FP(255))); //(int)((u.x * 255.0)) & 255;
+    col.g = fp_FP2Int(fp_mult(u.y, fp_Int2FP(255))); //(int)((u.y * 255.0)) & 255;
+    col.b = fp_FP2Int(fp_mult(u.z, fp_Int2FP(255))); //(int)((u.z * 255.0)) & 255;
     return col;
 }
 
-Colour int2Colour(int *array)
+Colour int2Colour(int *array) // This doesn't make sense! RGB are stored as ints and you've got decimal values!
 {
     Colour col;
-    col.r = (float)array[0] / 255.0;
-    col.g = (float)array[1] / 255.0;
-    col.b = (float)array[2] / 255.0;
+    col.r = fp_div(fp_Int2FP(array[0]), fp_Int2FP(255));
+    col.g = fp_div(fp_Int2FP(array[1]), fp_Int2FP(255));
+    col.b = fp_div(fp_Int2FP(array[2]), fp_Int2FP(255));
     return col;
 }
 
 Vector int2Vector(int *array)
 {
     Vector u;
-    u.x = (float)array[0] / 255.0;
-    u.y = (float)array[1] / 255.0;
-    u.z = (float)array[2] / 255.0;
+    u.x = fp_div(fp_Int2FP(array[0]), fp_Int2FP(255));
+    u.y = fp_div(fp_Int2FP(array[1]), fp_Int2FP(255));
+    u.z = fp_div(fp_Int2FP(array[2]), fp_Int2FP(255));
     return u;
 }
 

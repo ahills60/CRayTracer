@@ -10,6 +10,8 @@
 #ifndef LIGHTING_H_
 #define LIGHTING_H_
 
+#include "fpmath.h"
+
 #include "rays.h"
 
 // Add math stats
@@ -31,7 +33,7 @@ Vector diffusion(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     (*f).diffusion++;
     // Need to compute the direction of light
     Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
-    float distance = dot(hit.normal, lightDirection, m, f) * scene.object[hit.objectIndex].material.diffusivity;
+    fixedp distance = fp_mult(dot(hit.normal, lightDirection, m, f), scene.object[hit.objectIndex].material.diffusivity);
     statMultiplyFlt(m, 1);
     
     return scalarVecMult(distance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
@@ -44,7 +46,7 @@ Vector specular(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     // Reflective ray:
     Ray reflection = reflectRay(hit, m, f);
     Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
-    float distance = pow(dot(lightDirection, reflection.direction, m, f), scene.object[hit.objectIndex].material.shininess) * scene.object[hit.objectIndex].material.specular;
+    fixedp distance = fp_mult(fp_pow(dot(lightDirection, reflection.direction, m, f), scene.object[hit.objectIndex].material.shininess), scene.object[hit.objectIndex].material.specular);
     statMultiplyFlt(m, 1);
     statPower(m, 1);
     return scalarVecMult(distance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
