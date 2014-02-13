@@ -100,20 +100,20 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     v = vecSub(ray.source, triangle.u, m, f);
     // b = fp_mult(dot(v, u, m, f), arecip);
     // printf("b\n");
-    b = fp_div(dot(v, u, m, f), a);
+    b = fp_div(dot(v, u, m, f), a << 4);
     // printf("Apres b\n");
     statMultiplyFlt(m, 1);
-    if (b < 0 || b > fp_fp1)
+    if (b < 0 || b > (fp_fp1 >> 4))
         return 0; // no intersection
     
     w = cross(v, edge1, m, f);
     // c = fp_mult(dot(ray.direction, w, m, f), arecip);
     // printf("c\n");
-    c = fp_div(dot(ray.direction, w, m, f), a);
+    c = fp_div(dot(ray.direction, w, m, f), a << 4);
     // printf("Apres c\n");
     statMultiplyFlt(m, 1);
     statPlusFlt(m, 1);
-    if (c < 0 || b + c > fp_fp1)
+    if (c < 0 || b + c > (fp_fp1 >> 4))
         return 0; // no intersection
     // printf("Int\n");
     intersection = fp_div(dot(edge2, w, m, f), a); // fp_mult(dot(edge2, w, m, f), arecip);
