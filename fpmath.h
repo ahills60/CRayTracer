@@ -72,7 +72,10 @@ fixedp fp_mult(fixedp a, fixedp b)
     
 #ifdef CHECK_RANGE
     if (result > (long long int) 1 << 31)
-        printf("Overflow in downcast during mult %lld (0x%X), %f\n", result, result, result/65535.0);
+    {
+            printf("Overflow in downcast during mult %lld, %f\n", result, result/65535.0);
+            printf("\t0x%X * 0x%X = 0x%X\n\n", a, b, result);
+    }
 #endif
     
     return (int)(result);
@@ -83,7 +86,10 @@ fixedp fp_div(fixedp a, fixedp b)
     int64 result = ((int64) a * (int64)(1 << 16)) / (int64) b;
 #ifdef CHECK_RANGE
     if (result > (long long int) 1 << 31)
-        printf("Overflow in downcast during div %lld (0x%X), %f\n", result, result, result/65536.0);
+    {
+        printf("Overflow in downcast during div %lld, %f\n", result, result/65536.0);
+        printf("\t0x%X / 0x%X = 0x%X\n\n", a, b, result);
+    }
 #endif
     return (int)(result);
 }
