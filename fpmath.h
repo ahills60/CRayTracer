@@ -291,9 +291,9 @@ fixedp fp_sqrt(fixedp a)
     }
     
     // Get MSB
-    int i, im, k = 0, p = -16;
-    
-    i = a;
+    int im, p = -16;
+    unsigned int i, k = 0;
+    i = (unsigned int) a;
     
     if ((i & 0xFFFF0000) > 0)
     {
@@ -366,6 +366,6 @@ fixedp fp_sqrt(fixedp a)
     k += (fixedp) (longNum / k);
     k = (k + (fixedp) ((longNum << 2) / k) + 2) >> 2;
     
-    return k;
+    return (fixedp) k;
 }
 #endif
