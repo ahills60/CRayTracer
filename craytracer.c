@@ -26,7 +26,7 @@
 #include "lighting.h"
 
 // Define the construction instructions
-#include "construct.h"
+#include "OFconstruct.h"
 
 // Add math stats
 #include "mathstats.h"
