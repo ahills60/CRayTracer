@@ -78,8 +78,9 @@ Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 /* Compute the intersection of a triangle */
 fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f)
 {
-    fixedp intersection, a, b, c;// arecip;
+    fixedp intersection, a, b, c, tempVar;// arecip;
     Vector edge1, edge2, u, v, w;
+    int bitshift1 = 0, bitshift2 = 0, bitdiff = 0;
     
     (*f).triangleIntersection++;
     
@@ -100,20 +101,61 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     v = vecSub(ray.source, triangle.u, m, f);
     // b = fp_mult(dot(v, u, m, f), arecip);
     // printf("b\n");
-    b = fp_div(dot(v, u, m, f), a << 4);
+    b = dot(v, u, m, f);
+    // Temporarily hold this variable
+    tempVar = fp_fabs(b);
+    bitshift1 = 0;
+    while (tempVar > 0)
+    {
+        tempVar = tempVar >> 1;
+        bitshift1++;
+    }
+    // printf("BS1: %X = %d\n", (unsigned int) fp_fabs(b), bitshift1);
+    // Now do the same for a:
+    tempVar = fp_fabs(a);
+    bitshift2 = 0;
+    while (tempVar > 0)
+    {
+        tempVar = tempVar >> 1;
+        bitshift2++;
+    }
+    // printf("BS2: %X = %d\n", (unsigned int) fp_fabs(a), bitshift2);
+    // Compute shift calculation
+    bitdiff = 16 - bitshift2;
+    b = fp_div(b, (bitshift1 + 16 - bitshift2 <= 30)? a : (a << bitdiff));
     // printf("Apres b\n");
     statMultiplyFlt(m, 1);
-    if (b < 0 || b > (fp_fp1 >> 4))
+    if (b < 0 || b > ((bitshift1 + 16 - bitshift2 <= 30) ? fp_fp1 : (fp_fp1 >> bitdiff)))
         return 0; // no intersection
     
+    // printf("Beep\n");
     w = cross(v, edge1, m, f);
     // c = fp_mult(dot(ray.direction, w, m, f), arecip);
     // printf("c\n");
-    c = fp_div(dot(ray.direction, w, m, f), a << 4);
+    c = dot(ray.direction, w, m, f);
+    // // Temporarily hold this variable:
+//     tempVar = fabs(c);
+//     bitshift1 = 0;
+//     while (tempVar > 0)
+//     {
+//         tempVar = tempVar >> 1;
+//         bitshift1++;
+//     }
+//     // Now do the same for a
+//     tempVar = fabs(a);
+//     bitshift2 = 0;
+//     while (tempVar > 0)
+//     {
+//         tempVar = tempVar >> 1;
+//         bitshift2++;
+//     }
+//     bitdiff2 = bitshift1 - bitshift2;
+//     
+    c = fp_div(c, (bitshift1 + 16 - bitshift2 <= 30) ? a : (a << bitdiff));
     // printf("Apres c\n");
     statMultiplyFlt(m, 1);
     statPlusFlt(m, 1);
-    if (c < 0 || b + c > (fp_fp1 >> 4))
+    if (c < 0 || b + c > ((bitshift1 + 16 - bitshift2 <= 30) ? fp_fp1 : (fp_fp1 >> bitdiff)))
         return 0; // no intersection
     // printf("Int\n");
     intersection = fp_div(dot(edge2, w, m, f), a); // fp_mult(dot(edge2, w, m, f), arecip);
