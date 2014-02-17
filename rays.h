@@ -80,7 +80,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
 {
     fixedp intersection, a, b, c, tempVar;// arecip;
     Vector edge1, edge2, u, v, w;
-    int bitshift1 = 0, bitshift2 = 0, bitdiff = 0;
+    int bitshift1 = 0, bitshift2 = 0, bitdiff = 0, biteval;
     
     (*f).triangleIntersection++;
     
@@ -105,27 +105,80 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     // Temporarily hold this variable
     tempVar = fp_fabs(b);
     bitshift1 = 0;
-    while (tempVar > 0)
+    
+    if ((tempVar & 0xFFFF0000) > 0)
     {
-        tempVar = tempVar >> 1;
-        bitshift1++;
+        tempVar >>= 16;
+        bitshift1 += 16;
     }
+    if ((tempVar & 0x0000FF00) > 0)
+    {
+        tempVar >>= 8;
+        bitshift1 += 8;
+    }
+    if ((tempVar & 0x000000F0) > 0)
+    {
+        tempVar >>= 4;
+        bitshift1 += 4;
+    }
+    if ((tempVar & 0x0000000C) > 0)
+    {
+        tempVar >>= 2;
+        bitshift1 += 2;
+    }
+    if ((tempVar & 0x00000002) > 0)
+    {
+        tempVar >>= 1;
+        bitshift1 += 1;
+    }
+    if ((tempVar & 0x00000001) > 0)
+    {
+        tempVar >>= 1;
+        bitshift1 += 1;
+    }
+    
     // printf("BS1: %X = %d\n", (unsigned int) fp_fabs(b), bitshift1);
     // Now do the same for a:
     tempVar = fp_fabs(a);
     bitshift2 = 0;
-    while (tempVar > 0)
+    if ((tempVar & 0xFFFF0000) > 0)
     {
-        tempVar = tempVar >> 1;
-        bitshift2++;
+        tempVar >>= 16;
+        bitshift2 += 16;
+    }
+    if ((tempVar & 0x0000FF00) > 0)
+    {
+        tempVar >>= 8;
+        bitshift2 += 8;
+    }
+    if ((tempVar & 0x000000F0) > 0)
+    {
+        tempVar >>= 4;
+        bitshift2 += 4;
+    }
+    if ((tempVar & 0x0000000C) > 0)
+    {
+        tempVar >>= 2;
+        bitshift2 += 2;
+    }
+    if ((tempVar & 0x00000002) > 0)
+    {
+        tempVar >>= 1;
+        bitshift2 += 1;
+    }
+    if ((tempVar & 0x00000001) > 0)
+    {
+        tempVar >>= 1;
+        bitshift2 += 1;
     }
     // printf("BS2: %X = %d\n", (unsigned int) fp_fabs(a), bitshift2);
     // Compute shift calculation
     bitdiff = 16 - bitshift2;
-    b = fp_div(b, (bitshift1 + 16 - bitshift2 <= 30)? a : (a << bitdiff));
+    biteval = (bitshift1 + 16 - bitshift2 <= 30);
+    b = fp_div(b, biteval ? a : (a << bitdiff));
     // printf("Apres b\n");
     statMultiplyFlt(m, 1);
-    if (b < 0 || b > ((bitshift1 + 16 - bitshift2 <= 30) ? fp_fp1 : (fp_fp1 >> bitdiff)))
+    if (b < 0 || b > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
         return 0; // no intersection
     
     // printf("Beep\n");
@@ -151,11 +204,11 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
 //     }
 //     bitdiff2 = bitshift1 - bitshift2;
 //     
-    c = fp_div(c, (bitshift1 + 16 - bitshift2 <= 30) ? a : (a << bitdiff));
+    c = fp_div(c, biteval ? a : (a << bitdiff));
     // printf("Apres c\n");
     statMultiplyFlt(m, 1);
     statPlusFlt(m, 1);
-    if (c < 0 || b + c > ((bitshift1 + 16 - bitshift2 <= 30) ? fp_fp1 : (fp_fp1 >> bitdiff)))
+    if (c < 0 || b + c > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
         return 0; // no intersection
     // printf("Int\n");
     intersection = fp_div(dot(edge2, w, m, f), a); // fp_mult(dot(edge2, w, m, f), arecip);
