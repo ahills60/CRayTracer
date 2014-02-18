@@ -35,6 +35,7 @@ typedef struct Material
     fixedp diffusivity;          // Diffusive constant
     fixedp specular;             // How specular
     fixedp shininess;            // How shiny
+    Vector matLightColour;         // material * light colour
 }
 Material;
 
@@ -84,7 +85,7 @@ typedef struct Camera
 Camera;
 
 /* Set the material */
-void setMaterial(Material *matObj, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, FuncStat *f)
+void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, MathStat *m, FuncStat *f)
 {
     (*f).setMaterial++;
     (*matObj).colour = colour;
@@ -97,6 +98,7 @@ void setMaterial(Material *matObj, Vector colour, fixedp ambiance, fixedp diffus
     (*matObj).diffusivity = diffusivity;
     (*matObj).specular = specular;
     (*matObj).shininess = shininess;
+    (*matObj).matLightColour = vecMult(colour, lightSrc.colour, m, f);
 }
 
 /* Set the object */

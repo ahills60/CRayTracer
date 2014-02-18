@@ -42,13 +42,13 @@ Vector ambiance(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     (*f).ambiance++;
     Vector outputColour;
     
-    outputColour = scalarVecMult(scene.object[hit.objectIndex].material.ambiance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
+    outputColour = scalarVecMult(scene.object[hit.objectIndex].material.ambiance, scene.object[hit.objectIndex].material.matLightColour, m, f);
     
     return outputColour;
 }
 
 /* Creates diffusion effect given a hit, a scene and some light */
-Vector diffusion(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
+Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, MathStat *m, FuncStat *f)
 {
     (*f).diffusion++;
     Vector outputColour;
@@ -56,7 +56,6 @@ Vector diffusion(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     setVector(&outputColour, 0, 0, 0, f);
     
     // Need to compute the direction of light
-    Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
     fixedp dotProduct = dot(hit.normal, lightDirection, m, f);
     
     // If the dot product is negative, this term shouldn't be included.
@@ -68,13 +67,13 @@ Vector diffusion(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     
     statMultiplyFlt(m, 1);
     
-    outputColour = scalarVecMult(distance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
+    outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
     
     return outputColour;
 }
 
 /* Creates specular effect given a hit, a scene and some light */
-Vector specular(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
+Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, MathStat *m, FuncStat *f)
 {
     (*f).specular++;
     Vector outputColour;
@@ -85,7 +84,6 @@ Vector specular(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     
     // Reflective ray:
     Ray reflection = reflectRay(hit, m, f);
-    Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
     dotProduct = dot(lightDirection, reflection.direction, m, f);
     
     if (dotProduct < 0)
@@ -95,7 +93,7 @@ Vector specular(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     statMultiplyFlt(m, 1);
     statPower(m, 1);
     
-    outputColour = scalarVecMult(distance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
+    outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
     
     return outputColour;
 }
