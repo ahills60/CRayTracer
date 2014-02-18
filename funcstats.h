@@ -19,6 +19,7 @@ typedef struct FuncStat
     long long int dot;
     long long int cross;
     long long int scalarVecMult;
+    long long int scalarVecDiv;
     long long int vecAdd;
     long long int vecSub;
     long long int negVec;
@@ -81,6 +82,7 @@ void initFuncStats(FuncStat *f)
     (*f).dot = 0;
     (*f).cross = 0;
     (*f).scalarVecMult = 0;
+    (*f).scalarVecDiv = 0;
     (*f).vecAdd = 0;
     (*f).vecSub = 0;
     (*f).negVec = 0;

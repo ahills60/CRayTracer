@@ -121,6 +121,16 @@ Vector scalarVecMult(fixedp a, Vector u, MathStat *m, FuncStat *f)
     return w;
 }
 
+/* Scalar division with a vector */
+Vector scalarVecDiv(fixedp a, Vector u, MathStat *m, FuncStat *f)
+{
+    Vector w;
+    (*f).scalarVecDiv++;
+    setVector(&w, fp_div(u.x, a), fp_mult(u.y, a), fp_mult(u.z, a), f);
+    statDivideFlt(m, 3);
+    return w;
+}
+
 /* Vector addition */
 Vector vecAdd(Vector u, Vector v, MathStat *m, FuncStat *f)
 {
@@ -172,7 +182,7 @@ Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
     
     // setVector(&w, u.x / a, u.y / a, u.z / a);
     statDivideFlt(m, 1);
-    return scalarVecMult(fp_div(fp_fp1, a), u, m, f);
+    return scalarVecDiv(a, u, m, f);
 }
 
 /* Matrix multiplied by a vector */
