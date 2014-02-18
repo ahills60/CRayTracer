@@ -126,7 +126,7 @@ Vector scalarVecDiv(fixedp a, Vector u, MathStat *m, FuncStat *f)
 {
     Vector w;
     (*f).scalarVecDiv++;
-    setVector(&w, fp_div(u.x, a), fp_mult(u.y, a), fp_mult(u.z, a), f);
+    setVector(&w, fp_div(u.x, a), fp_div(u.y, a), fp_div(u.z, a), f);
     statDivideFlt(m, 3);
     return w;
 }
