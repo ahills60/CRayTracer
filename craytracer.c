@@ -117,15 +117,15 @@ int main(int argc, char *argv[])
 	}
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
     
-    // Build scene
-    populateScene(&scene, &m, &f);
-    printf("Scene initialised.\n");
-    
     // Define lighting:
     setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &f);
     setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(4), &f);
     setLight(&light, lightLocation, lightColour, fp_Flt2FP(0.3), &f);
     printf("Lighting defined.\n");
+    
+    // Build scene
+    populateScene(&scene, light, &m, &f);
+    printf("Scene initialised.\n");
     
     // Camera configuration
     setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &f);
@@ -187,6 +187,7 @@ int main(int argc, char *argv[])
     printf("dot: %lld\n", f.dot);
     printf("cross: %lld\n", f.cross);
     printf("scalarVecMult: %lld\n", f.scalarVecMult);
+    printf("scalarVecDiv: %lld\n", f.scalarVecDiv);
     printf("vecAdd: %lld\n", f.vecAdd);
     printf("vecSub: %lld\n", f.vecSub);
     printf("negVec: %lld\n", f.negVec);
