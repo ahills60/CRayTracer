@@ -211,7 +211,7 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     (*camera).vertical = cross(horizontal, viewNorm, m, f);
     
     // Field of view and aspect ratio
-    (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fp_div(fov, fp_fp2)), m, f));
+    (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fov >> 1), m, f));
     (*camera).ar = fp_div(fp_Int2FP(width), fp_Int2FP(height));
     
     // Height and width
@@ -221,7 +221,7 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     // Compute the coefficients used in creating a ray:
     (*camera).dfovardw = fp_div(fp_mult(fp_mult(fp_fp2, (*camera).ar), (*camera).fov), fp_Int2FP(width));
     (*camera).fovar = fp_mult((*camera).fov, (*camera).ar);
-    (*camera).dfovdh = fp_div(fp_mult(fp_fp2, (*camera).fov), fp_Int2FP(height));
+    (*camera).dfovdh = fp_div((*camera).fov << 1, fp_Int2FP(height));
     printf("dfovardw: 0x%X\n", (*camera).dfovardw);
     printf("fovar: 0x%X\n", (*camera).fovar);
     printf("dfovdh: 0x%X\n", (*camera).dfovdh);

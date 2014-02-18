@@ -35,11 +35,11 @@ typedef struct Colour
 
 /* Convert a vector to a colour array */
 Colour vec2Colour(Vector u)
-{
+{   // 255 is 0x00FF0000
     Colour col;
-    col.r = fp_FP2Int(fp_mult(u.x, fp_Int2FP(255))); //(int)((u.x * 255.0)) & 255;
-    col.g = fp_FP2Int(fp_mult(u.y, fp_Int2FP(255))); //(int)((u.y * 255.0)) & 255;
-    col.b = fp_FP2Int(fp_mult(u.z, fp_Int2FP(255))); //(int)((u.z * 255.0)) & 255;
+    col.r = fp_mult(u.x, 0x00FF0000) >> 16; //(int)((u.x * 255.0)) & 255;
+    col.g = fp_mult(u.y, 0x00FF0000) >> 16; //(int)((u.y * 255.0)) & 255;
+    col.b = fp_mult(u.z, 0x00FF0000) >> 16; //(int)((u.z * 255.0)) & 255;
     return col;
 }
 

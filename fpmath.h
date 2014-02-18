@@ -73,7 +73,7 @@ fixedp fp_mult(fixedp a, fixedp b)
 #ifdef CHECK_RANGE
     if (result > (long long int) 1 << 31)
     {
-            printf("Overflow in downcast during mult %lld, %f\n", result, result/65535.0);
+            printf("Overflow in downcast during mult %lld, %f\n", result, result/65536.0);
             printf("\t0x%X * 0x%X = 0x%X\n\n", a, b, result);
     }
 #endif

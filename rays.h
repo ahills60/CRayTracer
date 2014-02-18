@@ -80,7 +80,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
 {
     fixedp intersection, a, b, c, tempVar;// arecip;
     Vector edge1, edge2, u, v, w;
-    int bitshift1 = 0, bitshift2 = 0, bitdiff = 0, biteval;
+    int bitshift1 = 0, bitshift2 = 0, bitshift3 = 0, bitdiff = 0, biteval, biteval2;
     
     (*f).triangleIntersection++;
     
@@ -100,7 +100,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     
     v = vecSub(ray.source, triangle.u, m, f);
     // b = fp_mult(dot(v, u, m, f), arecip);
-    // printf("b\n");
     b = dot(v, u, m, f);
     // Temporarily hold this variable
     tempVar = fp_fabs(b);
@@ -137,7 +136,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         bitshift1 += 1;
     }
     
-    // printf("BS1: %X = %d\n", (unsigned int) fp_fabs(b), bitshift1);
     // Now do the same for a:
     tempVar = fp_fabs(a);
     bitshift2 = 0;
@@ -171,48 +169,93 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         tempVar >>= 1;
         bitshift2 += 1;
     }
-    // printf("BS2: %X = %d\n", (unsigned int) fp_fabs(a), bitshift2);
     // Compute shift calculation
     bitdiff = 16 - bitshift2;
-    biteval = (bitshift1 + 16 - bitshift2 <= 30);
+    // If the below is true, no shifting is required.
+    biteval = (bitshift1 - bitshift2 <= 14); // (bitshift1 + 16 - bitshift2 <= 30);
     b = fp_div(b, biteval ? a : (a << bitdiff));
-    // printf("Apres b\n");
+    
     statMultiplyFlt(m, 1);
     if (b < 0 || b > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
         return 0; // no intersection
     
-    // printf("Beep\n");
     w = cross(v, edge1, m, f);
     // c = fp_mult(dot(ray.direction, w, m, f), arecip);
-    // printf("c\n");
     c = dot(ray.direction, w, m, f);
     // // Temporarily hold this variable:
-//     tempVar = fabs(c);
-//     bitshift1 = 0;
-//     while (tempVar > 0)
-//     {
-//         tempVar = tempVar >> 1;
-//         bitshift1++;
-//     }
-//     // Now do the same for a
-//     tempVar = fabs(a);
-//     bitshift2 = 0;
-//     while (tempVar > 0)
-//     {
-//         tempVar = tempVar >> 1;
-//         bitshift2++;
-//     }
-//     bitdiff2 = bitshift1 - bitshift2;
-//     
-    c = fp_div(c, biteval ? a : (a << bitdiff));
-    // printf("Apres c\n");
+    tempVar = fabs(c);
+    bitshift3 = 0;
+    if ((tempVar & 0xFFFF0000) > 0)
+    {
+        tempVar >>= 16;
+        bitshift3 += 16;
+    }
+    if ((tempVar & 0x0000FF00) > 0)
+    {
+        tempVar >>= 8;
+        bitshift3 += 8;
+    }
+    if ((tempVar & 0x000000F0) > 0)
+    {
+        tempVar >>= 4;
+        bitshift3 += 4;
+    }
+    if ((tempVar & 0x0000000C) > 0)
+    {
+        tempVar >>= 2;
+        bitshift3 += 2;
+    }
+    if ((tempVar & 0x00000002) > 0)
+    {
+        tempVar >>= 1;
+        bitshift3 += 1;
+    }
+    if ((tempVar & 0x00000001) > 0)
+    {
+        tempVar >>= 1;
+        bitshift3 += 1;
+    }
+    // If the below statement is true, no shifting is required.
+    biteval2 = (bitshift3 - bitshift2 <= 14); 
+    
     statMultiplyFlt(m, 1);
     statPlusFlt(m, 1);
-    if (c < 0 || b + c > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
-        return 0; // no intersection
-    // printf("Int\n");
+    if (!biteval2)
+    {
+        c = fp_div(c, (a << bitdiff));
+        if (biteval)
+        {
+            // variable b wasn't shifted before, so we need to compensate
+            if (c < 0 || (b >> bitdiff) + c > (fp_fp1 >> bitdiff))
+                return 0; // no intersection
+        }
+        else
+        {
+            // b was shifted and this needs shiting, so...
+            if (c < 0 || b + c > (fp_fp1 >> bitdiff))
+                return 0; // no intersection
+        }
+    }
+    else
+    {
+        c = fp_div(c, a);
+        if (biteval)
+        {
+            // Variable b wasn't shifted before and c doesn't shift
+            if (c < 0 || b + c > fp_fp1)
+                return 0; // no intersection
+            
+        }
+        else
+        {
+            // Variable b was shifted and c wasn't shifted.
+            if (c < 0 || b + (c >> bitdiff) > (fp_fp1 >> bitdiff))
+                return 0; // no intersection
+        }
+    }
+    
     intersection = fp_div(dot(edge2, w, m, f), a); // fp_mult(dot(edge2, w, m, f), arecip);
-    // printf("out\n");
+    
     statMultiplyFlt(m, 1);
     
     // Determine whether the intersection is significant 
@@ -336,7 +379,7 @@ Ray reflectRay(Hit hit, MathStat *m, FuncStat *f)
     
     // 2 (n . v) * n - v
     viewDirection = negVec(hit.ray.direction, f);
-    reflection.direction = vecSub(scalarVecMult(fp_mult(fp_fp2, dot(hit.normal, viewDirection, m, f)), hit.normal, m, f), viewDirection, m, f);
+    reflection.direction = vecSub(scalarVecMult(dot(hit.normal, viewDirection, m, f) << 1, hit.normal, m, f), viewDirection, m, f);
     statMultiplyFlt(m, 1);
     reflection.source = hit.location;
     
