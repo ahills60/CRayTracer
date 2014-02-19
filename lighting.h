@@ -42,7 +42,7 @@ Vector ambiance(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
     (*f).ambiance++;
     Vector outputColour;
     
-    outputColour = scalarVecMult(scene.object[hit.objectIndex].material.ambiance, scene.object[hit.objectIndex].material.matLightColour, m, f);
+    outputColour = scene.object[hit.objectIndex].material.compAmbianceColour;
     
     return outputColour;
 }
@@ -55,19 +55,22 @@ Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, MathS
     
     setVector(&outputColour, 0, 0, 0, f);
     
-    // Need to compute the direction of light
-    fixedp dotProduct = dot(hit.normal, lightDirection, m, f);
-    
-    // If the dot product is negative, this term shouldn't be included.
-    if (dotProduct < 0)
-        return outputColour;
-    
-    // Dot product is positive, so continue
-    fixedp distance = fp_mult(dotProduct, scene.object[hit.objectIndex].material.diffusivity);
-    
-    statMultiplyFlt(m, 1);
-    
-    outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
+    if (scene.object[hit.objectIndex].material.diffusivity > 0)
+    {
+        // Need to compute the direction of light
+        fixedp dotProduct = dot(hit.normal, lightDirection, m, f);
+        
+        // If the dot product is negative, this term shouldn't be included.
+        if (dotProduct < 0)
+            return outputColour;
+        
+        // Dot product is positive, so continue
+        fixedp distance = fp_mult(dotProduct, scene.object[hit.objectIndex].material.diffusivity);
+        
+        statMultiplyFlt(m, 1);
+        
+        outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
+    }
     
     return outputColour;
 }
@@ -80,21 +83,23 @@ Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, MathSt
     
     setVector(&outputColour, 0, 0, 0, f);
     
-    fixedp dotProduct;
+    if (scene.object[hit.objectIndex].material.specular > 0)
+    {
+        fixedp dotProduct;
     
-    // Reflective ray:
-    Ray reflection = reflectRay(hit, m, f);
-    dotProduct = dot(lightDirection, reflection.direction, m, f);
+        // Reflective ray:
+        Ray reflection = reflectRay(hit, m, f);
+        dotProduct = dot(lightDirection, reflection.direction, m, f);
     
-    if (dotProduct < 0)
-        return outputColour;
+        if (dotProduct < 0)
+            return outputColour;
     
-    fixedp distance = fp_mult(fp_pow(dotProduct, scene.object[hit.objectIndex].material.shininess), scene.object[hit.objectIndex].material.specular);
-    statMultiplyFlt(m, 1);
-    statPower(m, 1);
+        fixedp distance = fp_mult(fp_pow(dotProduct, scene.object[hit.objectIndex].material.shininess), scene.object[hit.objectIndex].material.specular);
+        statMultiplyFlt(m, 1);
+        statPower(m, 1);
     
-    outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
-    
+        outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
+    }
     return outputColour;
 }
 

@@ -36,6 +36,7 @@ typedef struct Material
     fixedp specular;             // How specular
     fixedp shininess;            // How shiny
     Vector matLightColour;         // material * light colour
+    Vector compAmbianceColour;   // Computed ambiance colour.
 }
 Material;
 
@@ -99,6 +100,7 @@ void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambianc
     (*matObj).specular = specular;
     (*matObj).shininess = shininess;
     (*matObj).matLightColour = vecMult(colour, lightSrc.colour, m, f);
+    (*matObj).compAmbianceColour = scalarVecMult(ambiance, (*matObj).matLightColour, m, f);
 }
 
 /* Set the object */
