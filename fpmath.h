@@ -74,7 +74,7 @@ fixedp fp_mult(fixedp a, fixedp b)
     if (result > (long long int) 1 << 31)
     {
             printf("Overflow in downcast during mult %lld, %f\n", result, result/65536.0);
-            printf("\t0x%X * 0x%X = 0x%X\n\n", a, b, result);
+            printf("\t0x%X * 0x%X = 0x%X\n\n", (unsigned int) a, (unsigned int) b, (unsigned int) result);
     }
 #endif
     
@@ -88,7 +88,7 @@ fixedp fp_div(fixedp a, fixedp b)
     if (result > (long long int) 1 << 31)
     {
         printf("Overflow in downcast during div %lld, %f\n", result, result/65536.0);
-        printf("\t0x%X / 0x%X = 0x%X\n\n", a, b, result);
+        printf("\t0x%X / 0x%X = 0x%X\n\n", (unsigned int) a, (unsigned int) b, (unsigned int) result);
     }
 #endif
     return (int)(result);
