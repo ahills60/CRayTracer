@@ -201,7 +201,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     w = cross(v, edge1, m, f);
     c = dot(ray.direction, w, m, f);
     // Temporarily hold this variable:
-    tempVar = fabs(c);
+    tempVar = fp_fabs(c);
     bitshift3 = 0;
     if ((tempVar & 0xFFFF0000) > 0)
     {
