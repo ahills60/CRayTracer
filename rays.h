@@ -94,35 +94,39 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     if (a > -EPS && a < EPS)
         return 0; // No intersection
     
+    v = vecSub(ray.source, triangle.u, m, f);
+    b = dot(v, u, m, f);
+    
+    if ((b & 0x80000000) ^ (a & 0x80000000))
+        return 0;
+    
     // Reciprocal of a (normalising constant)
     arecip = fp_div(fp_fp1, a);
     statDivideFlt(m, 1);
     
-    v = vecSub(ray.source, triangle.u, m, f);
-    b = dot(v, u, m, f);
     // Temporarily hold this variable
     tempVar = fp_fabs(b);    
-    if ((tempVar & 0xFFFF0000) > 0)
+    if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
         bitshift1 += 16;
     }
-    if ((tempVar & 0x0000FF00) > 0)
+    if (tempVar & 0x0000FF00)
     {
         tempVar >>= 8;
         bitshift1 += 8;
     }
-    if ((tempVar & 0x000000F0) > 0)
+    if (tempVar & 0x000000F0)
     {
         tempVar >>= 4;
         bitshift1 += 4;
     }
-    if ((tempVar & 0x0000000C) > 0)
+    if (tempVar & 0x0000000C)
     {
         tempVar >>= 2;
         bitshift1 += 2;
     }
-    if ((tempVar & 0x00000002) > 0)
+    if (tempVar & 0x00000002)
     {
         tempVar >>= 1;
         bitshift1 += 1;
@@ -136,27 +140,27 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     
     // Now do the same for a:
     tempVar = fp_fabs(arecip);
-    if ((tempVar & 0xFFFF0000) > 0)
+    if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
         bitshift2 += 16;
     }
-    if ((tempVar & 0x0000FF00) > 0)
+    if (tempVar & 0x0000FF00)
     {
         tempVar >>= 8;
         bitshift2 += 8;
     }
-    if ((tempVar & 0x000000F0) > 0)
+    if (tempVar & 0x000000F0)
     {
         tempVar >>= 4;
         bitshift2 += 4;
     }
-    if ((tempVar & 0x0000000C) > 0)
+    if (tempVar & 0x0000000C)
     {
         tempVar >>= 2;
         bitshift2 += 2;
     }
-    if ((tempVar & 0x00000002) > 0)
+    if (tempVar & 0x00000002)
     {
         tempVar >>= 1;
         bitshift2 += 1;
@@ -176,7 +180,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     if (biteval)
         {
             b = fp_mult(b, arecip);
-            if (b < 0 || b > fp_fp1)//(biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
+            if (b > fp_fp1)//(biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
                 return 0; // no intersection
         }
     else
@@ -189,7 +193,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         {
             b = fp_mult(b, arecip >> bitdiff);
         }
-        if (b < 0 || b > (fp_fp1 >> bitdiff))
+        if (b > (fp_fp1 >> bitdiff))
             return 0; // no intersection
     }
     
@@ -199,29 +203,31 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     
     w = cross(v, edge1, m, f);
     c = dot(ray.direction, w, m, f);
+    if ((c & 0x80000000) ^ (a & 0x80000000))
+        return 0;
     // Temporarily hold this variable:
     tempVar = fp_fabs(c);
-    if ((tempVar & 0xFFFF0000) > 0)
+    if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
         bitshift3 += 16;
     }
-    if ((tempVar & 0x0000FF00) > 0)
+    if (tempVar & 0x0000FF00)
     {
         tempVar >>= 8;
         bitshift3 += 8;
     }
-    if ((tempVar & 0x000000F0) > 0)
+    if (tempVar & 0x000000F0)
     {
         tempVar >>= 4;
         bitshift3 += 4;
     }
-    if ((tempVar & 0x0000000C) > 0)
+    if (tempVar & 0x0000000C)
     {
         tempVar >>= 2;
         bitshift3 += 2;
     }
-    if ((tempVar & 0x00000002) > 0)
+    if (tempVar & 0x00000002)
     {
         tempVar >>= 1;
         bitshift3 += 1;
@@ -253,7 +259,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         if (biteval)
         {
             // variable b wasn't shifted before, so we need to compensate
-            if (c < 0 || (b >> bitdiff2) + c > (fp_fp1 >> bitdiff2))
+            if ((b >> bitdiff2) + c > (fp_fp1 >> bitdiff2))
                 return 0; // no intersection
         }
         else
@@ -261,14 +267,14 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
             if (bitdiff > bitdiff2)
             {
                 // b was shifted more than c. Shift c by b.
-                if (c < 0 || b + (c >> (bitdiff - bitdiff2)) > (fp_fp1 >> bitdiff))
+                if (b + (c >> (bitdiff - bitdiff2)) > (fp_fp1 >> bitdiff))
                     return 0; // no intersection
             }
             else
             {
                 // Bitdiff2 >= bitdiff
                 // c was shifted more than b. Shift b by c
-                if (c < 0 || (b >> (bitdiff2 - bitdiff)) + c > (fp_fp1 >> bitdiff2))
+                if ((b >> (bitdiff2 - bitdiff)) + c > (fp_fp1 >> bitdiff2))
                     return 0; // no intersection
             }
         }
@@ -280,13 +286,13 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         if (biteval)
         {
             // Variable b wasn't shifted before and c doesn't shift
-            if (c < 0 || b + c > fp_fp1)
+            if (b + c > fp_fp1)
                 return 0; // no intersection
         }
         else
         {
             // Variable b was shifted and c wasn't shifted.
-            if (c < 0 || b + (c >> bitdiff) > (fp_fp1 >> bitdiff))
+            if (b + (c >> bitdiff) > (fp_fp1 >> bitdiff))
                 return 0; // no intersection
         }
     }
