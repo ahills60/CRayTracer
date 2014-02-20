@@ -101,9 +101,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     v = vecSub(ray.source, triangle.u, m, f);
     b = dot(v, u, m, f);
     // Temporarily hold this variable
-    tempVar = fp_fabs(b);
-    bitshift1 = 0;
-    
+    tempVar = fp_fabs(b);    
     if ((tempVar & 0xFFFF0000) > 0)
     {
         tempVar >>= 16;
@@ -129,15 +127,15 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         tempVar >>= 1;
         bitshift1 += 1;
     }
-    if ((tempVar & 0x00000001) > 0)
-    {
-        tempVar >>= 1;
-        bitshift1 += 1;
-    }
+    // if ((tempVar & 0x00000001) > 0)
+    // {
+    //     tempVar >>= 1;
+    //     bitshift1 += 1;
+    // }
+    bitshift1 += tempVar;
     
     // Now do the same for a:
     tempVar = fp_fabs(arecip);
-    bitshift2 = 0;
     if ((tempVar & 0xFFFF0000) > 0)
     {
         tempVar >>= 16;
@@ -163,11 +161,12 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         tempVar >>= 1;
         bitshift2 += 1;
     }
-    if ((tempVar & 0x00000001) > 0)
-    {
-        tempVar >>= 1;
-        bitshift2 += 1;
-    }
+    // if ((tempVar & 0x00000001) > 0)
+    // {
+    //     tempVar >>= 1;
+    //     bitshift2 += 1;
+    // }
+    bitshift2 += tempVar;
     // Compute shift calculation
     bitdiff = bitshift1 + bitshift2 - 47;
     // If the below is true, no shifting is required.
@@ -202,7 +201,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     c = dot(ray.direction, w, m, f);
     // Temporarily hold this variable:
     tempVar = fp_fabs(c);
-    bitshift3 = 0;
     if ((tempVar & 0xFFFF0000) > 0)
     {
         tempVar >>= 16;
@@ -228,11 +226,12 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         tempVar >>= 1;
         bitshift3 += 1;
     }
-    if ((tempVar & 0x00000001) > 0)
-    {
-        tempVar >>= 1;
-        bitshift3 += 1;
-    }
+    // if ((tempVar & 0x00000001) > 0)
+    // {
+    //     tempVar >>= 1;
+    //     bitshift3 += 1;
+    // }
+    bitshift3 += tempVar;
     bitdiff2 = bitshift3 + bitshift2 - 47;
     // If the below statement is true, no shifting is required.
     biteval2 = bitdiff2 <= 0; 
