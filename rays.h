@@ -379,15 +379,13 @@ Hit sceneIntersection(Ray ray, Scene scene, MathStat *m, FuncStat *f)
 }
 
 /* Trace a ray back and find the shadow for a particular light source*/
-fixedp traceShadow(Hit hit, Scene scene, Light light, MathStat *ma, FuncStat *f)
+fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat *ma, FuncStat *f)
 {
-    Vector direction;
     Ray shadow;
     int n, m;
     
     (*f).traceShadow++;
     
-    direction = vecNormalised(vecSub(light.location, hit.location, ma, f), ma, f);
     setRay(&shadow, hit.location, direction, f);
     
     // Now send the shadow ray back to the light. If it intersects, then the ray is a shadow

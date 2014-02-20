@@ -31060,7 +31060,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
         // We've got what we needed after the hit, so return
         statSubtractFlt(m, 1);
         // return outputColour;
-        return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, m, f), outputColour, m, f);
+        return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, lightDirection, m, f), outputColour, m, f);
     }
     
     // No hit, return black.
