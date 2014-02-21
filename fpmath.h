@@ -136,7 +136,7 @@ fixedp fp_exp(fixedp a)
     if (im >= 0)
     {
         k = ((fixedp) LOOKUP_EXP3[im] & 0xFFFF);
-        i = i >> 5;
+        i >>= 5;
         im = (i & 31) - 1; // Use its 15 to 19
         if (im >= 0)
         {
@@ -145,7 +145,7 @@ fixedp fp_exp(fixedp a)
     }
     else
     {
-        i = i >> 5;
+        i >>= 5;
         im = (i & 31) - 1; // Use bits 15 to 19
         if (im >= 0)
         {
@@ -163,7 +163,7 @@ fixedp fp_exp(fixedp a)
         k = (k >> 1) + (k & 1);
     }
     
-    i = i >> 5;
+    i >>= 5;
     im = i & 31; // Use bits 15 to 19
     fixedp l = LOOKUP_EXP1[im];
     
@@ -190,27 +190,27 @@ fixedp fp_log(fixedp a)
     int im, j2, j1, j3, p = -16;
     unsigned int i = (unsigned int) a;
     
-    if ((i & 0xFFFF0000) > 0)
+    if (i & 0xFFFF0000)
     {
         i = i >> 16;
         p += 16;
     }
-    if ((i & 0x0000FF00) > 0)
+    if (i & 0x0000FF00)
     {
         i = i >> 8;
         p += 8;
     }
-    if ((i & 0x000000F0) > 0)
+    if (i & 0x000000F0)
     {
         i = i >> 4;
         p += 4;
     }
-    if ((i & 0x0000000C) > 0)
+    if (i & 0x0000000C)
     {
         i = i >> 2;
         p += 2;
     }
-    if ((i & 0x00000002) > 0)
+    if (i & 0x00000002)
     {
         i = i >> 1;
         p += 1;
@@ -295,29 +295,29 @@ fixedp fp_sqrt(fixedp a)
     unsigned int i, k = 0;
     i = (unsigned int) a;
     
-    if ((i & 0xFFFF0000) > 0)
+    if (i & 0xFFFF0000)
     {
-        i = i >> 16;
+        i >>= 16;
         p += 16;
     }
-    if ((i & 0x0000FF00) > 0)
+    if (i & 0x0000FF00)
     {
-        i = i >> 8;
+        i >>= 8;
         p += 8;
     }
-    if ((i & 0x000000F0) > 0)
+    if (i & 0x000000F0)
     {
-        i = i >> 4;
+        i >>= 4;
         p += 4;
     }
-    if ((i & 0x0000000C) > 0)
+    if (i & 0x0000000C)
     {
-        i = i >> 2;
+        i >>= 2;
         p += 2;
     }
-    if ((i & 0x00000002) > 0)
+    if (i & 0x00000002)
     {
-        i = i >> 1;
+        i >>= 1;
         p += 1;
     }
     
