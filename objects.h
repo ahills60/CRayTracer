@@ -93,8 +93,18 @@ void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambianc
     (*matObj).reflectivity = reflectivity;
     (*matObj).opacity = opacity;
     (*matObj).refractivity = refractivity;
-    (*matObj).inverserefractivity = fp_div(fp_fp1, refractivity);
-    (*matObj).squareinverserefractivity = fp_div(fp_fp1, fp_mult(refractivity, refractivity));
+    if (refractivity == 0)
+    {
+        // to prevent div/0 errors
+        (*matObj).inverserefractivity = fp_fp1;
+        (*matObj).squareinverserefractivity = fp_fp1;
+    }
+    else
+    {
+        (*matObj).inverserefractivity = fp_div(fp_fp1, refractivity);
+        (*matObj).squareinverserefractivity = fp_div(fp_fp1, fp_mult(refractivity, refractivity));
+    }
+
     (*matObj).ambiance = ambiance;
     (*matObj).diffusivity = diffusivity;
     (*matObj).specular = specular;
