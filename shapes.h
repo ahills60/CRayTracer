@@ -113,7 +113,7 @@ void createPlaneXZ(Object *object, Material material, fixedp size, MathStat *m, 
     Vector u, v, w;
     triangle = (Triangle *)malloc(sizeof(Triangle) * 2);
     
-    size = fp_div(size, fp_fp2); // Halve it (was size *= 0.5)
+    size >>= 2; // Halve it (was size *= 0.5)
     
     // Triangle 1:
     setVector(&u, size, 0, size, f);
