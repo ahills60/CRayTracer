@@ -17,10 +17,10 @@ typedef int int32;
 typedef long long int int64;
 typedef int32 fixedp;
 
-#define fp_Int2FP(a) ((int32)((int)(a) * (int)(1<<16)))
+#define fp_Int2FP(a) ((int32)((int)(a << 16)))
 #define fp_Flt2FP(a) ((int32)((float)(a) * (float)(1<<16)))
 #define fp_FP2Flt(a) ((float)(((float)(a)) / (float)(1<<16)))
-#define fp_FP2Int(a) ((int32)((int32)(a)) / (float)(1<<16))
+#define fp_FP2Int(a) ((int32)(a >> 16)) // ((int32)((int32)(a)) / (float)(1<<16))
 
 #define fp_fp1 (1<<16)
 #define fp_fp2 (2<<16)
