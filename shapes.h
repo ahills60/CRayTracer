@@ -26,7 +26,7 @@ void createCube(Object *object, Material material, fixedp size, MathStat *m, Fun
     
     // Define the bounds of the object. Note that this is prior
     // to translating the object to a specific position
-    size = fp_div(size, fp_fp2); // Halve it (was size *= 0.5) Note: could do >> 1 but this doesn't round.
+    size >>= 1; // Halve it (was size *= 0.5)
     setVector(&minBound, -size, -size, -size, f);
     setVector(&maxBound, size, size, size, f);
     
@@ -113,7 +113,7 @@ void createPlaneXZ(Object *object, Material material, fixedp size, MathStat *m, 
     Vector u, v, w;
     triangle = (Triangle *)malloc(sizeof(Triangle) * 2);
     
-    size >>= 2; // Halve it (was size *= 0.5)
+    size >>= 1; // Halve it (was size *= 0.5)
     
     // Triangle 1:
     setVector(&u, size, 0, size, f);
@@ -185,7 +185,7 @@ void createSphere(Object *object, Material material, fixedp radius, int resoluti
     */
     // Calculate the number of triangles:
     tempTri = fp_powi(4, resolution);
-    noTriangles = 8 * tempTri;
+    noTriangles = tempTri << 3; // Was 8 * tempTri.
     
     // Allocate memory for the necessary number of triangles
     triangle = (Triangle *)malloc(sizeof(Triangle) * noTriangles);
