@@ -322,7 +322,7 @@ fixedp fp_sqrt(fixedp a)
     }
     
     // Lookup the sqrt multiplier based on bits MSB + 0 to MSB + 3 then
-    // correct odd MSB positions using sqrt(2)
+    // correct odd MSB positions using sqrt(2). Sqrt(2) is roughly 92682
     if (p >= -11)
     {
         i = a >> (11 + p);
@@ -344,11 +344,11 @@ fixedp fp_sqrt(fixedp a)
     
     if ((p & 1) > 0)
     {
-        k += 92682;
+        k += 92682; // add sqrt(2)
     }
     else
     {
-        k += 0x10000;
+        k += 0x10000; // add 1
     }
     
     // Shift the square root estimate based on the halved MSB position
@@ -368,4 +368,33 @@ fixedp fp_sqrt(fixedp a)
     
     return (fixedp) k;
 }
+/*
+#define FRACBITS    22
+#define ITERS       (15 + (FRACBITS >> 1))
+
+fixedp fp_sqrti(fixedp a)
+{
+    unsigned int root, remHi, remLo, testDiv, count;
+    
+    root = 0;
+    remHi = 0;
+    remLo = (unsigned int) a;
+    count = ITERS;
+    
+    do
+    {
+        remHi = (remHi << 2) | (remLo >> 30);
+        remLo <<= 2;
+        root <<= 1;
+        testDiv = (root << 1) + 1;
+        if (remHi >= testDiv)
+        {
+            remHi -= testDiv;
+            root++;
+        }        
+    } while (count-- != 0)
+    
+    return (fixedp) root;
+}
+*/
 #endif
