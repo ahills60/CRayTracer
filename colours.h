@@ -21,5 +21,6 @@ int PURPLE[3] = {140, 0, 255};
 int YELLOW[3] = {255, 255, 0};
 int BROWN[3] = {148, 255, 0};
 int CYAN[3] = {0, 255, 255};
+int LIGHT_GREY[3] = {196, 196, 196};
 
 #endif /* COLOURS_H_ */

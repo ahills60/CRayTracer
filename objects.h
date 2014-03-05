@@ -35,6 +35,8 @@ typedef struct Material
     fixedp diffusivity;          // Diffusive constant
     fixedp specular;             // How specular
     fixedp shininess;            // How shiny
+    Vector matLightColour;         // material * light colour
+    Vector compAmbianceColour;   // Computed ambiance colour.
 }
 Material;
 
@@ -84,19 +86,31 @@ typedef struct Camera
 Camera;
 
 /* Set the material */
-void setMaterial(Material *matObj, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, FuncStat *f)
+void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, MathStat *m, FuncStat *f)
 {
     (*f).setMaterial++;
     (*matObj).colour = colour;
     (*matObj).reflectivity = reflectivity;
     (*matObj).opacity = opacity;
     (*matObj).refractivity = refractivity;
-    (*matObj).inverserefractivity = fp_div(fp_fp1, refractivity);
-    (*matObj).squareinverserefractivity = fp_div(fp_fp1, fp_mult(refractivity, refractivity));
+    if (refractivity == 0)
+    {
+        // to prevent div/0 errors
+        (*matObj).inverserefractivity = fp_fp1;
+        (*matObj).squareinverserefractivity = fp_fp1;
+    }
+    else
+    {
+        (*matObj).inverserefractivity = fp_div(fp_fp1, refractivity);
+        (*matObj).squareinverserefractivity = fp_div(fp_fp1, fp_mult(refractivity, refractivity));
+    }
+
     (*matObj).ambiance = ambiance;
     (*matObj).diffusivity = diffusivity;
     (*matObj).specular = specular;
     (*matObj).shininess = shininess;
+    (*matObj).matLightColour = vecMult(colour, lightSrc.colour, m, f);
+    (*matObj).compAmbianceColour = scalarVecMult(ambiance, (*matObj).matLightColour, m, f);
 }
 
 /* Set the object */

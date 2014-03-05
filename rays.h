@@ -78,9 +78,9 @@ Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 /* Compute the intersection of a triangle */
 fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f)
 {
-    fixedp intersection, a, b, c, tempVar;// arecip;
+    fixedp intersection, a, b, c, tempVar, arecip;
     Vector edge1, edge2, u, v, w;
-    int bitshift1 = 0, bitshift2 = 0, bitshift3 = 0, bitdiff = 0, biteval, biteval2;
+    int bitshift1 = 0, bitshift2 = 0, bitshift3 = 0, bitdiff = 0, bitdiff2 = 0, biteval, biteval2;
     
     (*f).triangleIntersection++;
     
@@ -94,167 +94,210 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     if (a > -EPS && a < EPS)
         return 0; // No intersection
     
+    v = vecSub(ray.source, triangle.u, m, f);
+    b = dot(v, u, m, f);
+    
+    if ((b & 0x80000000) ^ (a & 0x80000000))
+        return 0;
+    
     // Reciprocal of a (normalising constant)
-    // arecip = fp_div(fp_fp1, a);
+    arecip = fp_div(fp_fp1, a);
     statDivideFlt(m, 1);
     
-    v = vecSub(ray.source, triangle.u, m, f);
-    // b = fp_mult(dot(v, u, m, f), arecip);
-    b = dot(v, u, m, f);
     // Temporarily hold this variable
     tempVar = fp_fabs(b);
-    bitshift1 = 0;
-    
-    if ((tempVar & 0xFFFF0000) > 0)
+    if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
         bitshift1 += 16;
     }
-    if ((tempVar & 0x0000FF00) > 0)
+    if (tempVar & 0x0000FF00)
     {
         tempVar >>= 8;
         bitshift1 += 8;
     }
-    if ((tempVar & 0x000000F0) > 0)
+    if (tempVar & 0x000000F0)
     {
         tempVar >>= 4;
         bitshift1 += 4;
     }
-    if ((tempVar & 0x0000000C) > 0)
+    if (tempVar & 0x0000000C)
     {
         tempVar >>= 2;
         bitshift1 += 2;
     }
-    if ((tempVar & 0x00000002) > 0)
+    if (tempVar & 0x00000002)
     {
         tempVar >>= 1;
         bitshift1 += 1;
     }
-    if ((tempVar & 0x00000001) > 0)
-    {
-        tempVar >>= 1;
-        bitshift1 += 1;
-    }
+    // if ((tempVar & 0x00000001) > 0)
+    // {
+    //     tempVar >>= 1;
+    //     bitshift1 += 1;
+    // }
+    bitshift1 += tempVar;
     
     // Now do the same for a:
-    tempVar = fp_fabs(a);
-    bitshift2 = 0;
-    if ((tempVar & 0xFFFF0000) > 0)
+    tempVar = fp_fabs(arecip);
+    if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
         bitshift2 += 16;
     }
-    if ((tempVar & 0x0000FF00) > 0)
+    if (tempVar & 0x0000FF00)
     {
         tempVar >>= 8;
         bitshift2 += 8;
     }
-    if ((tempVar & 0x000000F0) > 0)
+    if (tempVar & 0x000000F0)
     {
         tempVar >>= 4;
         bitshift2 += 4;
     }
-    if ((tempVar & 0x0000000C) > 0)
+    if (tempVar & 0x0000000C)
     {
         tempVar >>= 2;
         bitshift2 += 2;
     }
-    if ((tempVar & 0x00000002) > 0)
+    if (tempVar & 0x00000002)
     {
         tempVar >>= 1;
         bitshift2 += 1;
     }
-    if ((tempVar & 0x00000001) > 0)
-    {
-        tempVar >>= 1;
-        bitshift2 += 1;
-    }
+    // if ((tempVar & 0x00000001) > 0)
+    // {
+    //     tempVar >>= 1;
+    //     bitshift2 += 1;
+    // }
+    bitshift2 += tempVar;
     // Compute shift calculation
-    bitdiff = 16 - bitshift2;
+    bitdiff = bitshift1 + bitshift2 - 47;
     // If the below is true, no shifting is required.
-    biteval = (bitshift1 - bitshift2 <= 14); // (bitshift1 + 16 - bitshift2 <= 30);
-    b = fp_div(b, biteval ? a : (a << bitdiff));
-    
+    biteval = bitdiff <= 0; // (bitshift1 + 16 - bitshift2 <= 30);
+    // b = fp_div(b, biteval ? a : (a << bitdiff));
     statMultiplyFlt(m, 1);
-    if (b < 0 || b > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
-        return 0; // no intersection
+    if (biteval)
+        {
+            b = fp_mult(b, arecip);
+            if (b > fp_fp1)//(biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
+                return 0; // no intersection
+        }
+    else
+    {
+        if (bitshift1 > bitshift2)
+        {
+            b = fp_mult(b >> bitdiff, arecip);
+        }
+        else
+        {
+            b = fp_mult(b, arecip >> bitdiff);
+        }
+        if (b > (fp_fp1 >> bitdiff))
+            return 0; // no intersection
+    }
+    
+    // 
+    // if (b < 0 || b > fp_fp1)//(biteval ? fp_fp1 : (fp_fp1 >> bitdiff)))
+    //     return 0; // no intersection
     
     w = cross(v, edge1, m, f);
-    // c = fp_mult(dot(ray.direction, w, m, f), arecip);
     c = dot(ray.direction, w, m, f);
-    // // Temporarily hold this variable:
-    tempVar = fabs(c);
-    bitshift3 = 0;
-    if ((tempVar & 0xFFFF0000) > 0)
+    if ((c & 0x80000000) ^ (a & 0x80000000))
+        return 0;
+    // Temporarily hold this variable:
+    tempVar = fp_fabs(c);
+    if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
         bitshift3 += 16;
     }
-    if ((tempVar & 0x0000FF00) > 0)
+    if (tempVar & 0x0000FF00)
     {
         tempVar >>= 8;
         bitshift3 += 8;
     }
-    if ((tempVar & 0x000000F0) > 0)
+    if (tempVar & 0x000000F0)
     {
         tempVar >>= 4;
         bitshift3 += 4;
     }
-    if ((tempVar & 0x0000000C) > 0)
+    if (tempVar & 0x0000000C)
     {
         tempVar >>= 2;
         bitshift3 += 2;
     }
-    if ((tempVar & 0x00000002) > 0)
+    if (tempVar & 0x00000002)
     {
         tempVar >>= 1;
         bitshift3 += 1;
     }
-    if ((tempVar & 0x00000001) > 0)
-    {
-        tempVar >>= 1;
-        bitshift3 += 1;
-    }
+    // if ((tempVar & 0x00000001) > 0)
+    // {
+    //     tempVar >>= 1;
+    //     bitshift3 += 1;
+    // }
+    bitshift3 += tempVar;
+    bitdiff2 = bitshift3 + bitshift2 - 47;
     // If the below statement is true, no shifting is required.
-    biteval2 = (bitshift3 - bitshift2 <= 14); 
+    biteval2 = bitdiff2 <= 0; 
     
     statMultiplyFlt(m, 1);
     statPlusFlt(m, 1);
     if (!biteval2)
     {
-        c = fp_div(c, (a << bitdiff));
+        if (bitshift3 > bitshift2)
+        {
+            c = fp_mult(c >> bitdiff2, arecip); //c = fp_mult(dot(ray.direction, w, m, f), arecip);
+        }
+        else
+        {
+            c = fp_mult(c, arecip >> bitdiff2); //c = fp_mult(dot(ray.direction, w, m, f), arecip);
+        }
+        // c = fp_div(c, (a << bitdiff));
+        // b was shifted and this needs shifting, so...
         if (biteval)
         {
             // variable b wasn't shifted before, so we need to compensate
-            if (c < 0 || (b >> bitdiff) + c > (fp_fp1 >> bitdiff))
+            if ((b >> bitdiff2) + c > (fp_fp1 >> bitdiff2))
                 return 0; // no intersection
         }
         else
         {
-            // b was shifted and this needs shiting, so...
-            if (c < 0 || b + c > (fp_fp1 >> bitdiff))
-                return 0; // no intersection
+            if (bitdiff > bitdiff2)
+            {
+                // b was shifted more than c. Shift c by b.
+                if (b + (c >> (bitdiff - bitdiff2)) > (fp_fp1 >> bitdiff))
+                    return 0; // no intersection
+            }
+            else
+            {
+                // Bitdiff2 >= bitdiff
+                // c was shifted more than b. Shift b by c
+                if ((b >> (bitdiff2 - bitdiff)) + c > (fp_fp1 >> bitdiff2))
+                    return 0; // no intersection
+            }
         }
     }
     else
     {
-        c = fp_div(c, a);
+        // c = fp_div(c, a);
+        c = fp_mult(c, arecip); //c = fp_mult(dot(ray.direction, w, m, f), arecip);
         if (biteval)
         {
             // Variable b wasn't shifted before and c doesn't shift
-            if (c < 0 || b + c > fp_fp1)
+            if (b + c > fp_fp1)
                 return 0; // no intersection
-            
         }
         else
         {
             // Variable b was shifted and c wasn't shifted.
-            if (c < 0 || b + (c >> bitdiff) > (fp_fp1 >> bitdiff))
+            if (b + (c >> bitdiff) > (fp_fp1 >> bitdiff))
                 return 0; // no intersection
         }
     }
     
-    intersection = fp_div(dot(edge2, w, m, f), a); // fp_mult(dot(edge2, w, m, f), arecip);
+    intersection = fp_mult(dot(edge2, w, m, f), arecip);//fp_div(dot(edge2, w, m, f), a); 
     
     statMultiplyFlt(m, 1);
     
@@ -341,15 +384,13 @@ Hit sceneIntersection(Ray ray, Scene scene, MathStat *m, FuncStat *f)
 }
 
 /* Trace a ray back and find the shadow for a particular light source*/
-fixedp traceShadow(Hit hit, Scene scene, Light light, MathStat *ma, FuncStat *f)
+fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat *ma, FuncStat *f)
 {
-    Vector direction;
     Ray shadow;
     int n, m;
     
     (*f).traceShadow++;
     
-    direction = vecNormalised(vecSub(light.location, hit.location, ma, f), ma, f);
     setRay(&shadow, hit.location, direction, f);
     
     // Now send the shadow ray back to the light. If it intersects, then the ray is a shadow
@@ -361,7 +402,7 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, MathStat *ma, FuncStat *f)
         {
             statPlusInt(ma, 1); // For the loop
             // Is this significant?
-            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma, f) > EPS)
+            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma, f) > 0x1000)
                 return light.shadowFactor;
         }
     }

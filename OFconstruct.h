@@ -16,16 +16,26 @@
 // This script is for model "Model"
 
 // Put the object(s) on the scene
-void populateScene(Scene *scene, MathStat *m, FuncStat *f)
+void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
 //fixedp normal[3];	// Storage for calculated surface normal
 
-Object myObj;
-Material myMat;
-Vector red = int2Vector(RED);
+Object myObj, bgObj;
+Material myMat, bgMat;
+// Vector red = int2Vector(RED);
+Vector lgrey = int2Vector(LIGHT_GREY);
+//Vector white = int2Vector(WHITE);
 Vector u, v, w;
 
-setMaterial(&myMat, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), f);
+printf("Establishing material... ");
+//setMaterial(*matObj, light, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity)
+// setMaterial(&myMat, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), m, f);
+setMaterial(&myMat, lightSrc, lgrey, fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.2), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
+//setMaterial(&bgMat, lightSrc, int2Vector(BLUE), fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
+printf("Done.\n");
+
+//createPlaneXZ(&bgObj, bgMat, 100 << 16, m, f);
+
 Triangle *triangle;
 triangle = (Triangle *)malloc(sizeof(Triangle) * 4426);
 // Now begin object writing
@@ -31020,50 +31030,52 @@ addObject(scene, myObj, f);
 
 Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncStat *f)
 {
-Hit hit;
-Vector outputColour, reflectiveColour, refractiveColour;
-fixedp reflection, refraction;
-
-(*f).draw++;
-
-// Default is black. We can add to this (if there's a hit) 
-// or just return it (if there's no object)
-setVector(&outputColour, 0, 0, 0, f);
-
-hit = sceneIntersection(ray, scene, m, f);
-
-// Determine whether there was a hit. Otherwise default.
-if (hit.objectIndex >= 0)
-{
-// There was a hit.
-// outputColour = vecAdd(ambiance(hit, scene, light, m, f), diffusion(hit, scene, light, m, f), m, f);
-outputColour = vecAdd(ambiance(hit, scene, light, m, f), vecAdd(diffusion(hit, scene, light, m, f), specular(hit, scene, light, m, f), m, f), m, f);
-
-// Should we go deeper?
-if (recursion > 0)
-{
-// Yes, we should
-// Get the reflection
-reflectiveColour = draw(reflectRay(hit, m, f), scene, light, recursion - 1, m, f);
-statSubtractInt(m, 1);
-reflection = scene.object[hit.objectIndex].material.reflectivity;
-outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour, m, f), m, f);
-
-// Get the refraction
-refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.inverserefractivity, scene.object[hit.objectIndex].material.squareinverserefractivity, m, f), scene, light, recursion - 1, m, f);
-statSubtractInt(m, 1);
-refraction = scene.object[hit.objectIndex].material.opacity;
-outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m, f), m, f);
-}
-
-// We've got what we needed after the hit, so return
-statSubtractFlt(m, 1);
-return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, m, f), outputColour, m, f);
-}
-
-// No hit, return black.
-
-return outputColour;
+    Hit hit;
+    Vector outputColour, reflectiveColour, refractiveColour;
+    fixedp reflection, refraction;
+    
+    (*f).draw++;
+    
+    // Default is black. We can add to this (if there's a hit) 
+    // or just return it (if there's no object)
+    setVector(&outputColour, 0, 0, 0, f);
+    
+    hit = sceneIntersection(ray, scene, m, f);
+    
+    // Determine whether there was a hit. Otherwise default.
+    if (hit.objectIndex >= 0)
+    {
+        // There was a hit.
+        Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
+        // outputColour = vecAdd(ambiance(hit, scene, light, m, f), diffusion(hit, scene, light, m, f), m, f);
+        outputColour = vecAdd(ambiance(hit, scene, light, m, f), vecAdd(diffusion(hit, scene, light, lightDirection, m, f), specular(hit, scene, light, lightDirection, m, f), m, f), m, f);
+        
+        // Should we go deeper?
+        if (recursion > 0)
+        {
+            // Yes, we should
+            // Get the reflection
+            reflectiveColour = draw(reflectRay(hit, m, f), scene, light, recursion - 1, m, f);
+            statSubtractInt(m, 1);
+            reflection = scene.object[hit.objectIndex].material.reflectivity;
+            outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour, m, f), m, f);
+            
+            // Get the refraction
+            refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.inverserefractivity, scene.object[hit.objectIndex].material.squareinverserefractivity, m, f), scene, light, recursion - 1, m, f);
+            statSubtractInt(m, 1);
+            refraction = scene.object[hit.objectIndex].material.opacity;
+            outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m, f), m, f);
+        }
+        
+        // We've got what we needed after the hit, so return
+        statSubtractFlt(m, 1);
+        // return outputColour;
+        return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, lightDirection, m, f), outputColour, m, f);
+    }
+    
+    // No hit, return black.
+    
+    return outputColour;
 }
 
 #endif

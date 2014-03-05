@@ -28,7 +28,7 @@
 #include "funcstats.h"
 
 /* Populate a scene with set items */
-void populateScene(Scene *scene, MathStat *m, FuncStat *f)
+void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
     Object cube, planeBase, planeLeft, planeRight, planeTop, planeBack, mirrCube;
     Material redGlass, nonreflBlue, nonreflGreen, nonreflPurple, mirror;
@@ -39,12 +39,12 @@ void populateScene(Scene *scene, MathStat *m, FuncStat *f)
     Vector white = int2Vector(WHITE);
     
     // Set material types
-    //setMaterial(*matObj, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity)
-    setMaterial(&redGlass, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), f);
-    setMaterial(&nonreflBlue, blue, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
-    setMaterial(&nonreflGreen, green, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
-    setMaterial(&nonreflPurple, purple, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
-    setMaterial(&mirror, white, fp_Flt2FP(0.1), fp_Flt2FP(0.0), fp_Flt2FP(0.9), fp_Flt2FP(32.0), fp_Flt2FP(0.6), fp_Flt2FP(0.0), fp_Flt2FP(1.4), f);
+    //setMaterial(*matObj, light, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity)
+    setMaterial(&redGlass, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), m, f);
+    setMaterial(&nonreflBlue, lightSrc, blue, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
+    setMaterial(&nonreflGreen, lightSrc, green, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
+    setMaterial(&nonreflPurple, lightSrc, purple, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
+    setMaterial(&mirror, lightSrc, white, fp_Flt2FP(0.1), fp_Flt2FP(0.0), fp_Flt2FP(0.9), fp_Flt2FP(32.0), fp_Flt2FP(0.6), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
     
     // Create objects
     createCube(&cube, redGlass, fp_Flt2FP(1.0), m, f);
@@ -93,8 +93,9 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
     if (hit.objectIndex >= 0)
     {
         // There was a hit.
+        Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
         // outputColour = vecAdd(ambiance(hit, scene, light, m, f), diffusion(hit, scene, light, m, f), m, f);
-        outputColour = vecAdd(ambiance(hit, scene, light, m, f), vecAdd(diffusion(hit, scene, light, m, f), specular(hit, scene, light, m, f), m, f), m, f);
+        outputColour = vecAdd(ambiance(hit, scene, light, m, f), vecAdd(diffusion(hit, scene, light, lightDirection, m, f), specular(hit, scene, light, lightDirection, m, f), m, f), m, f);
         
         // Should we go deeper?
         if (recursion > 0)
@@ -116,7 +117,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
         // We've got what we needed after the hit, so return
         statSubtractFlt(m, 1);
         // return outputColour;
-        return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, m, f), outputColour, m, f);
+        return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, lightDirection, m, f), outputColour, m, f);
     }
     
     // No hit, return black.

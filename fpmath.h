@@ -17,10 +17,10 @@ typedef int int32;
 typedef long long int int64;
 typedef int32 fixedp;
 
-#define fp_Int2FP(a) ((int32)((int)(a) * (int)(1<<16)))
+#define fp_Int2FP(a) ((int32)((int)(a << 16)))
 #define fp_Flt2FP(a) ((int32)((float)(a) * (float)(1<<16)))
 #define fp_FP2Flt(a) ((float)(((float)(a)) / (float)(1<<16)))
-#define fp_FP2Int(a) ((int32)((int32)(a)) / (float)(1<<16))
+#define fp_FP2Int(a) ((int32)(a >> 16)) // ((int32)((int32)(a)) / (float)(1<<16))
 
 #define fp_fp1 (1<<16)
 #define fp_fp2 (2<<16)
@@ -74,7 +74,7 @@ fixedp fp_mult(fixedp a, fixedp b)
     if (result > (long long int) 1 << 31)
     {
             printf("Overflow in downcast during mult %lld, %f\n", result, result/65536.0);
-            printf("\t0x%X * 0x%X = 0x%X\n\n", a, b, result);
+            printf("\t0x%X * 0x%X = 0x%X\n\n", (unsigned int) a, (unsigned int) b, (unsigned int) result);
     }
 #endif
     
@@ -88,7 +88,7 @@ fixedp fp_div(fixedp a, fixedp b)
     if (result > (long long int) 1 << 31)
     {
         printf("Overflow in downcast during div %lld, %f\n", result, result/65536.0);
-        printf("\t0x%X / 0x%X = 0x%X\n\n", a, b, result);
+        printf("\t0x%X / 0x%X = 0x%X\n\n", (unsigned int) a, (unsigned int) b, (unsigned int) result);
     }
 #endif
     return (int)(result);
@@ -136,7 +136,7 @@ fixedp fp_exp(fixedp a)
     if (im >= 0)
     {
         k = ((fixedp) LOOKUP_EXP3[im] & 0xFFFF);
-        i = i >> 5;
+        i >>= 5;
         im = (i & 31) - 1; // Use its 15 to 19
         if (im >= 0)
         {
@@ -145,7 +145,7 @@ fixedp fp_exp(fixedp a)
     }
     else
     {
-        i = i >> 5;
+        i >>= 5;
         im = (i & 31) - 1; // Use bits 15 to 19
         if (im >= 0)
         {
@@ -163,7 +163,7 @@ fixedp fp_exp(fixedp a)
         k = (k >> 1) + (k & 1);
     }
     
-    i = i >> 5;
+    i >>= 5;
     im = i & 31; // Use bits 15 to 19
     fixedp l = LOOKUP_EXP1[im];
     
@@ -190,27 +190,27 @@ fixedp fp_log(fixedp a)
     int im, j2, j1, j3, p = -16;
     unsigned int i = (unsigned int) a;
     
-    if ((i & 0xFFFF0000) > 0)
+    if (i & 0xFFFF0000)
     {
         i = i >> 16;
         p += 16;
     }
-    if ((i & 0x0000FF00) > 0)
+    if (i & 0x0000FF00)
     {
         i = i >> 8;
         p += 8;
     }
-    if ((i & 0x000000F0) > 0)
+    if (i & 0x000000F0)
     {
         i = i >> 4;
         p += 4;
     }
-    if ((i & 0x0000000C) > 0)
+    if (i & 0x0000000C)
     {
         i = i >> 2;
         p += 2;
     }
-    if ((i & 0x00000002) > 0)
+    if (i & 0x00000002)
     {
         i = i >> 1;
         p += 1;
@@ -295,34 +295,34 @@ fixedp fp_sqrt(fixedp a)
     unsigned int i, k = 0;
     i = (unsigned int) a;
     
-    if ((i & 0xFFFF0000) > 0)
+    if (i & 0xFFFF0000)
     {
-        i = i >> 16;
+        i >>= 16;
         p += 16;
     }
-    if ((i & 0x0000FF00) > 0)
+    if (i & 0x0000FF00)
     {
-        i = i >> 8;
+        i >>= 8;
         p += 8;
     }
-    if ((i & 0x000000F0) > 0)
+    if (i & 0x000000F0)
     {
-        i = i >> 4;
+        i >>= 4;
         p += 4;
     }
-    if ((i & 0x0000000C) > 0)
+    if (i & 0x0000000C)
     {
-        i = i >> 2;
+        i >>= 2;
         p += 2;
     }
-    if ((i & 0x00000002) > 0)
+    if (i & 0x00000002)
     {
-        i = i >> 1;
+        i >>= 1;
         p += 1;
     }
     
     // Lookup the sqrt multiplier based on bits MSB + 0 to MSB + 3 then
-    // correct odd MSB positions using sqrt(2)
+    // correct odd MSB positions using sqrt(2). Sqrt(2) is roughly 92682
     if (p >= -11)
     {
         i = a >> (11 + p);
@@ -344,11 +344,11 @@ fixedp fp_sqrt(fixedp a)
     
     if ((p & 1) > 0)
     {
-        k += 92682;
+        k += 92682; // add sqrt(2)
     }
     else
     {
-        k += 0x10000;
+        k += 0x10000; // add 1
     }
     
     // Shift the square root estimate based on the halved MSB position
@@ -368,4 +368,33 @@ fixedp fp_sqrt(fixedp a)
     
     return (fixedp) k;
 }
+/*
+#define FRACBITS    22
+#define ITERS       (15 + (FRACBITS >> 1))
+
+fixedp fp_sqrti(fixedp a)
+{
+    unsigned int root, remHi, remLo, testDiv, count;
+    
+    root = 0;
+    remHi = 0;
+    remLo = (unsigned int) a;
+    count = ITERS;
+    
+    do
+    {
+        remHi = (remHi << 2) | (remLo >> 30);
+        remLo <<= 2;
+        root <<= 1;
+        testDiv = (root << 1) + 1;
+        if (remHi >= testDiv)
+        {
+            remHi -= testDiv;
+            root++;
+        }        
+    } while (count-- != 0)
+    
+    return (fixedp) root;
+}
+*/
 #endif
