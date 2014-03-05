@@ -20,7 +20,7 @@
 #define DATATYPES_H_
 
 // Define some constants
-#define EPS         31 // Was 0.00001
+#define EPS        6 // 512 // 6 // 31 // Was 0.00001
 
 /* A 3D vector */
 typedef struct Vector
@@ -173,8 +173,18 @@ fixedp vecLength(Vector u, MathStat *m, FuncStat *f)
 Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
 {
     (*f).vecNormalised++;
+    fixedp tempVar = fp_mult(u.x, u.x) + fp_mult(u.y, u.y) + fp_mult(u.z, u.z);
+    if (tempVar == 0)
+        return u;
+    else
+        if (tempVar == 1)
+            return scalarVecMult(0x1000000, u, m, f); // Equivalent of 256 as 1 / sqrt(1.52E-5) is 256
+        else
+            return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f); // return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f);
+    /*
     fixedp a = vecLength(u, m, f);
     // Vector w;
+    // printf("vecNormalised: x: 0x%08X, y: 0x%08X, z: 0x%08X, a: 0x%08X\n", u.x, u.y, u.z, a);
     
     // Assume anything less than epsilon is zero
     if (a < EPS && a > -EPS)
@@ -183,6 +193,7 @@ Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
     // setVector(&w, u.x / a, u.y / a, u.z / a);
     statDivideFlt(m, 1);
     return scalarVecDiv(a, u, m, f);
+    */
 }
 
 /* Matrix multiplied by a vector */
