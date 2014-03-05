@@ -105,7 +105,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
     statDivideFlt(m, 1);
     
     // Temporarily hold this variable
-    tempVar = fp_fabs(b);    
+    tempVar = fp_fabs(b);
     if (tempVar & 0xFFFF0000)
     {
         tempVar >>= 16;
@@ -402,7 +402,7 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat
         {
             statPlusInt(ma, 1); // For the loop
             // Is this significant?
-            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma, f) > EPS)
+            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma, f) > 0x1000)
                 return light.shadowFactor;
         }
     }
