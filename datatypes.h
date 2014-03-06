@@ -22,6 +22,14 @@
 // Define some constants
 #define EPS        6 // 512 // 6 // 31 // Was 0.00001
 
+/* UV coordinate structure */
+typedef struct UVCoord
+{
+    fixedp U;
+    fixedp V;
+}
+UVCoord;
+
 /* A 3D vector */
 typedef struct Vector
 {
@@ -45,6 +53,10 @@ typedef struct Triangle
     Vector vmu;             // v - u
     Vector wmu;             // w - u
     Vector normcrvmuwmu;    // vecNormalised(cross(vmu, wmu))
+    // Texture coordinate information
+    UVCoord uUV;
+    UVCoord vUV;
+    UVCoord wUV;
 }
 Triangle;
 
@@ -350,6 +362,23 @@ void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m, 
     (*triangle).vmu = vecSub(v, u, m, f);
     (*triangle).wmu = vecSub(w, u, m, f);
     (*triangle).normcrvmuwmu = vecNormalised(cross((*triangle).vmu, (*triangle).wmu, m, f), m, f);
+    (*triangle).uUV = -1;
+    (*triangle).vUV = -1;
+    (*triangle).wUV = -1;
+}
+
+void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV, UVCoord vUV, UVCoord wUV, MathStat *m, FuncStat *f)
+{
+    (*f).setTriangle++;
+    (*triangle).u = u;
+    (*triangle).v = v;
+    (*triangle).w = w;
+    (*triangle).vmu = vecSub(v, u, m, f);
+    (*triangle).wmu = vecSub(w, u, m, f);
+    (*triangle).normcrvmuwmu = vecNormalised(cross((*triangle).vmu, (*triangle).wmu, m, f), m, f);
+    (*triangle).uUV = uUV;
+    (*triangle).vUV = vUV;
+    (*triangle).wUV = wUV;
 }
 
 #endif /* DATATYPES_H_ */
