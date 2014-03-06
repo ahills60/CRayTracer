@@ -44,7 +44,8 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *f)
         Vector *bitmap = (Vector *)malloc(sizeof(Vector) * size);
         for (i = 0; i < size; i++)
         {
-            setVector(&a, data[i * 3 + 20] << 8, data[i * 3 + 19] << 8, data[i * 3 + 18] << 8, f);
+            // shifting by 8 is equivalent to 256. Note that as 1 starts at bit 16 and char is up to 8 bits, shift by eight to left to align.
+            setVector(&a, ((int)data[i * 3 + 20]) << 8, ((int)data[i * 3 + 19]) << 8, ((int)data[i * 3 + 18]) << 8, f);
             bitmap[i] = a;
         }
         (Texture *)texture.width = width;
