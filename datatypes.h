@@ -60,6 +60,13 @@ typedef struct Triangle
 }
 Triangle;
 
+/* Set the UV coordinates */
+void setUVCoord(UVCoord *a, fixedp u, fixedp v)
+{
+    (*a).U = u;
+    (*a).V = v;
+}
+
 /* Set the coordinates of a vector */
 void setVector(Vector *v, fixedp x, fixedp y, fixedp z, FuncStat *f)
 {
@@ -379,6 +386,22 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
     (*triangle).uUV = uUV;
     (*triangle).vUV = vUV;
     (*triangle).wUV = wUV;
+}
+
+/* Multiple a UV coordinate by a scalar value */
+UVCoord scalarUVMult(fixedp a, UVCoord u)
+{
+    UVCoord r;
+    setUVCoord(&r, fp_mult(a, u.U), fp_mult(a, u.V));
+    return r;
+}
+
+/* Add two UV coordinates */
+UVCoord uvAdd(fixedp a, fixedp b)
+{
+    UVCoord r;
+    setUVCoord(&r, a.U + b.U, a.V + b.V);
+    return r;
 }
 
 #endif /* DATATYPES_H_ */
