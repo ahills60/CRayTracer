@@ -39,6 +39,7 @@ typedef struct Hit
     Ray ray;                    // The ray that hit this point
     int objectIndex;            // The index of the object that was hit
     fixedp distance;             // Distance from the camera to the nearest hit.
+    int triangleIndex;          // The index of the triangle that was hit (useful for extracting UV information later)
 }
 Hit;
 
@@ -343,7 +344,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
     if (nearestIntersection > 0 && nearestIntersection < FURTHEST_RAY)
     {
         hit.location = vecAdd(ray.source, scalarVecMult(nearestIntersection, ray.direction, m, f), m, f);
-        
+        hit.triangleIndex = nearestIdx;
         hit.normal = object.triangle[nearestIdx].normcrvmuwmu;
         hit.ray = ray;
         hit.objectIndex = objectIndex;
