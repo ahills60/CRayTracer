@@ -100,4 +100,32 @@ Vector getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat
     
     // return bilinear filtered result
     return vecAdd(c1, vecAdd(c2, vecAdd(c3, c4, m, f), m, f), m, f);
-}#endif
+}
+
+Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f)
+{
+    fixedp a, a1, a2, a3;
+    Triangle triangle;
+    Vector h1, h2, h3;
+    UVCoord UV;
+    
+    // Extract the triangle that received the hit.
+    triangle = scene.object[hit.objectIndex].triangle[hit.triangleIndex];
+    
+    // Calculate vectors from hit point
+    h1 = vecSub(triangle.u - hit.location);
+    h2 = vecSub(triangle.v - hit.location);
+    h3 = vecSub(triangle.w - hit.location);
+    
+    // Now compute the areas and factors.
+    a  = vecLength(cross(triangle.vmu, triangle.wmu));
+    a1 = fp_div(vecLength(cross(h2, h3)), a);
+    a2 = fp_div(vecLength(cross(h3, h1)), a);
+    a3 = fp_div(vecLength(cross(h1, h2)), a);
+    
+    // Now we can get U and V:
+    UV = uvAdd(scalarUVMult(a1, triangle.uUV), uvAdd(scalarUVMult(a2, triangle.vUV), scalarUVMult(a3, triangle.wUV)));
+    
+    return getTexel(texture, UV.U, UV.V, m, f);
+}
+#endif
