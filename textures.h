@@ -7,6 +7,11 @@
  *      Author: andrew
  */
 
+#ifndef TEXTURES_H_
+#define TEXTURES_H_
+
+#include "datatypes.h";
+
 typedef struct Texture
 {
     int width;
@@ -95,4 +100,4 @@ Vector getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat
     
     // return bilinear filtered result
     return vecAdd(c1, vecAdd(c2, vecAdd(c3, c4, m, f), m, f), m, f);
-}
+}#endif
