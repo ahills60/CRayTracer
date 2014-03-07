@@ -102,6 +102,7 @@ Vector getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat
     return vecAdd(c1, vecAdd(c2, vecAdd(c3, c4, m, f), m, f), m, f);
 }
 
+/* Return a colour based on interpolation of UV coordinates from a hit */
 Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f)
 {
     fixedp a, a1, a2, a3;
