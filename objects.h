@@ -37,6 +37,7 @@ typedef struct Material
     fixedp shininess;            // How shiny
     Vector matLightColour;         // material * light colour
     Vector compAmbianceColour;   // Computed ambiance colour.
+    int textureIdx;              // An index to the appropriate texture. If < 0, use Vector colour.
 }
 Material;
 
@@ -86,7 +87,7 @@ typedef struct Camera
 Camera;
 
 /* Set the material */
-void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, MathStat *m, FuncStat *f)
+void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, int textureIdx, MathStat *m, FuncStat *f)
 {
     (*f).setMaterial++;
     (*matObj).colour = colour;
@@ -111,6 +112,7 @@ void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambianc
     (*matObj).shininess = shininess;
     (*matObj).matLightColour = vecMult(colour, lightSrc.colour, m, f);
     (*matObj).compAmbianceColour = scalarVecMult(ambiance, (*matObj).matLightColour, m, f);
+    (*matObj).textureIdx = textureIdx;
 }
 
 /* Set the object */
