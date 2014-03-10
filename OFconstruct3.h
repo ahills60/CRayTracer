@@ -16,6 +16,8 @@
 
 // This script is for model "Model"
 
+Texture Textures[1];
+
 // Put the object(s) on the scene
 void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
