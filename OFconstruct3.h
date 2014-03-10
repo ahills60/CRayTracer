@@ -29,7 +29,7 @@ void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     UVCoord uUV, vUV, wUV;
 
     ReadTexture(&texture,"texture.tga", f);
-    setMaterial(&myMat, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), f);
+    setMaterial(&myMat, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), 0, f);
     Triangle *triangle;
     triangle = (Triangle *)malloc(sizeof(Triangle) * 1196);
     // Now begin object writing
