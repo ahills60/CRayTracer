@@ -28,10 +28,10 @@ Vector lgrey = int2Vector(LIGHT_GREY);
 Vector u, v, w;
 
 printf("Establishing material... ");
-//setMaterial(*matObj, light, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity)
-// setMaterial(&myMat, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), m, f);
-setMaterial(&myMat, lightSrc, lgrey, fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.2), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
-//setMaterial(&bgMat, lightSrc, int2Vector(BLUE), fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), m, f);
+//setMaterial(*matObj, light, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, int textureIdx)
+// setMaterial(&myMat, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), -1, m, f);
+setMaterial(&myMat, lightSrc, lgrey, fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.2), fp_Flt2FP(0.0), fp_Flt2FP(1.4), -1, m, f);
+//setMaterial(&bgMat, lightSrc, int2Vector(BLUE), fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), -1, m, f);
 printf("Done.\n");
 
 //createPlaneXZ(&bgObj, bgMat, 100 << 16, m, f);
