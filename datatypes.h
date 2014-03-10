@@ -369,9 +369,11 @@ void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m, 
     (*triangle).vmu = vecSub(v, u, m, f);
     (*triangle).wmu = vecSub(w, u, m, f);
     (*triangle).normcrvmuwmu = vecNormalised(cross((*triangle).vmu, (*triangle).wmu, m, f), m, f);
-    (*triangle).uUV = -1;
-    (*triangle).vUV = -1;
-    (*triangle).wUV = -1;
+    UVCoord tempCoord;
+    setUVCoord(&tempCoord, -1, -1);
+    (*triangle).uUV = tempCoord;
+    (*triangle).vUV = tempCoord;
+    (*triangle).wUV = tempCoord;
 }
 
 void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV, UVCoord vUV, UVCoord wUV, MathStat *m, FuncStat *f)
@@ -397,7 +399,7 @@ UVCoord scalarUVMult(fixedp a, UVCoord u)
 }
 
 /* Add two UV coordinates */
-UVCoord uvAdd(fixedp a, fixedp b)
+UVCoord uvAdd(UVCoord a, UVCoord b)
 {
     UVCoord r;
     setUVCoord(&r, a.U + b.U, a.V + b.V);
