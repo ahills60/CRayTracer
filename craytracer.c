@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <omp.h>
 // #include <math.h>
 
 // Fixed point math functions
@@ -149,8 +150,10 @@ int main(int argc, char *argv[])
     initStats(&m);
     initFuncStats(&f);
     
-    
+    #pragma omp parallel private(n)
+    {
     // Now go through every pixel
+    #pragma omp for schedule(dynamic, 1)
     for (i = 0; i < height; i++)
     {
         for (n = 0; n < width; n++)
@@ -164,6 +167,7 @@ int main(int argc, char *argv[])
             setPixel(&image, n, i, outputColour);
 //             printf("Pixel set at row %i and column %i.\n", i, n);
         }
+    }
     }
     printf("Writing image... ");
     writeImageASC(image, filename);
