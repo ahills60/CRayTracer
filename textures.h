@@ -21,7 +21,7 @@ typedef struct Texture
 Texture;
 
 /* Open a texture file */
-void ReadTexture(Texture *texture, char *fileName, FuncStat *f)
+void ReadTexture(Texture *texture, char *fileName, FuncStat *fs)
 {
     int width, height, i, size;
     Vector a;
@@ -36,13 +36,14 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *f)
         fread(buffer, 1, 20, f);
         width = *(buffer + 12) + 256 * *(buffer + 13);
         height = *(buffer + 14) + 256 * *(buffer + 15);
+        printf("Texture dimensions: %d x %d\n", width, height);
         fclose(f);
         size = height * width;
         
         // Now to read the pixel data
         f = fopen(fileName, "rb");
         unsigned char *data = (unsigned char *)malloc(sizeof(unsigned char) * size * 3 + 1024);
-        fread(t, 1, size * 3 + 1024);
+        fread(data, 1, size * 3 + 1024, f);
         fclose(f);
         
         // Convert 8 bits to fixed point
@@ -50,12 +51,12 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *f)
         for (i = 0; i < size; i++)
         {
             // shifting by 8 is equivalent to 256. Note that as 1 starts at bit 16 and char is up to 8 bits, shift by eight to left to align.
-            setVector(&a, ((int)data[i * 3 + 20]) << 8, ((int)data[i * 3 + 19]) << 8, ((int)data[i * 3 + 18]) << 8, f);
+            setVector(&a, ((int)data[i * 3 + 20]) << 8, ((int)data[i * 3 + 19]) << 8, ((int)data[i * 3 + 18]) << 8, fs);
             bitmap[i] = a;
         }
-        (Texture *)texture.width = width;
-        (Texture *)texture.height = height;
-        (Texture *)texture.bitmap = bitmap;
+        (*texture).width = width;
+        (*texture).height = height;
+        (*texture).bitmap = bitmap;
     }
     else
     {
