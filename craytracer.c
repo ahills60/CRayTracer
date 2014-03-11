@@ -24,9 +24,10 @@
 #include "shapes.h"
 #include "rays.h"
 #include "lighting.h"
+#include "textures.h"
 
 // Define the construction instructions
-#include "OFconstruct.h"
+#include "OFconstruct3.h"
 
 // Add math stats
 #include "mathstats.h"
