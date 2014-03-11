@@ -120,6 +120,8 @@ Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f
     
     // Now compute the areas and factors.
     a  = vecLength(cross(triangle.vmu, triangle.wmu, m, f), m, f);
+    if (a == 0)
+        a = 1;
     a1 = fp_div(vecLength(cross(h2, h3, m, f), m, f), a);
     a2 = fp_div(vecLength(cross(h3, h1, m, f), m, f), a);
     a3 = fp_div(vecLength(cross(h1, h2, m, f), m, f), a);
