@@ -78,7 +78,7 @@ void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncStat *f)
 {
     Hit hit;
-    Vector outputColour, reflectiveColour, refractiveColour;
+    Vector outputColour, reflectiveColour, refractiveColour, textureColour;
     fixedp reflection, refraction;
     
     (*f).draw++;
@@ -94,8 +94,14 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
     {
         // There was a hit.
         Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
+        
+        // Determine whether this has a texture or not
+        if (scene.object[hit.objectIndex].material.textureIdx < 0)
+            setVector(&textureColour, -1, -1, -1, f);
+        else
+            textureColour = getColour(Textures[scene.object[hit.objectIndex].material.textureIdx], scene, hit, m, f);
         // outputColour = vecAdd(ambiance(hit, scene, light, m, f), diffusion(hit, scene, light, m, f), m, f);
-        outputColour = vecAdd(ambiance(hit, scene, light, m, f), vecAdd(diffusion(hit, scene, light, lightDirection, m, f), specular(hit, scene, light, lightDirection, m, f), m, f), m, f);
+        outputColour = vecAdd(ambiance(hit, scene, light, textureColour, m, f), vecAdd(diffusion(hit, scene, light, lightDirection, textureColour, m, f), specular(hit, scene, light, lightDirection, textureColour, m, f), m, f), m, f);
         
         // Should we go deeper?
         if (recursion > 0)
