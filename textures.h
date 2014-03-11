@@ -114,15 +114,15 @@ Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f
     triangle = scene.object[hit.objectIndex].triangle[hit.triangleIndex];
     
     // Calculate vectors from hit point
-    h1 = vecSub(triangle.u - hit.location);
-    h2 = vecSub(triangle.v - hit.location);
-    h3 = vecSub(triangle.w - hit.location);
+    h1 = vecSub(triangle.u, hit.location, m, f);
+    h2 = vecSub(triangle.v, hit.location, m, f);
+    h3 = vecSub(triangle.w, hit.location, m, f);
     
     // Now compute the areas and factors.
-    a  = vecLength(cross(triangle.vmu, triangle.wmu));
-    a1 = fp_div(vecLength(cross(h2, h3)), a);
-    a2 = fp_div(vecLength(cross(h3, h1)), a);
-    a3 = fp_div(vecLength(cross(h1, h2)), a);
+    a  = vecLength(cross(triangle.vmu, triangle.wmu, m, f), m, f);
+    a1 = fp_div(vecLength(cross(h2, h3, m, f), m, f), a);
+    a2 = fp_div(vecLength(cross(h3, h1, m, f), m, f), a);
+    a3 = fp_div(vecLength(cross(h1, h2, m, f), m, f), a);
     
     // Now we can get U and V:
     UV = uvAdd(scalarUVMult(a1, triangle.uUV), uvAdd(scalarUVMult(a2, triangle.vUV), scalarUVMult(a3, triangle.wUV)));
