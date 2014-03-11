@@ -37,18 +37,22 @@
 // }
 
 /* Creates ambiance effect given a hit, a scene and some light */
-Vector ambiance(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
+Vector ambiance(Hit hit, Scene scene, Light light, Vector textureColour, MathStat *m, FuncStat *f)
 {
     (*f).ambiance++;
     Vector outputColour;
     
-    outputColour = scene.object[hit.objectIndex].material.compAmbianceColour;
+    // Check to see if there's a texture
+    if (textureColour.x < 0)
+        outputColour = scene.object[hit.objectIndex].material.compAmbianceColour; // No texture. Apply material colour
+    else
+        outputColour = scalarVecMult(scene.object[hit.objectIndex].material.ambiance, textureColour, m, f); // Texture. Apply texture colour
     
     return outputColour;
 }
 
 /* Creates diffusion effect given a hit, a scene and some light */
-Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, MathStat *m, FuncStat *f)
+Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, Vector textureColour, MathStat *m, FuncStat *f)
 {
     (*f).diffusion++;
     Vector outputColour;
@@ -69,14 +73,18 @@ Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, MathS
         
         statMultiplyFlt(m, 1);
         
-        outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
+        // Has a texture been defined?
+        if (textureColour.x < 0)
+            outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f); // No texture defined
+        else
+            outputColour = scalarVecMult(distance, vecMult(textureColour, light.colour, m, f), m, f);
     }
     
     return outputColour;
 }
 
 /* Creates specular effect given a hit, a scene and some light */
-Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, MathStat *m, FuncStat *f)
+Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, Vector textureColour, MathStat *m, FuncStat *f)
 {
     (*f).specular++;
     Vector outputColour;
@@ -98,7 +106,11 @@ Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, MathSt
         statMultiplyFlt(m, 1);
         statPower(m, 1);
     
-        outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f);
+        // Has a texture been defined?
+        if (textureColour.x < 0)
+            outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f); // No texture defined
+        else
+            outputColour = scalarVecMult(distance, vecMult(textureColour, light.colour, m, f), m, f);
     }
     return outputColour;
 }
