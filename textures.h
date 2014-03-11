@@ -10,7 +10,8 @@
 #ifndef TEXTURES_H_
 #define TEXTURES_H_
 
-#include "datatypes.h";
+#include <stdio.h>
+#include "datatypes.h"
 
 typedef struct Texture
 {
