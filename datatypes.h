@@ -192,6 +192,7 @@ fixedp vecLength(Vector u, MathStat *m, FuncStat *f)
 Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
 {
     (*f).vecNormalised++;
+    statMultiplyFlt(m, 3);
     fixedp tempVar = fp_mult(u.x, u.x) + fp_mult(u.y, u.y) + fp_mult(u.z, u.z);
     if (tempVar == 0)
         return u;
@@ -199,7 +200,11 @@ Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
         if (tempVar == 1)
             return scalarVecMult(0x1000000, u, m, f); // Equivalent of 256 as 1 / sqrt(1.52E-5) is 256
         else
-            return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f); // return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f);
+        {
+            statDivideFlt(m, 1);
+            statSqrtFlt(m, 1);
+            return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f);
+        } // return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f);
     /*
     fixedp a = vecLength(u, m, f);
     // Vector w;
@@ -391,18 +396,20 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
 }
 
 /* Multiple a UV coordinate by a scalar value */
-UVCoord scalarUVMult(fixedp a, UVCoord u)
+UVCoord scalarUVMult(fixedp a, UVCoord u, MathStat *m)
 {
     UVCoord r;
     setUVCoord(&r, fp_mult(a, u.U), fp_mult(a, u.V));
+    statMultiplyFlt(m, 2);
     return r;
 }
 
 /* Add two UV coordinates */
-UVCoord uvAdd(UVCoord a, UVCoord b)
+UVCoord uvAdd(UVCoord a, UVCoord b, MathStat *m)
 {
     UVCoord r;
     setUVCoord(&r, a.U + b.U, a.V + b.V);
+    statPlusFlt(m, 2);
     return r;
 }
 

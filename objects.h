@@ -102,6 +102,7 @@ void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambianc
     }
     else
     {
+        statGroupFlt(m, 0, 0, 1, 1);
         (*matObj).inverserefractivity = fp_div(fp_fp1, refractivity);
         (*matObj).squareinverserefractivity = fp_div(fp_fp1, fp_mult(refractivity, refractivity));
     }
@@ -229,12 +230,14 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     // Field of view and aspect ratio
     (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fov >> 1), m, f));
     (*camera).ar = fp_div(fp_Int2FP(width), fp_Int2FP(height));
+    statDivideFlt(m, 1);
     
     // Height and width
     (*camera).width = width;
     (*camera).height = height;
     
     // Compute the coefficients used in creating a ray:
+    statGroupFlt(m, 0, 0, 3, 2);
     (*camera).dfovardw = fp_div(fp_mult(fp_mult(fp_fp2, (*camera).ar), (*camera).fov), fp_Int2FP(width));
     (*camera).fovar = fp_mult((*camera).fov, (*camera).ar);
     (*camera).dfovdh = fp_div((*camera).fov << 1, fp_Int2FP(height));
