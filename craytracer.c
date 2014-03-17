@@ -8,6 +8,7 @@
 #include <string.h>
 #include <omp.h>
 #include <GL/glut.h>
+#include <time.h>
 // #include <math.h>
 
 // Fixed point math functions
@@ -67,6 +68,8 @@ int main(int argc, char *argv[])
 	printf("Version: %i.%i.%i (%s)\n", VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_DATE);
 	printf("Author: Andrew Hills (a.hills@sheffield.ac.uk)\n\n");
     
+    time_t timer = time(NULL);
+    printf("Current timestamp: %s\n", asctime(localtime(&timer)));
     // Initialise stats
     initStats(&m);
     initFuncStats(&f);
