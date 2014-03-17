@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <omp.h>
+#include <GL/glut.h>
 // #include <math.h>
 
 // Fixed point math functions
