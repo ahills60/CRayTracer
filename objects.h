@@ -246,6 +246,17 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     printf("dfovdh: 0x%X\n", (*camera).dfovdh);
 }
 
+void updateCamera(Camera *camera, Vector location, Vector view, MathStat *m, FuncStat *f)
+{
+    // Update view and location
+    (*camera).location = location;
+    (*camera).view = vecNormalised(vecSub(view, location, m, f), m, f);;
+    
+    // Update horizontal and vertical
+    (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
+    (*camera).veritcal = cross((*camera).horizontal, (*camera).view, m, f);
+}
+
 /* Transform object by transformation matrix T */
 void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
 {
