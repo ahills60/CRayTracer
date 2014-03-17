@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
     int width = 1024;
     int height = 768;
     int recursions = 2;
+    int interactive = 0;
 
 	parVal = "";
     filename = "output.ppm";
@@ -88,6 +89,10 @@ int main(int argc, char *argv[])
 			memmove(&currObj[0], &currObj[n], strlen(currObj) - n+1);
 //			printf("after: %s\n", currObj);
 			parVal = currObj;
+            
+            // Check to see if this is an interactive declaration. If so, then set interactive flag:
+            if (strcmp(parVal, "interactive") == 0)
+                interactive = 1;
 		}
 		else
 		{
@@ -119,6 +124,9 @@ int main(int argc, char *argv[])
 	}
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
     
+    if (interactive)
+        printf("Interactive mode enabled.\n\n");
+    
     // Define lighting:
     setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &f);
     setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(4), &f);
@@ -132,6 +140,7 @@ int main(int argc, char *argv[])
     // Camera configuration
     setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &f);
     setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &f);
+    //setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int width, int height, MathStat *m, FuncStat *f)
     setCamera(&camera, cameraLocation, cameraDirection, fp_Int2FP(45), width, height, &m, &f);
     printf("Camera is ready.\n");
     
