@@ -254,7 +254,7 @@ void updateCamera(Camera *camera, Vector location, Vector view, MathStat *m, Fun
     
     // Update horizontal and vertical
     (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
-    (*camera).veritcal = cross((*camera).horizontal, (*camera).view, m, f);
+    (*camera).vertical = cross((*camera).horizontal, (*camera).view, m, f);
 }
 
 /* Transform object by transformation matrix T */
