@@ -11,6 +11,7 @@
 #include <string.h>
 #include "craytracer.h"
 #include "datatypes.h"
+#include "interactive.h"
 
 #define IMG_COMMENT "# This image was generated with the CRayTracer application."
 
@@ -72,6 +73,13 @@ void initialiseImage(Image *img, int width, int height)
     memset((*img).data, 0, sizeof(int) * width * height * 3);
 }
 
+/* Reset the space used to store the image */
+void resetImage(Image *img)
+{
+    // Simply set the memory to 0 based on the intial image setup conditions
+    memset((*img).data, 0, sizeof(int) * (*img).width * (*img).height * 3;
+}
+
 /* Set a pixel for a specific image */
 void setPixel(Image *img, int x, int y, Colour col)
 {
@@ -86,6 +94,7 @@ void setPixel(Image *img, int x, int y, Colour col)
     // Then offset for G and B
     (*img).data[idx + 1] = col.g;
     (*img).data[idx + 2] = col.b;
+    PixelStore[idx / 3] = col.r | (col.g << 8) | (col.b << 16);
 }
 
 /* Function to output image in PPM ASCII format (P3) */
