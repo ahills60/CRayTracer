@@ -23,13 +23,17 @@ void initialisePixelStore(int width, int height)
     PixelStore = (unsigned int *)malloc(sizeof(unsigned int) * width * height);
     // Finally wipe this space
     memset(PixelStore, 0, sizeof(unsigned int) * width * height);
+    
+    // Store the size into the global variable
+    ScreenWidth = width;
+    ScreenHeight = height;
 }
 
 /* Quick function to wipe the pixel store */
 void clearPixelStore()
 {
     // A simple wipe of the memory location.
-    memset(PixelStore, 0, sizeof(unsigned int) * width * height);
+    memset(PixelStore, 0, sizeof(unsigned int) * ScreenWidth * ScreenHeight);
 }
 
 /* Function to define window resizing */
@@ -51,6 +55,8 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
     {
         case 'Q':
         case 'q':
+            free(PixelStore);
+            exit(0);
             break;
         default:
             break;
@@ -70,23 +76,25 @@ void specialFunc(int key, int x, int y)
 /* Function to handle what's displayed within the window */
 void displayFunc(void)
 {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glRasterPos2i(0, 0);
     
+    // Display the contents of the pixel store to the screen
+    glDrawPixels(ScreenWidth, ScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE, &PixelStore[0]);
+    
+    glutSwapBuffers();
 }
 
 /* Function to initialise GLUT window and output */
-void initialiseGLUT(int width, int height)
+void initialiseGLUT(int argc, char *argv[])
 {
-    glutInitWindowSize(width, height);
-    
-    // Store the size into the global variable
-    ScreenWidth = width;
-    ScreenHeight = height;
+    glutInitWindowSize(ScreenWidth, ScreenHeight);
     
     // Back to window setup
-    glutInitWindowsPosition(0, 0);
+    glutInitWindowPosition(0, 0);
     glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE);
     
-    glutInit();
+    glutInit(&argc, argv);
     
     glutCreateWindow("CRayTracer Visualiser");
     
@@ -96,9 +104,9 @@ void initialiseGLUT(int width, int height)
     glutSpecialFunc(specialFunc);
     glutReshapeFunc(reshapeFunc);
     
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, ScreenWidth, ScreenHeight);
     glLoadIdentity();
-    glOrtho(0.0, width - 1.0, 0.0, height - 1.0, -1.0, 1.0);
+    glOrtho(0.0, ScreenWidth - 1.0, 0.0, ScreenHeight - 1.0, -1.0, 1.0);
 }
 
 #endif
