@@ -6,17 +6,16 @@
  *      Author: andrew
  */
 
+#ifndef IMAGE_H_
+#define IMAGE_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "craytracer.h"
 #include "datatypes.h"
 #include "interactive.h"
-
 #define IMG_COMMENT "# This image was generated with the CRayTracer application."
-
-#ifndef IMAGE_H_
-#define IMAGE_H_
 
 /* Define a container for an image */
 typedef struct Image
@@ -94,7 +93,7 @@ void setPixel(Image *img, int x, int y, Colour col)
     // Then offset for G and B
     (*img).data[idx + 1] = col.g;
     (*img).data[idx + 2] = col.b;
-    PixelStore[idx / 3] = col.r | (col.g << 8) | (col.b << 16);
+    PixelStore[y * width + x] = col.r | (col.g << 8) | (col.b << 16);
 }
 
 /* Function to output image in PPM ASCII format (P3) */
