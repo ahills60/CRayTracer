@@ -9,6 +9,7 @@
 #include <omp.h>
 #include <GL/glut.h>
 #include <time.h>
+#include <pthread.h>
 // #include <math.h>
 
 // Fixed point math functions
@@ -45,6 +46,38 @@ Camera PrimaryCamera;
 Image PrimaryImage;
 MathStat PrimaryM;
 FuncStat PrimaryF;
+int PrimaryRecursions;
+int TerminateFlag;
+int ForceRedraw;
+
+pthread_t drawing_thread;
+
+void *PixelDraw(void* null)
+{
+    int i, n;
+    Colour outputColour;
+    Ray ray;
+    do
+    {
+        // Reset the redraw flag as this counts as a redraw
+        ForceRedraw = 0;
+        for (i = 0; i < ScreenHeight && !ForceRedraw; i++)
+        {
+            for (n = 0; n < ScreenWidth && !ForceRedraw; n++)
+            {
+    //             printf("Drawing pixel at row %i and column %i:\n", i, n);
+    //             printf("Creating ray... ");
+                ray = createRay(n, i, PrimaryCamera, &PrimaryM, &PrimaryF);
+    //             printf("Created.\nStarting to draw... ");
+                outputColour = vec2Colour(draw(ray, PrimaryScene, PrimaryLight, PrimaryRecursions, &PrimaryM, &PrimaryF));
+    //             printf("Draw complete.\nSetting pixel... ");
+                setPixel(&PrimaryImage, n, i, outputColour);
+    //             printf("Pixel set at row %i and column %i.\n", i, n);
+            }
+        }
+    } while (!TerminateFlag);
+    return NULL;
+}
 
 
 int main(int argc, char *argv[])
@@ -54,14 +87,16 @@ int main(int argc, char *argv[])
 	char *parVal;
 	int i, n, a;
     Vector lightColour, lightLocation, cameraLocation, cameraDirection;
-    Ray ray;
-    Colour outputColour;
     char *filename;
 
     int width = 1024;
     int height = 768;
-    int recursions = 2;
     int interactive = 0;
+    void *status;
+    
+    ForceRedraw = 0;
+    TerminateFlag = 1;
+    PrimaryRecursions = 2;
 
 	parVal = "";
     filename = "output.ppm";
@@ -116,7 +151,7 @@ int main(int argc, char *argv[])
 					else
 					{
                         if (strcmp(parVal, "recursions") == 0)
-                            recursions = (atoi(currObj) < 0) ? 2 : atoi(currObj);
+                            PrimaryRecursions = (atoi(currObj) < 0) ? 2 : atoi(currObj);
                         else
                         {
                             if (strcmp(parVal, "filename") == 0)
@@ -130,6 +165,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
+    printf("Recursions to compute: %i\n\n", PrimaryRecursions);
     
     if (interactive)
         printf("Interactive mode enabled.\n\n");
@@ -166,36 +202,33 @@ int main(int argc, char *argv[])
     printf("Integer Operations:\n");
     printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n\n", PrimaryM.plusInt, PrimaryM.subtractInt, PrimaryM.multiplyInt, PrimaryM.divideInt);
     
-    // Now load interactive modules if enabled
-    if (interactive)
-    {
-        initialiseGLUT(argc, argv);
-        glutMainLoop();
-    }
-    
     // Now reset the stats
     initStats(&PrimaryM);
     initFuncStats(&PrimaryF);
     
-    #pragma omp parallel private(n)
+    // Now load interactive modules if enabled
+    if (interactive)
     {
-    // Now go through every pixel
-    #pragma omp for schedule(dynamic, 1)
-    for (i = 0; i < height; i++)
-    {
-        for (n = 0; n < width; n++)
-        {
-//             printf("Drawing pixel at row %i and column %i:\n", i, n);
-//             printf("Creating ray... ");
-            ray = createRay(n, i, PrimaryCamera, &PrimaryM, &PrimaryF);
-//             printf("Created.\nStarting to draw... ");
-            outputColour = vec2Colour(draw(ray, PrimaryScene, PrimaryLight, recursions, &PrimaryM, &PrimaryF));
-//             printf("Draw complete.\nSetting pixel... ");
-            setPixel(&PrimaryImage, n, i, outputColour);
-//             printf("Pixel set at row %i and column %i.\n", i, n);
-        }
+        printf("Starting interactive session...\n");
+        initialiseGLUT(argc, argv);
+        TerminateFlag = 0;
     }
-    }
+    
+    // Spawn a thread for drawing
+    pthread_create(&drawing_thread, NULL, PixelDraw, 0);
+    
+    // The following are loops that will hold for as long as needed.
+    if (interactive)
+        glutMainLoop();
+    else
+        pthread_join(drawing_thread, &status);
+    
+    // #pragma omp parallel private(n)
+    // {
+    // // Now go through every pixel
+    // #pragma omp for schedule(dynamic, 1)
+    // 
+    // }
     printf("Writing image... ");
     writeImageASC(PrimaryImage, filename);
     printf("Complete.\nResetting scene...");
