@@ -152,12 +152,23 @@ int main(int argc, char *argv[])
     initialiseImage(&image, width, height);
     printf("Image is initialised.\n");
     
+    // Initialise pixel store
+    initialisePixelStore(width, height);
+    printf("Pixel store is initialised.\n");
+    
     printf("Initialisation Stats:\n\n");
     printf("Floating Point Operations:\n");
     printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n", m.plusFlt, m.subtractFlt, m.multiplyFlt, m.divideFlt);
     printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt: %lld\n", m.cosine, m.sine, m.power, m.sqrtFlt);
     printf("Integer Operations:\n");
     printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n\n", m.plusInt, m.subtractInt, m.multiplyInt, m.divideInt);
+    
+    // Now load interactive modules if enabled
+    if (interactive)
+    {
+        initialiseGLUT(argc, argv);
+        glutMainLoop();
+    }
     
     // Now reset the stats
     initStats(&m);
