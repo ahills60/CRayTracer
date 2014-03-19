@@ -77,7 +77,7 @@ void initialiseImage(Image *img, int width, int height)
 void resetImage(Image *img)
 {
     // Simply set the memory to 0 based on the intial image setup conditions
-    memset((*img).data, 0, sizeof(int) * (*img).width * (*img).height * 3;
+    memset((*img).data, 0, sizeof(int) * (*img).width * (*img).height * 3);
 }
 
 /* Set a pixel for a specific image */
