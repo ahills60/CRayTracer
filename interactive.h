@@ -10,11 +10,20 @@
 #ifndef _INTERACTIVE_H_
 #define _INTERACTIVE_H_
 
+#define MOVE_INCREMENT  0x1 // Equivalent to 0.001
+
 #include <GL/glut.h>
+#include "objects.h"
 
 // Make a variable for storing pixels accessible to all functions
 unsigned int *PixelStore;
 unsigned int ScreenWidth, ScreenHeight;
+
+extern Camera PrimaryCamera;
+extern MathStat PrimaryM;
+extern FuncStat PrimaryF;
+extern int TerminateFlag;
+extern int ForceRedraw;
 
 /* Initialise pixel store */
 void initialisePixelStore(int width, int height)
@@ -44,7 +53,8 @@ void reshapeFunc(int newWidth, int newHeight)
 }
 
 /* Function to define idle time tasks */
-void idleFunc(void){
+void idleFunc(void)
+{
     glutPostRedisplay();
 }
 
@@ -55,7 +65,6 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
     {
         case 'Q':
         case 'q':
-            free(PixelStore);
             exit(0);
             break;
         default:
@@ -66,11 +75,29 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
 /* Function to handle special key input */
 void specialFunc(int key, int x, int y)
 {
+    Vector cameraLocation = PrimaryCamera.location;
+    Vector cameraView = PrimaryCamera.view;
+    
     switch(key)
     {
+        case GLUT_KEY_UP:
+            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z + MOVE_INCREMENT, &PrimaryF);
+            break;
+        case GLUT_KEY_DOWN:
+            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z - MOVE_INCREMENT, &PrimaryF);
+            break;
+        case GLUT_KEY_LEFT:
+            setVector(&cameraLocation, cameraLocation.x - MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            break;
+        case GLUT_KEY_RIGHT:
+            setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            break;
         default:
             break;
     }
+    updateCamera(&PrimaryCamera, cameraLocation, cameraView, &PrimaryM, &PrimaryF);
+    // Now force a scene redraw
+    ForceRedraw = 1;
 }
 
 /* Function to handle what's displayed within the window */
