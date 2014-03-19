@@ -38,22 +38,25 @@
 // Add function stats
 #include "funcstats.h"
 
+// Add global variables
+Scene PrimaryScene;
+Light PrimaryLight;
+Camera PrimaryCamera;
+Image PrimaryImage;
+MathStat PrimaryM;
+FuncStat PrimaryF;
+
+
 int main(int argc, char *argv[])
 {
-    Scene scene;
-    Light light;
-    Camera camera;
 	char *currObj;
 	int isParam;
 	char *parVal;
 	int i, n, a;
     Vector lightColour, lightLocation, cameraLocation, cameraDirection;
-    Image image;
     Ray ray;
     Colour outputColour;
     char *filename;
-    MathStat m;
-    FuncStat f;
 
     int width = 1024;
     int height = 768;
@@ -71,8 +74,8 @@ int main(int argc, char *argv[])
     time_t timer = time(NULL);
     printf("Current timestamp: %s\n", asctime(localtime(&timer)));
     // Initialise stats
-    initStats(&m);
-    initFuncStats(&f);
+    initStats(&PrimaryM);
+    initFuncStats(&PrimaryF);
     
 	for (i = 1; i<argc; i++)
 	{
@@ -132,24 +135,24 @@ int main(int argc, char *argv[])
         printf("Interactive mode enabled.\n\n");
     
     // Define lighting:
-    setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &f);
-    setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(4), &f);
-    setLight(&light, lightLocation, lightColour, fp_Flt2FP(0.3), &f);
+    setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &PrimaryF);
+    setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(4), &PrimaryF);
+    setLight(&PrimaryLight, lightLocation, lightColour, fp_Flt2FP(0.3), &PrimaryF);
     printf("Lighting defined.\n");
     
     // Build scene
-    populateScene(&scene, light, &m, &f);
+    populateScene(&PrimaryScene, PrimaryLight, &PrimaryM, &PrimaryF);
     printf("Scene initialised.\n");
     
     // Camera configuration
-    setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &f);
-    setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &f);
+    setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &PrimaryF);
+    setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
     //setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int width, int height, MathStat *m, FuncStat *f)
-    setCamera(&camera, cameraLocation, cameraDirection, fp_Int2FP(45), width, height, &m, &f);
+    setCamera(&PrimaryCamera, cameraLocation, cameraDirection, fp_Int2FP(45), width, height, &PrimaryM, &PrimaryF);
     printf("Camera is ready.\n");
     
     // Configure image
-    initialiseImage(&image, width, height);
+    initialiseImage(&PrimaryImage, width, height);
     printf("Image is initialised.\n");
     
     // Initialise pixel store
@@ -158,10 +161,10 @@ int main(int argc, char *argv[])
     
     printf("Initialisation Stats:\n\n");
     printf("Floating Point Operations:\n");
-    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n", m.plusFlt, m.subtractFlt, m.multiplyFlt, m.divideFlt);
-    printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt: %lld\n", m.cosine, m.sine, m.power, m.sqrtFlt);
+    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n", PrimaryM.plusFlt, PrimaryM.subtractFlt, PrimaryM.multiplyFlt, PrimaryM.divideFlt);
+    printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt: %lld\n", PrimaryM.cosine, PrimaryM.sine, PrimaryM.power, PrimaryM.sqrtFlt);
     printf("Integer Operations:\n");
-    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n\n", m.plusInt, m.subtractInt, m.multiplyInt, m.divideInt);
+    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n\n", PrimaryM.plusInt, PrimaryM.subtractInt, PrimaryM.multiplyInt, PrimaryM.divideInt);
     
     // Now load interactive modules if enabled
     if (interactive)
@@ -171,8 +174,8 @@ int main(int argc, char *argv[])
     }
     
     // Now reset the stats
-    initStats(&m);
-    initFuncStats(&f);
+    initStats(&PrimaryM);
+    initFuncStats(&PrimaryF);
     
     #pragma omp parallel private(n)
     {
@@ -184,76 +187,76 @@ int main(int argc, char *argv[])
         {
 //             printf("Drawing pixel at row %i and column %i:\n", i, n);
 //             printf("Creating ray... ");
-            ray = createRay(n, i, camera, &m, &f);
+            ray = createRay(n, i, PrimaryCamera, &PrimaryM, &PrimaryF);
 //             printf("Created.\nStarting to draw... ");
-            outputColour = vec2Colour(draw(ray, scene, light, recursions, &m, &f));
+            outputColour = vec2Colour(draw(ray, PrimaryScene, PrimaryLight, recursions, &PrimaryM, &PrimaryF));
 //             printf("Draw complete.\nSetting pixel... ");
-            setPixel(&image, n, i, outputColour);
+            setPixel(&PrimaryImage, n, i, outputColour);
 //             printf("Pixel set at row %i and column %i.\n", i, n);
         }
     }
     }
     printf("Writing image... ");
-    writeImageASC(image, filename);
+    writeImageASC(PrimaryImage, filename);
     printf("Complete.\nResetting scene...");
-    resetScene(&scene, &f);
+    resetScene(&PrimaryScene, &PrimaryF);
     printf("Complete.\n\n");
     
     printf("Stats:\n\n");
     printf("Floating Point Operations:\n");
-    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n", m.plusFlt, m.subtractFlt, m.multiplyFlt, m.divideFlt);
-    printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt: %lld\n", m.cosine, m.sine, m.power, m.sqrtFlt);
+    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n", PrimaryM.plusFlt, PrimaryM.subtractFlt, PrimaryM.multiplyFlt, PrimaryM.divideFlt);
+    printf("Cos: %lld\tSin: %lld\tPow: %lld\tSqrt: %lld\n", PrimaryM.cosine, PrimaryM.sine, PrimaryM.power, PrimaryM.sqrtFlt);
     printf("Integer Operations:\n");
-    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n\n", m.plusInt, m.subtractInt, m.multiplyInt, m.divideInt);
+    printf("+: %lld\t-: %lld\t*: %lld\t/: %lld\n\n", PrimaryM.plusInt, PrimaryM.subtractInt, PrimaryM.multiplyInt, PrimaryM.divideInt);
     
     
     
     printf("Function stats:\n\n");
-    printf("setVector: %lld\n", f.setVector);
-    printf("setMatrix: %lld\n", f.setMatrix);
-    printf("deg2rad: %lld\n", f.deg2rad);
-    printf("vecMult: %lld\n", f.vecMult);
-    printf("dot: %lld\n", f.dot);
-    printf("cross: %lld\n", f.cross);
-    printf("scalarVecMult: %lld\n", f.scalarVecMult);
-    printf("scalarVecDiv: %lld\n", f.scalarVecDiv);
-    printf("vecAdd: %lld\n", f.vecAdd);
-    printf("vecSub: %lld\n", f.vecSub);
-    printf("negVec: %lld\n", f.negVec);
-    printf("vecLength: %lld\n", f.vecLength);
-    printf("vecNormalised: %lld\n", f.vecNormalised);
-    printf("matVecMult: %lld\n", f.matVecMult);
-    printf("matMult: %lld\n", f.matMult);
-    printf("genIdentMat: %lld\n", f.genIdentMat);
-    printf("genXRotateMat: %lld\n", f.genXRotateMat);
-    printf("genYRotateMat: %lld\n", f.genYRotateMat);
-    printf("genZRotateMat: %lld\n", f.genZRotateMat);
-    printf("getRotateMatrix: %lld\n", f.getRotateMatrix);
-    printf("genTransMatrix: %lld\n", f.genTransMatrix);
-    printf("genScaleMatrix: %lld\n", f.genScaleMatrix);
-    printf("setTriangle: %lld\n", f.setTriangle);
-    printf("ambiance: %lld\n", f.ambiance);
-    printf("diffusion: %lld\n", f.diffusion);
-    printf("specular: %lld\n", f.specular);
-    printf("setMaterial: %lld\n", f.setMaterial);
-    printf("setObject: %lld\n", f.setObject);
-    printf("initialiseScene: %lld\n", f.initialiseScene);
-    printf("getTriangleTotal: %lld\n", f.getTriangleTotal);
-    printf("addObject: %lld\n", f.addObject);
-    printf("deleteObject: %lld\n", f.deleteObject);
-    printf("resetScene: %lld\n", f.resetScene);
-    printf("setLight: %lld\n", f.setLight);
-    printf("setCamera: %lld\n", f.setCamera);
-    printf("transformObject: %lld\n", f.transformObject);
-    printf("setRay: %lld\n", f.setRay);
-    printf("createRay: %lld\n", f.createRay);
-    printf("triangleIntersection: %lld\n", f.triangleIntersection);
-    printf("objectIntersection: %lld\n", f.objectIntersection);
-    printf("sceneIntersection: %lld\n", f.sceneIntersection);
-    printf("traceShadow: %lld\n", f.traceShadow);
-    printf("reflectRay: %lld\n", f.reflectRay);
-    printf("refractRay: %lld\n", f.refractRay);
-    printf("draw: %lld\n", f.draw);
+    printf("setVector: %lld\n", PrimaryF.setVector);
+    printf("setMatrix: %lld\n", PrimaryF.setMatrix);
+    printf("deg2rad: %lld\n", PrimaryF.deg2rad);
+    printf("vecMult: %lld\n", PrimaryF.vecMult);
+    printf("dot: %lld\n", PrimaryF.dot);
+    printf("cross: %lld\n", PrimaryF.cross);
+    printf("scalarVecMult: %lld\n", PrimaryF.scalarVecMult);
+    printf("scalarVecDiv: %lld\n", PrimaryF.scalarVecDiv);
+    printf("vecAdd: %lld\n", PrimaryF.vecAdd);
+    printf("vecSub: %lld\n", PrimaryF.vecSub);
+    printf("negVec: %lld\n", PrimaryF.negVec);
+    printf("vecLength: %lld\n", PrimaryF.vecLength);
+    printf("vecNormalised: %lld\n", PrimaryF.vecNormalised);
+    printf("matVecMult: %lld\n", PrimaryF.matVecMult);
+    printf("matMult: %lld\n", PrimaryF.matMult);
+    printf("genIdentMat: %lld\n", PrimaryF.genIdentMat);
+    printf("genXRotateMat: %lld\n", PrimaryF.genXRotateMat);
+    printf("genYRotateMat: %lld\n", PrimaryF.genYRotateMat);
+    printf("genZRotateMat: %lld\n", PrimaryF.genZRotateMat);
+    printf("getRotateMatrix: %lld\n", PrimaryF.getRotateMatrix);
+    printf("genTransMatrix: %lld\n", PrimaryF.genTransMatrix);
+    printf("genScaleMatrix: %lld\n", PrimaryF.genScaleMatrix);
+    printf("setTriangle: %lld\n", PrimaryF.setTriangle);
+    printf("ambiance: %lld\n", PrimaryF.ambiance);
+    printf("diffusion: %lld\n", PrimaryF.diffusion);
+    printf("specular: %lld\n", PrimaryF.specular);
+    printf("setMaterial: %lld\n", PrimaryF.setMaterial);
+    printf("setObject: %lld\n", PrimaryF.setObject);
+    printf("initialiseScene: %lld\n", PrimaryF.initialiseScene);
+    printf("getTriangleTotal: %lld\n", PrimaryF.getTriangleTotal);
+    printf("addObject: %lld\n", PrimaryF.addObject);
+    printf("deleteObject: %lld\n", PrimaryF.deleteObject);
+    printf("resetScene: %lld\n", PrimaryF.resetScene);
+    printf("setLight: %lld\n", PrimaryF.setLight);
+    printf("setCamera: %lld\n", PrimaryF.setCamera);
+    printf("transformObject: %lld\n", PrimaryF.transformObject);
+    printf("setRay: %lld\n", PrimaryF.setRay);
+    printf("createRay: %lld\n", PrimaryF.createRay);
+    printf("triangleIntersection: %lld\n", PrimaryF.triangleIntersection);
+    printf("objectIntersection: %lld\n", PrimaryF.objectIntersection);
+    printf("sceneIntersection: %lld\n", PrimaryF.sceneIntersection);
+    printf("traceShadow: %lld\n", PrimaryF.traceShadow);
+    printf("reflectRay: %lld\n", PrimaryF.reflectRay);
+    printf("refractRay: %lld\n", PrimaryF.refractRay);
+    printf("draw: %lld\n", PrimaryF.draw);
     
 	// Exit cleanly
 	return 0;
