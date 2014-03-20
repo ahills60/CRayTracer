@@ -72,6 +72,7 @@ Light;
 typedef struct Camera
 {
     Vector location;            // Location of camera
+    Vector preview;             // Pre-normalised view vector
     Vector view;                // View unit vector
     Vector horizontal;          // Horizontal unit vector
     Vector vertical;             // Vertical unit vector
@@ -219,6 +220,7 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     
     // Location and Normalised view
     (*camera).location = location;
+    (*camera).preview = view;
     viewNorm = vecNormalised(vecSub(view, location, m, f), m, f);
     (*camera).view = viewNorm;
     
@@ -250,7 +252,8 @@ void updateCamera(Camera *camera, Vector location, Vector view, MathStat *m, Fun
 {
     // Update view and location
     (*camera).location = location;
-    (*camera).view = vecNormalised(vecSub(view, location, m, f), m, f);;
+    (*camera).preview = view;
+    (*camera).view = vecNormalised(vecSub(view, location, m, f), m, f);
     
     // Update horizontal and vertical
     (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
