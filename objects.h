@@ -243,9 +243,9 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     (*camera).dfovardw = fp_div(fp_mult(fp_mult(fp_fp2, (*camera).ar), (*camera).fov), fp_Int2FP(width));
     (*camera).fovar = fp_mult((*camera).fov, (*camera).ar);
     (*camera).dfovdh = fp_div((*camera).fov << 1, fp_Int2FP(height));
-    printf("dfovardw: 0x%X\n", (*camera).dfovardw);
-    printf("fovar: 0x%X\n", (*camera).fovar);
-    printf("dfovdh: 0x%X\n", (*camera).dfovdh);
+    // printf("dfovardw: 0x%X\n", (*camera).dfovardw);
+    // printf("fovar: 0x%X\n", (*camera).fovar);
+    // printf("dfovdh: 0x%X\n", (*camera).dfovdh);
 }
 
 void updateCamera(Camera *camera, Vector location, Vector view, MathStat *m, FuncStat *f)
