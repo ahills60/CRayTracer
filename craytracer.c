@@ -49,6 +49,8 @@ FuncStat PrimaryF;
 int PrimaryRecursions;
 int TerminateFlag;
 int ForceRedraw;
+fixedp CameraAngleTheta;
+fixedp CameraAnglePhi;
 
 pthread_t drawing_thread;
 
@@ -182,7 +184,11 @@ int main(int argc, char *argv[])
     
     // Camera configuration
     setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &PrimaryF);
-    setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
+    // setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
+    CameraAngleTheta = 0x0002F2A7;
+    CameraAnglePhi = 0xFFFE6DE0;    
+    setVector(&cameraDirection, 0, 0xFFFFCEB6, 0xFFFF04CA, &PrimaryF);
+    
     //setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int width, int height, MathStat *m, FuncStat *f)
     setCamera(&PrimaryCamera, cameraLocation, cameraDirection, fp_Int2FP(45), width, height, &PrimaryM, &PrimaryF);
     printf("Camera is ready.\n");
