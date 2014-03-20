@@ -92,12 +92,12 @@ void specialFunc(int key, int x, int y)
             setVector(&cameraView, cameraView.x, cameraView.y, cameraView.z + MOVE_INCREMENT, &PrimaryF);
             break;
         case GLUT_KEY_LEFT:
-            setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
-            setVector(&cameraView, cameraView.x + MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
-            break;
-        case GLUT_KEY_RIGHT:
             setVector(&cameraLocation, cameraLocation.x - MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
             setVector(&cameraView, cameraView.x - MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
+            break;
+        case GLUT_KEY_RIGHT:
+            setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            setVector(&cameraView, cameraView.x + MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
             break;
         default:
             break;

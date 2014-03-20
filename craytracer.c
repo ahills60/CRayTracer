@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
     // Now load interactive modules if enabled
     if (interactive)
     {
-        printf("Starting interactive session...\n");
+        printf("Starting interactive session...\n\n");
         initialiseGLUT(argc, argv);
         TerminateFlag = 0;
     }
