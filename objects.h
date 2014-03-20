@@ -260,6 +260,32 @@ void updateCamera(Camera *camera, Vector location, Vector view, MathStat *m, Fun
     (*camera).vertical = cross((*camera).horizontal, (*camera).view, m, f);
 }
 
+void updateCameraPosition(Camera *camera, Vector location, FuncStat *f)
+{
+    (*camera).location = location;
+}
+
+void updateCameraView(Camera *camera, Vector view, MathStat *m, FuncStat *f)
+{
+    (*camera).preview = view;
+    (*camera).view = view;
+    
+    // Update horizontal and vertical
+    (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
+    (*camera).vertical = cross((*camera).horizontal, (*camera).view, m, f);
+}
+
+void updateCameraAngle(Camera *camera, fixedp theta, fixedp phi, MathStat *m, FuncStat *f)
+{
+    fixedp sintheta = fp_sin(theta);
+    Vector a;
+    setVector(&a, fp_mult(sintheta, fp_cos(phi)), fp_mult(sintheta, fp_sin(phi)), fp_cos(theta), f);
+    (*camera).view = a;
+    // Update horizontal and vertical
+    (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
+    (*camera).vertical = cross((*camera).horizontal, (*camera).view, m, f);
+}
+
 /* Transform object by transformation matrix T */
 void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
 {
