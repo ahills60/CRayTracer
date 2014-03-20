@@ -10,7 +10,7 @@
 #ifndef _INTERACTIVE_H_
 #define _INTERACTIVE_H_
 
-#define MOVE_INCREMENT  0x1 // Equivalent to 0.001
+#define MOVE_INCREMENT  0x8000 // Equivalent to 0.5
 
 #include <GL/glut.h>
 #include "objects.h"
