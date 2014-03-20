@@ -11,6 +11,7 @@
 #define _INTERACTIVE_H_
 
 #define MOVE_INCREMENT  0x8000 // Equivalent to 0.5
+#define PAN_INCREMENT   0x1657 // Equivalent to 5 degrees
 
 #include <GL/glut.h>
 #include "objects.h"
@@ -24,6 +25,8 @@ extern MathStat PrimaryM;
 extern FuncStat PrimaryF;
 extern int TerminateFlag;
 extern int ForceRedraw;
+extern fixedp CameraAngleTheta;
+extern fixedp CameraAnglePhi;
 
 /* Initialise pixel store */
 void initialisePixelStore(int width, int height)
@@ -76,7 +79,6 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
 void specialFunc(int key, int x, int y)
 {
     Vector cameraLocation = PrimaryCamera.location;
-    Vector cameraView = PrimaryCamera.preview;
     
     // printf("Camera location: 0x%X, 0x%X, 0x%X\n", cameraLocation.x, cameraLocation.y, cameraLocation.z);
     // printf("Camera view: 0x%X, 0x%X, 0x%X\n", cameraView.x, cameraView.y, cameraView.z);
@@ -85,24 +87,39 @@ void specialFunc(int key, int x, int y)
     {
         case GLUT_KEY_UP:
             setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z - MOVE_INCREMENT, &PrimaryF);
-            setVector(&cameraView, cameraView.x, cameraView.y, cameraView.z - MOVE_INCREMENT, &PrimaryF);
+            updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
             break;
         case GLUT_KEY_DOWN:
             setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z + MOVE_INCREMENT, &PrimaryF);
-            setVector(&cameraView, cameraView.x, cameraView.y, cameraView.z + MOVE_INCREMENT, &PrimaryF);
+            updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
             break;
         case GLUT_KEY_LEFT:
             setVector(&cameraLocation, cameraLocation.x - MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
-            setVector(&cameraView, cameraView.x - MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
+            updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
             break;
         case GLUT_KEY_RIGHT:
             setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
-            setVector(&cameraView, cameraView.x + MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
+            updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
+            break;
+        case GLUT_KEY_PAGE_UP:
+            CameraAngleTheta += PAN_INCREMENT;
+            updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
+            break;
+        case GLUT_KEY_PAGE_DOWN:
+            CameraAngleTheta -= PAN_INCREMENT;
+            updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
+            break;
+        case GLUT_KEY_HOME:
+            CameraAnglePhi += PAN_INCREMENT;
+            updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
+            break;
+        case GLUT_KEY_END:
+            CameraAnglePhi -= PAN_INCREMENT;
+            updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
             break;
         default:
             break;
     }
-    updateCamera(&PrimaryCamera, cameraLocation, cameraView, &PrimaryM, &PrimaryF);
     // Now force a scene redraw
     ForceRedraw = 1;
 }
