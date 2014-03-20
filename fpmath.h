@@ -29,6 +29,14 @@ typedef int32 fixedp;
 #define MAX_VAL 0x7FFFFFFF;
 #define MIN_VAL 0x80000000;
 
+// Sine and cosine defines
+#define FP_CONST_B   83443      // A = 4 / pi
+#define FP_CONST_C  -26561      // B = -4 / pi * pi
+#define FP_CONST_Q   14746      // P = 0.225 or 0.775
+#define FP_PI       205887      // pi
+#define FP_2PI      411775      // 2 * pi
+#define FP_PI_2     102944      // pi / 2
+
 // Lookup tables
 int LOOKUP_EXP1[24] = {
     65536, 108051, 178145, 293712, 484249, 798392, 1316326, 2170254, 
@@ -397,4 +405,32 @@ fixedp fp_sqrti(fixedp a)
     return (fixedp) root;
 }
 */
+
+/* Fixed point sine */
+fixedp fp_sin(fixedp a)
+{
+    // Ensure input within the range of -pi to pi
+    a -= (a > FP_PI) * FP_2PI;
+    
+    if (a > FP_PI)
+        printf("Sine function out of range: 0x%X\n", a);
+    if (a < -FP_PI)
+        printf("Sine function out of range: 0x%X\n", a);
+    
+    // Use fast sine parabola approximation
+    fixedp output = (fp_mult(FP_CONST_B, a)) + (fp_mult((fp_mult(FP_CONST_C, a)), fp_fabs(a)));
+    
+    // Get extra precision weighting the parabola:
+    output = (fp_mult(FP_CONST_Q, (fp_mult(output, fp_fabs(output))) - output)) + output; // Q * output + P * output * abs(output)
+    return output;
+}
+
+
+/* Fixed point cosine */
+fixedp fp_cos(fixedp a)
+{
+    // Use the sine function
+    return fp_sin(a + FP_PI_2);
+}
+
 #endif
