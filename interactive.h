@@ -76,21 +76,28 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
 void specialFunc(int key, int x, int y)
 {
     Vector cameraLocation = PrimaryCamera.location;
-    Vector cameraView = PrimaryCamera.view;
+    Vector cameraView = PrimaryCamera.preview;
+    
+    // printf("Camera location: 0x%X, 0x%X, 0x%X\n", cameraLocation.x, cameraLocation.y, cameraLocation.z);
+    // printf("Camera view: 0x%X, 0x%X, 0x%X\n", cameraView.x, cameraView.y, cameraView.z);
     
     switch(key)
     {
         case GLUT_KEY_UP:
-            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z + MOVE_INCREMENT, &PrimaryF);
+            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z - MOVE_INCREMENT, &PrimaryF);
+            setVector(&cameraView, cameraView.x, cameraView.y, cameraView.z - MOVE_INCREMENT, &PrimaryF);
             break;
         case GLUT_KEY_DOWN:
-            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z - MOVE_INCREMENT, &PrimaryF);
+            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y, cameraLocation.z + MOVE_INCREMENT, &PrimaryF);
+            setVector(&cameraView, cameraView.x, cameraView.y, cameraView.z + MOVE_INCREMENT, &PrimaryF);
             break;
         case GLUT_KEY_LEFT:
-            setVector(&cameraLocation, cameraLocation.x - MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            setVector(&cameraView, cameraView.x + MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
             break;
         case GLUT_KEY_RIGHT:
-            setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            setVector(&cameraLocation, cameraLocation.x - MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
+            setVector(&cameraView, cameraView.x - MOVE_INCREMENT, cameraView.y, cameraView.z, &PrimaryF);
             break;
         default:
             break;
