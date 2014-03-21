@@ -187,7 +187,8 @@ int main(int argc, char *argv[])
     // setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
     CameraAngleTheta = 0x0002F2A7;
     CameraAnglePhi = 0xFFFE6DE0;    
-    setVector(&cameraDirection, 0, 0xFFFFCEB6, 0xFFFF04CA, &PrimaryF);
+    // setVector(&cameraDirection, 0, 0xFFFFCEB6, 0xFFFF04CA, &PrimaryF);
+    setVector(&cameraDirection, fp_mult(fp_sin(CameraAngleTheta), fp_cos(CameraAnglePhi)), fp_mult(fp_sin(CameraAngleTheta), fp_sin(CameraAnglePhi)), fp_cos(CameraAngleTheta), &PrimaryF);
     
     //setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int width, int height, MathStat *m, FuncStat *f)
     setCamera(&PrimaryCamera, cameraLocation, cameraDirection, fp_Int2FP(45), width, height, &PrimaryM, &PrimaryF);
