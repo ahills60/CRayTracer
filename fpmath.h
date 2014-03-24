@@ -410,7 +410,11 @@ fixedp fp_sqrti(fixedp a)
 fixedp fp_sin(fixedp a)
 {
     // Ensure input within the range of -pi to pi
+    // printf("Original: 0x%X, %f\n", a, fp_FP2Flt(a) * 180. / 3.141592653589793238);
     a -= (a > FP_PI) * FP_2PI;
+    // printf("  Step 1: 0x%X, %f\n", a, fp_FP2Flt(a) * 180. / 3.141592653589793238);
+    a += (a < -FP_PI) * FP_2PI;
+    // printf("  Step 2: 0x%X, %f\n", a, fp_FP2Flt(a) * 180. / 3.141592653589793238);
     
     if (a > FP_PI)
         printf("Sine function out of range: 0x%X\n", a);
@@ -422,6 +426,9 @@ fixedp fp_sin(fixedp a)
     
     // Get extra precision weighting the parabola:
     output = (fp_mult(FP_CONST_Q, (fp_mult(output, fp_fabs(output))) - output)) + output; // Q * output + P * output * abs(output)
+    
+    // printf("  Output: %f\n", fp_FP2Flt(output));
+    
     return output;
 }
 
@@ -429,6 +436,8 @@ fixedp fp_sin(fixedp a)
 /* Fixed point cosine */
 fixedp fp_cos(fixedp a)
 {
+    a -= (a > FP_PI) * FP_2PI;
+    a += (a < -FP_PI) * FP_2PI;
     // Use the sine function
     return fp_sin(a + FP_PI_2);
 }
