@@ -126,13 +126,13 @@ void specialFunc(int key, int x, int y)
             CameraAngleTheta += (CameraAngleTheta < -FP_PI) * FP_2PI;
             updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
             break;
-        case GLUT_KEY_HOME:
+        case GLUT_KEY_END:
             CameraAnglePhi += PAN_INCREMENT;
             CameraAnglePhi -= (CameraAnglePhi > FP_PI) * FP_2PI;
             CameraAnglePhi += (CameraAnglePhi < -FP_PI) * FP_2PI;
             updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
             break;
-        case GLUT_KEY_END:
+        case GLUT_KEY_HOME:
             CameraAnglePhi -= PAN_INCREMENT;
             CameraAnglePhi -= (CameraAnglePhi > FP_PI) * FP_2PI;
             CameraAnglePhi += (CameraAnglePhi < -FP_PI) * FP_2PI;
