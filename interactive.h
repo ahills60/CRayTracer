@@ -101,13 +101,13 @@ void specialFunc(int key, int x, int y)
             setVector(&cameraLocation, cameraLocation.x + MOVE_INCREMENT, cameraLocation.y, cameraLocation.z, &PrimaryF);
             updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
             break;
-        case GLUT_KEY_PAGE_UP:
+        case GLUT_KEY_PAGE_DOWN:
             CameraAngleTheta += PAN_INCREMENT;
             CameraAngleTheta -= (CameraAngleTheta > FP_PI) * FP_2PI;
             CameraAngleTheta += (CameraAngleTheta < -FP_PI) * FP_2PI;
             updateCameraAngle(&PrimaryCamera, CameraAngleTheta, CameraAnglePhi, &PrimaryM, &PrimaryF);
             break;
-        case GLUT_KEY_PAGE_DOWN:
+        case GLUT_KEY_PAGE_UP:
             CameraAngleTheta -= PAN_INCREMENT;
             CameraAngleTheta -= (CameraAngleTheta > FP_PI) * FP_2PI;
             CameraAngleTheta += (CameraAngleTheta < -FP_PI) * FP_2PI;
@@ -128,6 +128,7 @@ void specialFunc(int key, int x, int y)
         default:
             break;
     }
+    // printf("Theta: 0x%X (%f)\tPhi: 0x%X (%f)\n", CameraAngleTheta, fp_FP2Flt(CameraAngleTheta), CameraAnglePhi, fp_FP2Flt(CameraAnglePhi));
     // Now force a scene redraw
     ForceRedraw = 1;
 }
