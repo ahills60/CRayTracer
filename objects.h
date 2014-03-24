@@ -72,7 +72,7 @@ Light;
 typedef struct Camera
 {
     Vector location;            // Location of camera
-    Vector preview;             // Pre-normalised view vector
+//    Vector preview;             // Pre-normalised view vector
     Vector view;                // View unit vector
     Vector horizontal;          // Horizontal unit vector
     Vector vertical;             // Vertical unit vector
@@ -210,7 +210,7 @@ void setLight(Light *light, Vector location, Vector colour, fixedp shadowFactor,
 /* Set a camera */
 void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int width, int height, MathStat *m, FuncStat *f)
 {
-    Vector up, viewNorm, horizontal;
+    Vector up, horizontal;
     
     (*f).setCamera++;
     
@@ -220,14 +220,12 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     
     // Location and Normalised view
     (*camera).location = location;
-    (*camera).preview = view;
-    viewNorm = vecNormalised(vecSub(view, location, m, f), m, f);
-    (*camera).view = viewNorm;
+    (*camera).view = view; //viewNorm;
     
     // Set horizontal and vertical
-    horizontal = cross(viewNorm, up, m, f);
+    horizontal = cross((*camera).view, up, m, f);
     (*camera).horizontal = horizontal;
-    (*camera).vertical = cross(horizontal, viewNorm, m, f);
+    (*camera).vertical = cross(horizontal, (*camera).view, m, f);
     
     // Field of view and aspect ratio
     (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fov >> 1), m, f));
@@ -252,8 +250,7 @@ void updateCamera(Camera *camera, Vector location, Vector view, MathStat *m, Fun
 {
     // Update view and location
     (*camera).location = location;
-    (*camera).preview = view;
-    (*camera).view = vecNormalised(vecSub(view, location, m, f), m, f);
+    (*camera).view = view; //vecNormalised(vecSub(view, location, m, f), m, f);
     
     // Update horizontal and vertical
     (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
@@ -267,7 +264,6 @@ void updateCameraPosition(Camera *camera, Vector location, FuncStat *f)
 
 void updateCameraView(Camera *camera, Vector view, MathStat *m, FuncStat *f)
 {
-    (*camera).preview = view;
     (*camera).view = view;
     
     // Update horizontal and vertical
