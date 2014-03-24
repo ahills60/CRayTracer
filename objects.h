@@ -279,9 +279,11 @@ void updateCameraAngle(Camera *camera, fixedp theta, fixedp phi, MathStat *m, Fu
 {
     fixedp sintheta = fp_sin(theta);
     Vector a;
-    setVector(&a, fp_mult(sintheta, fp_cos(phi)), fp_mult(sintheta, fp_sin(phi)), fp_cos(theta), f);
+    setVector(&a, fp_mult(sintheta, fp_cos(phi)), fp_cos(theta), fp_mult(sintheta, fp_sin(phi)), f);
+    // setVector(&a, fp_mult(sintheta, fp_cos(phi)), fp_mult(sintheta, fp_sin(phi)), fp_cos(theta), f);
+    // printf("X: %f, Y: %f, Z: %f\n", fp_FP2Flt(a.x), fp_FP2Flt(a.y), fp_FP2Flt(a.z));
     (*camera).view = a;
-    // Update horizontal and vertical
+    // // Update horizontal and vertical
     (*camera).horizontal = cross((*camera).view, (*camera).up, m, f);
     (*camera).vertical = cross((*camera).horizontal, (*camera).view, m, f);
 }
