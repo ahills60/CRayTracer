@@ -64,11 +64,24 @@ void idleFunc(void)
 /* Function to take control of user input elements */
 void keyboardFunc(unsigned char key, int xmouse, int ymouse)
 {
+    Vector cameraLocation = PrimaryCamera.location;
     switch(key)
     {
         case 'Q':
         case 'q':
             exit(0);
+            break;
+        case '+':
+            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y + MOVE_INCREMENT, cameraLocation.z, &PrimaryF);
+            updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
+            // Now force a scene redraw
+            ForceRedraw = 1;
+            break;
+        case '-':
+            setVector(&cameraLocation, cameraLocation.x, cameraLocation.y - MOVE_INCREMENT, cameraLocation.z, &PrimaryF);
+            updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
+            // Now force a scene redraw
+            ForceRedraw = 1;
             break;
         default:
             break;
