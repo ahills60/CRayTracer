@@ -20,6 +20,15 @@
 unsigned int *PixelStore;
 unsigned int ScreenWidth, ScreenHeight;
 
+// Info flag
+int DisplayInfo;
+
+// Used for printing to screen
+int PrintLoc;
+
+// Text buffer:
+char ScreenText[256];
+
 extern Camera PrimaryCamera;
 extern MathStat PrimaryM;
 extern FuncStat PrimaryF;
@@ -67,6 +76,11 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
     Vector cameraLocation = PrimaryCamera.location;
     switch(key)
     {
+        case 'i':
+        case 'I':
+            // Display information
+            DisplayInfo = !DisplayInfo;
+            break;
         case 'Q':
         case 'q':
             exit(0);
@@ -146,6 +160,22 @@ void specialFunc(int key, int x, int y)
     ForceRedraw = 1;
 }
 
+static void printToScreen(int inset, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsprintf(ScreenText, format, args);
+    va_end(args);
+    
+    glRasterPos2i(inset, PrintLoc);
+    int i;
+    
+    for (i = 0; i < strlen(ScreenText); i++)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ScreenText[i]);
+    
+    PrintLoc -= 20;
+}
+
 /* Function to handle what's displayed within the window */
 void displayFunc(void)
 {
@@ -155,12 +185,37 @@ void displayFunc(void)
     // Display the contents of the pixel store to the screen
     glDrawPixels(ScreenWidth, ScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE, &PixelStore[0]);
     
+    if (DisplayInfo)
+    {
+        // Display the information on screen:
+        glPushMatrix();
+        glLoadIdentity();
+        glOrtho(0, ScreenWidth, 0, ScreenHeight, -1.0, 1.0);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glColor4f(0.0, 0.0, 0.0, 0.7);
+        glRecti(5, PrintLoc, 340, ScreenHeight - 5);
+        glColor3f(1.0, 1.0, 1.0);
+        PrintLoc = ScreenHeight - 30;
+        
+        printToScreen(10, "CRayTracer Visualiser Version %i.%i.%i (%s)", VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_DATE);
+        printToScreen(10, " ");
+        printToScreen(10, "Camera information:");
+        printToScreen(10, "*******************");
+        printToScreen(10, "Theta: %f\tPhi: %f", (fp_FP2Flt(CameraAngleTheta) * 180. / 3.141592653589793238), (fp_FP2Flt(CameraAnglePhi) * 180. / 3.141592653589793238));
+        printToScreen(10, "x: %f\ty: %f\tz: %f", fp_FP2Flt(PrimaryCamera.location.x), fp_FP2Flt(PrimaryCamera.location.y), fp_FP2Flt(PrimaryCamera.location.z));
+        
+        glDisable(GL_BLEND);
+        glPopMatrix();
+    }
+    
     glutSwapBuffers();
 }
 
 /* Function to initialise GLUT window and output */
 void initialiseGLUT(int argc, char *argv[])
 {
+    DisplayInfo = 0;
     glutInitWindowSize(ScreenWidth, ScreenHeight);
     
     // Back to window setup
