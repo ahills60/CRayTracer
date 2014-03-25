@@ -48,36 +48,44 @@ MathStat PrimaryM;
 FuncStat PrimaryF;
 int PrimaryRecursions;
 int TerminateFlag;
-int ForceRedraw;
+int ForceRedraw[MAXTHREADS];
 fixedp CameraAngleTheta;
 fixedp CameraAnglePhi;
 
-pthread_t drawing_thread;
+pthread_t drawing_thread[MAXTHREADS];
 
-void *PixelDraw(void* null)
+void *PixelDraw(void* inputPar)
 {
-    int i, n;
+    int i, offset;
     Colour outputColour;
     Ray ray;
+    
+    
+    offset = *((int *) inputPar);
+    printf("Thread created with offset %i.\n", offset);
+    
+    int noPixels = ScreenHeight * ScreenWidth;
+    int currX = 0, currY = 0;
+    
     do
     {
         // Reset the redraw flag as this counts as a redraw
-        ForceRedraw = 0;
-        for (i = 0; i < ScreenHeight && !ForceRedraw; i++)
+        ForceRedraw[offset] = 0;
+        for (i = offset; i < noPixels && !ForceRedraw[offset]; i += MAXTHREADS)
         {
-            for (n = 0; n < ScreenWidth && !ForceRedraw; n++)
-            {
-    //             printf("Drawing pixel at row %i and column %i:\n", i, n);
-    //             printf("Creating ray... ");
-                ray = createRay(n, i, PrimaryCamera, &PrimaryM, &PrimaryF);
-    //             printf("Created.\nStarting to draw... ");
-                outputColour = vec2Colour(draw(ray, PrimaryScene, PrimaryLight, PrimaryRecursions, &PrimaryM, &PrimaryF));
-    //             printf("Draw complete.\nSetting pixel... ");
-                setPixel(&PrimaryImage, n, i, outputColour);
-    //             printf("Pixel set at row %i and column %i.\n", i, n);
-            }
+            // Decode index
+            currX = i % ScreenWidth;
+            currY = (int) (i / ScreenWidth);
+            
+            // Now create rays
+            ray = createRay(currX, currY, PrimaryCamera, &PrimaryM, &PrimaryF);
+            // Output Colour
+            outputColour = vec2Colour(draw(ray, PrimaryScene, PrimaryLight, PrimaryRecursions, &PrimaryM, &PrimaryF));
+            // Save pixel to output buffer, pausing if currently in use.
+            setPixel(&PrimaryImage, currX, currY, outputColour);
         }
     } while (!TerminateFlag);
+    free(inputPar);
     return NULL;
 }
 
@@ -95,8 +103,10 @@ int main(int argc, char *argv[])
     int height = 768;
     int interactive = 0;
     void *status;
+    int *arg[MAXTHREADS];
     
-    ForceRedraw = 0;
+    // ForceRedraw = 0;
+    memset(ForceRedraw, 0, sizeof(ForceRedraw));
     TerminateFlag = 1;
     PrimaryRecursions = 2;
 
@@ -222,13 +232,19 @@ int main(int argc, char *argv[])
     }
     
     // Spawn a thread for drawing
-    pthread_create(&drawing_thread, NULL, PixelDraw, 0);
+    for (i = 0; i < MAXTHREADS; i++)
+    {
+        arg[i] = (int *)malloc(sizeof(int));
+        *arg[i] = i;
+        pthread_create(&drawing_thread[i], NULL, PixelDraw, (void *) arg[i]);
+    }
     
     // The following are loops that will hold for as long as needed.
     if (interactive)
         glutMainLoop();
     else
-        pthread_join(drawing_thread, &status);
+        for (i = 0; i < MAXTHREADS; i++)
+            pthread_join(drawing_thread[i], &status);
     
     // #pragma omp parallel private(n)
     // {

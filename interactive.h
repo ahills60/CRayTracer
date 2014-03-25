@@ -33,7 +33,7 @@ extern Camera PrimaryCamera;
 extern MathStat PrimaryM;
 extern FuncStat PrimaryF;
 extern int TerminateFlag;
-extern int ForceRedraw;
+extern int ForceRedraw[MAXTHREADS];
 extern fixedp CameraAngleTheta;
 extern fixedp CameraAnglePhi;
 
@@ -89,13 +89,15 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
             setVector(&cameraLocation, cameraLocation.x, cameraLocation.y + MOVE_INCREMENT, cameraLocation.z, &PrimaryF);
             updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
             // Now force a scene redraw
-            ForceRedraw = 1;
+            memset(ForceRedraw, 1, sizeof(ForceRedraw));
+            // ForceRedraw = 1;
             break;
         case '-':
             setVector(&cameraLocation, cameraLocation.x, cameraLocation.y - MOVE_INCREMENT, cameraLocation.z, &PrimaryF);
             updateCameraPosition(&PrimaryCamera, cameraLocation, &PrimaryF);
             // Now force a scene redraw
-            ForceRedraw = 1;
+            memset(ForceRedraw, 1, sizeof(ForceRedraw));
+            // ForceRedraw = 1;
             break;
         default:
             break;
@@ -157,7 +159,8 @@ void specialFunc(int key, int x, int y)
     }
     // printf("Theta: 0x%X (%f)\tPhi: 0x%X (%f)\n", CameraAngleTheta, fp_FP2Flt(CameraAngleTheta), CameraAnglePhi, fp_FP2Flt(CameraAnglePhi));
     // Now force a scene redraw
-    ForceRedraw = 1;
+    // ForceRedraw = 1;
+    memset(ForceRedraw, 1, sizeof(ForceRedraw));
 }
 
 static void printToScreen(int inset, const char *format, ...)
