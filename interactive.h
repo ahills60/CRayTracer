@@ -81,6 +81,11 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
             // Display information
             DisplayInfo = !DisplayInfo;
             break;
+        case 'C':
+        case 'c':
+            clearPixelStore();
+            memset(ForceRedraw, 1, sizeof(ForceRedraw));
+            break;
         case 'Q':
         case 'q':
             exit(0);
