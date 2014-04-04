@@ -25,7 +25,7 @@
 #include "textures.h"
 
 Texture *Textures;
-extern char *inputfile;
+extern char *inputFile;
 
 /* Function to read the byte file */
 void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
@@ -37,13 +37,12 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     UVCoord uUV, vUV, wUV;
     fixedp x, y, z, a, b;
     Triangle *triangle;
-    int i, n, zeroCheck, matIdx, textIdx, noTriangles;
+    Object myObj;
+    int i, n, zeroCheck, matIdx, textIdx, noTriangles, noMaterials, noTextures;
     char *texturefn;
     
     // File initialisation
     fp = fopen(inputFile, "rb");
-    
-    int noMaterials, noTextures, tempSize, zeroCheck;
     
     // Read the number of materials
     fread(&noMaterials, sizeof(noMaterials), 1, fp);
@@ -159,6 +158,7 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         // Now read the next number of triangles value. EOF will raise if this failed.
         fread(&noTriangles, sizeof(int), 1, fp);
     }
+    fclose(fp);
 }
 
 /* The populateScene function calls the ReadByteFile function. This is here mainly
