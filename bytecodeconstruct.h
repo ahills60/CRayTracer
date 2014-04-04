@@ -13,20 +13,160 @@
 
 #include <stdio.h>
 #include "fpmath.h"
+#include "craytracer.h"
+#include "datatypes.h"
+#include "rays.h"
+#include "image.h"
+#include "lighting.h"
+#include "objects.h"
+#include "colours.h"
+#include "mathstats.h"
+#include "funcstats.h"
+#include "textures.h"
 
 Texture *Textures;
+extern char *inputfile;
 
 /* Function to read the byte file */
-void ReadByteFile(void)
+void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
+    // Variable declarations:
+    FILE *fp;
+    Vector lgrey = int2Vector(LIGHT_GREY);
+    Vector u, v, w;
+    UVCoord uUV, vUV, wUV;
+    fixedp x, y, z, a, b;
+    Triangle *triangle;
+    int i, n, zeroCheck, matIdx, textIdx, noTriangles;
+    char *texturefn;
     
+    // File initialisation
+    fp = fopen(inputFile, "rb");
+    
+    int noMaterials, noTextures, tempSize, zeroCheck;
+    
+    // Read the number of materials
+    fread(&noMaterials, sizeof(noMaterials), 1, fp);
+    // Then read the number of textures:
+    fread(&noTextures, sizeof(noTextures), 1, fp);
+    
+    // With this in mind, it's now possible to initialise the textures and materials store.
+    Textures = (Texture *)malloc(sizeof(Texture) * noTextures);
+    // Materials need only be specified here.
+    Material myMat[noMaterials];
+    
+    // Next up: scene initialisation
+    initialiseScene(scene, noMaterials, f);
+    
+    for (i = 0; i < noTextures; i++)
+    {
+        // Read the size of the filename to open
+        fread(&n, sizeof(n), 1, fp);
+        texturefn = (char *)malloc(sizeof(char) * n);
+        fread(&texturefn, sizeof(char) * n, 1, fp);
+        ReadTexture(&Textures[i], texturefn, f);
+        free(texturefn);
+    }
+    fread(&zeroCheck, sizeof(int), 1, fp);
+    if (zeroCheck != 0)
+    {
+        printf("\nError encountered entering filenames. Failed zero check.\n");
+        // Terminate now.
+        exit(-1);
+    }
+    
+    // Everything looks okay. Let's continue to the material and indexing structures
+    for (i = 0; i < noMaterials; i++)
+    {
+        // Read the material index and then read the texture index
+        fread(&matIdx, sizeof(int), 1, fp);
+        fread(&textIdx, sizeof(int), 1, fp);
+        
+        // Now create a material:
+        setMaterial(&myMat[matIdx], lightSrc, lgrey, fp_Flt2FP(1.0), 0, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.2), 0, fp_Flt2FP(1.4), textIdx, m, f);
+    }
+    // Once agian, do a zero check:
+    fread(&zeroCheck, sizeof(int), 1, fp);
+    if (zeroCheck != 0)
+    {
+        printf("\nError encountered pairing materials with textures. Failed zero check.\n");
+        // Terminate now:
+        exit(-2);
+    }
+    
+    // Next step is to go through triangles
+    fread(&noTriangles, sizeof(int), 1, fp);
+    // Whilst the EOF flag isn't raised:
+    while(!feof(fp))
+    {
+        triangle = (Triangle *)malloc(sizeof(Triangle) * noTriangles);
+        for (i = 0; i < noTriangles; i++)
+        {
+            // Vector Values
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            // UV coords
+            fread(&a, sizeof(fixedp), 1, fp);
+            fread(&b, sizeof(fixedp), 1, fp);
+            
+            // Add to vector:
+            setVector(&u, x, y, z, f);
+            setUVCoord(&uUV, a, b);
+            
+            // Vector Values
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            // UV coords
+            fread(&a, sizeof(fixedp), 1, fp);
+            fread(&b, sizeof(fixedp), 1, fp);
+            
+            // Add to vector:
+            setVector(&v, x, y, z, f);
+            setUVCoord(&vUV, a, b);
+            
+            // Vector Values
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            // UV coords
+            fread(&a, sizeof(fixedp), 1, fp);
+            fread(&b, sizeof(fixedp), 1, fp);
+            
+            // Add to vector:
+            setVector(&w, x, y, z, f);
+            setUVCoord(&wUV, a, b);
+            
+            // Now commit this to a triangle
+            setUVTriangle(&triangle[i], u, v, w, uUV, vUV, wUV, m, f);
+        }
+        // Triangles are now added. Read the associated material index
+        fread(&matIdx, sizeof(int), 1, fp);
+        setObject(&myObj, myMat[matIdx], noTriangles, triangle, f);
+        addObject(scene, myObj, f);
+        // Now free up the space
+        free(triangle);
+        
+        // Finally do a zero check
+        fread(&zeroCheck, sizeof(int), 1, fp);
+        if (zeroCheck != 0)
+        {
+            printf("\nError encountered pairing triangle points with UV values. Failed zero check.\n");
+            // Terminate now:
+            exit(-3);
+        }
+        // Now read the next number of triangles value. EOF will raise if this failed.
+        fread(&noTriangles, sizeof(int), 1, fp);
+    }
 }
 
 /* The populateScene function calls the ReadByteFile function. This is here mainly
    for compatibility with older generations of the OFconstruct header file.        */
 void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
-    
+    // Pass all inputs to the byte file reader.
+    ReadByteFile(scene, lightSrc, m, f);
 }
 
 /* And then the standard draw function that's been previously constructed */
