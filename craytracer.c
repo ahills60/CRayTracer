@@ -31,7 +31,8 @@
 #include "textures.h"
 
 // Define the construction instructions
-#include "OFconstruct4.h"
+#include "bytecodeconstruct.h"
+// #include "OFconstruct4.h"
 
 // Add math stats
 #include "mathstats.h"
