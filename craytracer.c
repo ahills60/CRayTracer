@@ -51,6 +51,7 @@ int TerminateFlag;
 int ForceRedraw[MAXTHREADS];
 fixedp CameraAngleTheta;
 fixedp CameraAnglePhi;
+char *inputFile;
 
 pthread_t drawing_thread[MAXTHREADS];
 
@@ -169,7 +170,12 @@ int main(int argc, char *argv[])
                             if (strcmp(parVal, "filename") == 0)
                                 filename = currObj;
                             else
-                                printf("Unrecognised input \"%s\"\n", parVal);
+                            {
+                                if (strcmp(parVal, "input") == 0)
+                                    inputFile = currObj;
+                                else
+                                    printf("Unrecognised input \"%s\"\n", parVal);
+                            }
                         }
                     }
 				}
