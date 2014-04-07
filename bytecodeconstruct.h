@@ -42,6 +42,8 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     char *texturefn;
     
     // File initialisation
+    printf("\nReading world \"%s\"...\n", inputFile);
+    
     fp = fopen(inputFile, "rb");
     
     // Read the number of materials
@@ -49,23 +51,42 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     // Then read the number of textures:
     fread(&noTextures, sizeof(noTextures), 1, fp);
     
+    printf("Total materials: %i\nTotal textures: %i\n", noMaterials, noTextures);
+    
+    printf("Initialising variables...\n");
     // With this in mind, it's now possible to initialise the textures and materials store.
     Textures = (Texture *)malloc(sizeof(Texture) * noTextures);
     // Materials need only be specified here.
     Material myMat[noMaterials];
     
+    printf("Initialising scene with %i objects...\n", noMaterials);
     // Next up: scene initialisation
     initialiseScene(scene, noMaterials, f);
     
+    printf("Reading textures...\n");
     for (i = 0; i < noTextures; i++)
     {
         // Read the size of the filename to open
+        // printf("Reading texture %i...\n", i);
         fread(&n, sizeof(n), 1, fp);
-        texturefn = (char *)malloc(sizeof(char) * n);
-        fread(&texturefn, sizeof(char) * n, 1, fp);
+        // printf("Reserving space for character... ");
+        texturefn = (char *)malloc(sizeof(char) * (n + 1));
+        memset(texturefn, 0, sizeof(char) * (n + 1));
+        // printf("Space reserved (%i)\nReading texture filename...\n", n);
+        // The variable texturefn is a pointer. Pass the pointer directly.
+        fread(texturefn, sizeof(char), n, fp);
+        // printf("Attempting to read \"%s\"", texturefn);
+        if (strcmp(texturefn, "terrain.tga") != 0)
+        {
+            memcpy(texturefn, texturefn + 12, 36);
+            memset(texturefn + 36, 0, sizeof(char) * 12);
+        }
         ReadTexture(&Textures[i], texturefn, f);
+        // printf("Texture read. Freeing memory.\n");
         free(texturefn);
+        // printf("Memory freed.\n");
     }
+    printf("Complete.\n");
     fread(&zeroCheck, sizeof(int), 1, fp);
     if (zeroCheck != 0)
     {
@@ -109,6 +130,10 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
             
+            x >>= 1;
+            y >>= 1;
+            z >>= 1;
+            
             // Add to vector:
             setVector(&u, x, y, z, f);
             setUVCoord(&uUV, a, b);
@@ -120,6 +145,10 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             // UV coords
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
+            
+            x >>= 1;
+            y >>= 1;
+            z >>= 1;
             
             // Add to vector:
             setVector(&v, x, y, z, f);
@@ -133,6 +162,10 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
             
+            x >>= 1;
+            y >>= 1;
+            z >>= 1;
+            
             // Add to vector:
             setVector(&w, x, y, z, f);
             setUVCoord(&wUV, a, b);
@@ -145,7 +178,7 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         setObject(&myObj, myMat[matIdx], noTriangles, triangle, f);
         addObject(scene, myObj, f);
         // Now free up the space
-        free(triangle);
+        // free(triangle);
         
         // Finally do a zero check
         fread(&zeroCheck, sizeof(int), 1, fp);
