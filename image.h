@@ -94,6 +94,7 @@ void setPixel(Image *img, int x, int y, Colour col)
     (*img).data[idx + 1] = col.g;
     (*img).data[idx + 2] = col.b;
     PixelStore[y * width + x] = col.r | (col.g << 8) | (col.b << 16);
+    ActivityStore[y * width + x] = 0 | 255 << 8 | 0 << 16 | 255 << 24;
 }
 
 /* Function to output image in PPM ASCII format (P3) */

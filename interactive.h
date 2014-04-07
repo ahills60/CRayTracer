@@ -19,9 +19,11 @@
 // Make a variable for storing pixels accessible to all functions
 unsigned int *PixelStore;
 unsigned int ScreenWidth, ScreenHeight;
+unsigned int *ActivityStore;
 
 // Info flag
 int DisplayInfo;
+int DisplayActivity;
 
 // Used for printing to screen
 int PrintLoc;
@@ -42,8 +44,10 @@ void initialisePixelStore(int width, int height)
 {
     // Ensure we have enough memory to store pixel information
     PixelStore = (unsigned int *)malloc(sizeof(unsigned int) * width * height);
+    ActivityStore = (unsigned int *)malloc(sizeof(unsigned int) * width * height);
     // Finally wipe this space
     memset(PixelStore, 0, sizeof(unsigned int) * width * height);
+    memset(ActivityStore, 0, sizeof(unsigned int) * width * height);
     
     // Store the size into the global variable
     ScreenWidth = width;
@@ -70,12 +74,32 @@ void idleFunc(void)
     glutPostRedisplay();
 }
 
+/* Function to fade activity pixels */
+void fadeActivity(void)
+{
+    int i, a;
+    for (i = 0; i < ScreenHeight * ScreenWidth; i++)
+    {
+        a = ActivityStore[i] >> 24;
+        a--;
+        // Ensure a is within bounds
+        a = (a < 0) ? 0 : a;
+        ActivityStore[i] = 0 | 255 << 8 | 0 << 16 | a << 24;
+    }
+}
+
+
 /* Function to take control of user input elements */
 void keyboardFunc(unsigned char key, int xmouse, int ymouse)
 {
     Vector cameraLocation = PrimaryCamera.location;
     switch(key)
     {
+        case 'a':
+        case 'A':
+            // Display activity
+            DisplayActivity = !DisplayActivity;
+            break;
         case 'i':
         case 'I':
             // Display information
@@ -193,6 +217,16 @@ void displayFunc(void)
     // Display the contents of the pixel store to the screen
     glDrawPixels(ScreenWidth, ScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE, &PixelStore[0]);
     
+    // Display activity if requested:
+    if (DisplayActivity)
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDrawPixels(ScreenWidth, ScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE, &ActivityStore[0]);
+        glDisable(GL_BLEND);
+        fadeActivity();
+    }
+    
     if (DisplayInfo)
     {
         // Display the information on screen:
@@ -224,6 +258,7 @@ void displayFunc(void)
 void initialiseGLUT(int argc, char *argv[])
 {
     DisplayInfo = 0;
+    DisplayActivity = 0;
     glutInitWindowSize(ScreenWidth, ScreenHeight);
     
     // Back to window setup
