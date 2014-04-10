@@ -57,6 +57,9 @@ typedef struct Triangle
     UVCoord uUV;
     UVCoord vUV;
     UVCoord wUV;
+    int DominantAxisIdx;    // The dominant axis index
+    Vector veclist[3];      // Used to hold uvw. This gets along with the dominant axis index.
+    UVCoord uvlist[3];      // Used to hold UV components. THis gets along with the dominant axis index.
 }
 Triangle;
 
