@@ -23,6 +23,10 @@
 // Add function stats
 #include "funcstats.h"
 
+// To help determine which element of vector to take based on the most dominant index.
+// This saves on computing modulo itself.
+int DomMod[5] = {0, 1, 2, 0, 1};
+
 /* Define a ray */
 typedef struct Ray
 {
@@ -77,8 +81,60 @@ Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 }
 
 /* Compute the intersection of a triangle */
-fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f)
+fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, MathStat *m, FuncStat *f)
 {
+    int ku, kv;
+    fixedp dk, du, dv, ok, ou, ov, denom, dist, beta, gamma, hu, hv, au, av;
+    
+    // Firstly get the correct axes and offset using modulus array:
+    ku = DomMod[triangle.DominantAxisIdx + 1];
+    kv = DomMod[triangle.DominantAxisIdx + 2];
+    
+    // Now take the correct components for destination
+    dk = (triangle.DominantAxisIdx == 0) ? ray.destination.x : (triangle.DominantAxisIdx == 1) ? ray.destination.y : ray.destination.z;
+    du = (ku == 0) ? ray.destination.x : (ku == 1) ? ray.destination.y : ray.destination.z;
+    dv = (kv == 0) ? ray.destination.x : (kv == 1) ? ray.destination.y : ray.destination.z;
+    // then the same for the source
+    ok = (triangle.DominantAxisIdx == 0) ? ray.source.x : (triangle.DominantAxisIdx == 1) ? ray.source.y : ray.source.z;
+    ou = (ku == 0) ? ray.source.x : (ku == 1) ? ray.source.y : ray.source.z;
+    ov = (kv == 0) ? ray.source.x : (kv == 1) ? ray.source.y : ray.source.z;
+    
+    // Compute demoninator:
+    denom = dk + fp_mult(triangle.NUDom, du) + fp_mult(triangle.NVDom, dv);
+    dist = fp_div(triangle.NDDom - ok - fp_mult(triangle.NUDom, ou) - fp_mult(triangle.NVDom, ov), denom);
+    
+    // Early exit if the computed distances is greater than what we've already encountered
+    // and if it's not a valid distance.
+    if (!(CurDist > dist && dist > 0))
+        return 0;
+    
+    // Extract points from primary vector:
+    au = (ku == 0) ? triangle.u.x : (ku == 1) ? triangle.u.y : triangle.u.z;
+    av = (kv == 0) ? triangle.u.x : (kv == 1) ? triangle.u.y : triangle.u.z;
+    
+    // Continue calculating intersections.
+    hu = ou + fp_mult(dist, du) - au;
+    hv = ov + fp_mult(dist, dv) - av;
+    beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.bvDom);
+    
+    // If this is negative, early exit
+    if (beta < 0)
+        return 0;
+    
+    gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
+    // Then exit if this is also negative
+    if (gamma < 0)
+        return 0;
+    
+    // And exit if they add up to something greater than 1:
+    if ((gamma + beta) > 1)
+        return 0;
+    
+    // If here, it looks like we have an intersection.
+    return dist;
+    
+    
+    /*
     fixedp intersection, a, b, c, tempVar, arecip;
     Vector edge1, edge2, u, v, w;
     int bitshift1 = 0, bitshift2 = 0, bitshift3 = 0, bitdiff = 0, bitdiff2 = 0, biteval, biteval2;
@@ -308,6 +364,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, MathStat *m, FuncStat *f
         return intersection;
     else
         return 0;
+    */
 }
 
 /* Go through the triangles within an object and find one that intersects with this ray */
@@ -325,7 +382,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
     for (n = 0; n < object.noTriangles; n++)
     {
         statPlusInt(m, 1); // For the loop
-        intersectionPoint = triangleIntersection(ray, object.triangle[n], m, f);
+        intersectionPoint = triangleIntersection(ray, object.triangle[n], nearestIntersection, m, f);
         
         // Determine whether there was an intersection and whether this was
         // the closest intersection to the camera for this object
