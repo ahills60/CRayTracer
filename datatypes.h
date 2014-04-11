@@ -401,7 +401,7 @@ void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m, 
 void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV, UVCoord vUV, UVCoord wUV, MathStat *m, FuncStat *f)
 {
     int uIdx, vIdx;
-    fixedp dk, du, dv, coeff;
+    fixedp dk, du, dv, bu, bv, cu, cv, coeff;
     
     (*f).setTriangle++;
     (*triangle).u = u;
