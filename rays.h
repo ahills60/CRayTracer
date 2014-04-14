@@ -25,7 +25,7 @@
 
 // To help determine which element of vector to take based on the most dominant index.
 // This saves on computing modulo itself.
-int DomMod[5] = {0, 1, 2, 0, 1};
+int DomMod[] = {0, 1, 2, 0, 1};
 
 /* Define a ray */
 typedef struct Ray
@@ -103,6 +103,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     
     // Compute demoninator:
     denom = dk + fp_mult(triangle.NUDom, du) + fp_mult(triangle.NVDom, dv);
+    denom = (denom == 0) ? fp_fp1 : denom;
     dist = fp_div(triangle.NDDom - ok - fp_mult(triangle.NUDom, ou) - fp_mult(triangle.NVDom, ov), denom);
     
     // Early exit if the computed distances is greater than what we've already encountered
@@ -129,7 +130,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
         return 0;
     
     // And exit if they add up to something greater than 1:
-    if ((gamma + beta) > 1)
+    if ((gamma + beta) > fp_fp1)
         return 0;
     
     *Mu = beta;
