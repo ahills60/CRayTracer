@@ -91,13 +91,13 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, MathStat
     kv = DomMod[triangle.DominantAxisIdx + 2];
     
     // Now take the correct components for destination
-    dk = (triangle.DominantAxisIdx == 0) ? ray.destination.x : (triangle.DominantAxisIdx == 1) ? ray.destination.y : ray.destination.z;
-    du = (ku == 0) ? ray.destination.x : (ku == 1) ? ray.destination.y : ray.destination.z;
-    dv = (kv == 0) ? ray.destination.x : (kv == 1) ? ray.destination.y : ray.destination.z;
+    dk = (triangle.DominantAxisIdx == 0) ? ray.direction.x : ((triangle.DominantAxisIdx == 1) ? ray.direction.y : ray.direction.z);
+    du = (ku == 0) ? ray.direction.x : ((ku == 1) ? ray.direction.y : ray.direction.z);
+    dv = (kv == 0) ? ray.direction.x : ((kv == 1) ? ray.direction.y : ray.direction.z);
     // then the same for the source
-    ok = (triangle.DominantAxisIdx == 0) ? ray.source.x : (triangle.DominantAxisIdx == 1) ? ray.source.y : ray.source.z;
-    ou = (ku == 0) ? ray.source.x : (ku == 1) ? ray.source.y : ray.source.z;
-    ov = (kv == 0) ? ray.source.x : (kv == 1) ? ray.source.y : ray.source.z;
+    ok = (triangle.DominantAxisIdx == 0) ? ray.source.x : ((triangle.DominantAxisIdx == 1) ? ray.source.y : ray.source.z);
+    ou = (ku == 0) ? ray.source.x : ((ku == 1) ? ray.source.y : ray.source.z);
+    ov = (kv == 0) ? ray.source.x : ((kv == 1) ? ray.source.y : ray.source.z);
     
     // Compute demoninator:
     denom = dk + fp_mult(triangle.NUDom, du) + fp_mult(triangle.NVDom, dv);
@@ -109,8 +109,8 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, MathStat
         return 0;
     
     // Extract points from primary vector:
-    au = (ku == 0) ? triangle.u.x : (ku == 1) ? triangle.u.y : triangle.u.z;
-    av = (kv == 0) ? triangle.u.x : (kv == 1) ? triangle.u.y : triangle.u.z;
+    au = (ku == 0) ? triangle.u.x : ((ku == 1) ? triangle.u.y : triangle.u.z);
+    av = (kv == 0) ? triangle.u.x : ((kv == 1) ? triangle.u.y : triangle.u.z);
     
     // Continue calculating intersections.
     hu = ou + fp_mult(dist, du) - au;
