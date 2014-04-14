@@ -116,14 +116,14 @@ Vector getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat
 /* Return a colour based on interpolation of UV coordinates from a hit */
 Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f)
 {
-    fixedp a, a1, a2, a3;
+    // fixedp a, a1, a2, a3;
     Triangle triangle;
-    Vector h1, h2, h3;
+    // Vector h1, h2, h3;
     UVCoord UV;
     
     // Extract the triangle that received the hit.
     triangle = scene.object[hit.objectIndex].triangle[hit.triangleIndex];
-    
+    /*
     // Calculate vectors from hit point
     h1 = vecSub(triangle.u, hit.location, m, f);
     h2 = vecSub(triangle.v, hit.location, m, f);
@@ -140,6 +140,9 @@ Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f
     
     // Now we can get U and V:
     UV = uvAdd(scalarUVMult(a1, triangle.uUV, m), uvAdd(scalarUVMult(a2, triangle.vUV, m), scalarUVMult(a3, triangle.wUV, m), m), m);
+    */
+    
+    UV = uvAdd(triangle.uUV, uvAdd(scalarUVMult(hit.Mu, uvSub(triangle.vUV, triangle.uUV, m), m), scalarUVMult(hit.Mv, uvSub(triangle.wUV, triangle.uUV, m), m), m), m);
     
     return getTexel(texture, UV.U, UV.V, m, f);
 }
