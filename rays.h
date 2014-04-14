@@ -118,7 +118,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     // Continue calculating intersections.
     hu = ou + fp_mult(dist, du) - au;
     hv = ov + fp_mult(dist, dv) - av;
-    beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.bvDom);
+    beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.BVDom);
     
     // If this is negative, early exit
     if (beta < 0)
