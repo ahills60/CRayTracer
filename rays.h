@@ -83,7 +83,7 @@ Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 }
 
 /* Compute the intersection of a triangle */
-fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, MathStat *m, FuncStat *f)
+fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *Mu, fixedp *Mv, MathStat *m, FuncStat *f)
 {
     int ku, kv;
     fixedp dk, du, dv, ok, ou, ov, denom, dist, beta, gamma, hu, hv, au, av;
@@ -131,6 +131,9 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, MathStat
     // And exit if they add up to something greater than 1:
     if ((gamma + beta) > 1)
         return 0;
+    
+    *Mu = beta;
+    *Mv = gamma;
     
     // If here, it looks like we have an intersection.
     return dist;
@@ -372,7 +375,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, MathStat
 /* Go through the triangles within an object and find one that intersects with this ray */
 Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, FuncStat *f)
 {
-    fixedp intersectionPoint, nearestIntersection = FURTHEST_RAY;
+    fixedp Mu, Mv, tempMu, tempMv, intersectionPoint, nearestIntersection = FURTHEST_RAY;
     int n, nearestIdx;
     Hit hit;
     
@@ -384,7 +387,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
     for (n = 0; n < object.noTriangles; n++)
     {
         statPlusInt(m, 1); // For the loop
-        intersectionPoint = triangleIntersection(ray, object.triangle[n], nearestIntersection, m, f);
+        intersectionPoint = triangleIntersection(ray, object.triangle[n], nearestIntersection, &tempMu, &tempMv, m, f);
         
         // Determine whether there was an intersection and whether this was
         // the closest intersection to the camera for this object
@@ -395,6 +398,8 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
             {
                 nearestIdx = n;
                 nearestIntersection = intersectionPoint;
+                Mu = tempMu;
+                Mv = tempMv;
             }
         }
     }
@@ -408,6 +413,8 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
         hit.ray = ray;
         hit.objectIndex = objectIndex;
         hit.distance = nearestIntersection;
+        hit.Mu = Mu;
+        hit.Mv = Mv;
         return hit;
     }
     
@@ -448,6 +455,7 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat
 {
     Ray shadow;
     int n, m;
+    fixedp tempMu, tempMv, tempDist = FURTHEST_RAY;
     
     (*f).traceShadow++;
     
@@ -462,7 +470,7 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat
         {
             statPlusInt(ma, 1); // For the loop
             // Is this significant?
-            if (triangleIntersection(shadow, scene.object[m].triangle[n], ma, f) > 0x1000)
+            if (triangleIntersection(shadow, scene.object[m].triangle[n], tempDist, &tempMu, &tempMv, ma, f) > 0x1000)
                 return light.shadowFactor;
         }
     }
