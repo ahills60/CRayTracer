@@ -58,8 +58,6 @@ typedef struct Triangle
     UVCoord vUV;
     UVCoord wUV;
     int DominantAxisIdx;    // The dominant axis index
-    Vector veclist[3];      // Used to hold uvw. This gets along with the dominant axis index.
-    UVCoord uvlist[3];      // Used to hold UV components. THis gets along with the dominant axis index.
     Vector NormDom;         // Used for the normal.
     fixedp NUDom;
     fixedp NVDom;
@@ -390,12 +388,6 @@ void setTriangle(Triangle *triangle, Vector u, Vector v, Vector w, MathStat *m, 
     (*triangle).uUV = tempCoord;
     (*triangle).vUV = tempCoord;
     (*triangle).wUV = tempCoord;
-    (*triangle).veclist[0] = u;
-    (*triangle).veclist[1] = v;
-    (*triangle).veclist[2] = w;
-    (*triangle).uvlist[0] = tempCoord;
-    (*triangle).uvlist[1] = tempCoord;
-    (*triangle).uvlist[2] = tempCoord;
 }
 
 void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV, UVCoord vUV, UVCoord wUV, MathStat *m, FuncStat *f)
@@ -409,18 +401,11 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
     (*triangle).w = w;
     (*triangle).vmu = vecSub(v, u, m, f);
     (*triangle).wmu = vecSub(w, u, m, f);
-    (*triangle).NormDom = cross((*triangle).vmu, (*triangle).wmu, m, f);
+    (*triangle).NormDom = cross((*triangle).wmu, (*triangle).vmu, m, f);
     (*triangle).normcrvmuwmu = vecNormalised((*triangle).NormDom, m, f);
     (*triangle).uUV = uUV;
     (*triangle).vUV = vUV;
     (*triangle).wUV = wUV;
-    // Now the list form:
-    (*triangle).veclist[0] = u;
-    (*triangle).veclist[1] = v;
-    (*triangle).veclist[2] = w;
-    (*triangle).uvlist[0] = uUV;
-    (*triangle).uvlist[1] = vUV;
-    (*triangle).uvlist[2] = wUV;
     
     // Now compute dominant axes:
     if (fp_fabs((*triangle).NormDom.x) > fp_fabs((*triangle).NormDom.y))
@@ -437,18 +422,18 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
         else
             (*triangle).DominantAxisIdx = 2;
     }
-    uIdx = (k + 1) % 3;
-    vIdx = (k + 2) % 3;
+    uIdx = ((*triangle).DominantAxisIdx + 1) % 3;
+    vIdx = ((*triangle).DominantAxisIdx + 2) % 3;
     
     // This should make calculations easier...
-    dk = ((*triangle).DominantAxisIdx == 1) ? (*triangle).NormDom.y : ((*triangle).DominantAxisIdx) ? (*triangle).NormDom.z : (*triangle).NormDom.x;
-    du = (uIdx == 1) ? (*triangle).NormDom.y : (uIdx == 2) ? (*triangle).NormDom.z : (*triangle).NormDom.x;
-    dv = (vIdx == 1) ? (*triangle).NormDom.y : (vIdx == 2) ? (*triangle).NormDom.z : (*triangle).NormDom.x;
+    dk = ((*triangle).DominantAxisIdx == 1) ? (*triangle).NormDom.y : (((*triangle).DominantAxisIdx == 2) ? (*triangle).NormDom.z : (*triangle).NormDom.x);
+    du = (uIdx == 1) ? (*triangle).NormDom.y : ((uIdx == 2) ? (*triangle).NormDom.z : (*triangle).NormDom.x);
+    dv = (vIdx == 1) ? (*triangle).NormDom.y : ((vIdx == 2) ? (*triangle).NormDom.z : (*triangle).NormDom.x);
     
-    bu = (uIdx == 1) ? (*triangle).wmu.y : (uIdx == 2) ? (*triangle).wmu.z : (*triangle).wmu.x;
-    bv = (vIdx == 1) ? (*triangle).wmu.y : (vIdx == 2) ? (*triangle).wmu.z : (*triangle).wmu.x;
-    cu = (uIdx == 1) ? (*triangle).vmu.y : (uIdx == 2) ? (*triangle).vmu.z : (*triangle).vmu.x;
-    cv = (vIdx == 1) ? (*triangle).vmu.y : (vIdx == 2) ? (*triangle).vmu.z : (*triangle).vmu.x;
+    bu = (uIdx == 1) ? (*triangle).wmu.y : ((uIdx == 2) ? (*triangle).wmu.z : (*triangle).wmu.x);
+    bv = (vIdx == 1) ? (*triangle).wmu.y : ((vIdx == 2) ? (*triangle).wmu.z : (*triangle).wmu.x);
+    cu = (uIdx == 1) ? (*triangle).vmu.y : ((uIdx == 2) ? (*triangle).vmu.z : (*triangle).vmu.x);
+    cv = (vIdx == 1) ? (*triangle).vmu.y : ((vIdx == 2) ? (*triangle).vmu.z : (*triangle).vmu.x);
     
     // Now precompute components for Barycentric intersection
     (*triangle).NUDom = fp_div(du, dk);
@@ -456,12 +441,13 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
     (*triangle).NDDom = fp_div(dot((*triangle).NormDom, u, m, f) , dk);
     
     // First line of the equation:
-    coeff = fp_mult(bu, cv) - fp_mult(bv - cu);
+    coeff = fp_mult(bu, cv) - fp_mult(bv, cu);
+    coeff = (coeff == 0) ? fp_fp1 : coeff;
     (*triangle).BUDom = fp_div(bu, coeff);
-    (*triangle).BVDom = fp_div(-bv, coeff);
+    (*triangle).BVDom = -fp_div(bv, coeff);
     // Second line of the equation:
     (*triangle).CUDom = fp_div(cv, coeff);
-    (*triangle).CVDom = fp_div(-cu, coeff);
+    (*triangle).CVDom = -fp_div(cu, coeff);
 }
 
 /* Multiple a UV coordinate by a scalar value */
