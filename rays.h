@@ -44,6 +44,8 @@ typedef struct Hit
     int objectIndex;            // The index of the object that was hit
     fixedp distance;             // Distance from the camera to the nearest hit.
     int triangleIndex;          // The index of the triangle that was hit (useful for extracting UV information later)
+    fixedp Mu;                  // Texture U-axis coefficient
+    fixedp Mv;                  // Texture V-axis coefficient
 }
 Hit;
 
