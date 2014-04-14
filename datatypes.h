@@ -436,6 +436,7 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
     cv = (vIdx == 1) ? (*triangle).vmu.y : ((vIdx == 2) ? (*triangle).vmu.z : (*triangle).vmu.x);
     
     // Now precompute components for Barycentric intersection
+    dk = (dk == 0) ? fp_fp1 : dk;
     (*triangle).NUDom = fp_div(du, dk);
     (*triangle).NVDom = fp_div(dv, dk);
     (*triangle).NDDom = fp_div(dot((*triangle).NormDom, u, m, f) , dk);
