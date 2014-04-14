@@ -468,4 +468,12 @@ UVCoord uvAdd(UVCoord a, UVCoord b, MathStat *m)
     return r;
 }
 
+UVCoord uvSub(UVCoord a, UVCoord b, MathStat *m)
+{
+    UVCoord r;
+    setUVCoord(&r, a.U - b.U, a.V - b.V);
+    statSubtractFlt(m, 2);
+    return r;
+}
+
 #endif /* DATATYPES_H_ */
