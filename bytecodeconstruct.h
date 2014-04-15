@@ -40,6 +40,10 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     Object myObj;
     int i, n, zeroCheck, matIdx, textIdx, noTriangles, noMaterials, noTextures;
     char *texturefn;
+    // Variables for precomputing:
+    int DominantAxisIdx, NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom;
+    fixedp vmu, wmu;
+    Vector NormDom, normcrvmuwmu;
     
     // File initialisation
     printf("\nReading world \"%s\"...\n", inputFile);
@@ -170,8 +174,54 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             setVector(&w, x, y, z, f);
             setUVCoord(&wUV, a, b);
             
+            //
+            // Now precomputed variables:
+            //
+            
+            // k:
+            fread(&DominantAxisIdx, sizeof(int), 1, fp);
+            
+            // c == vmu:
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            setVector(&vmu, x, y, z, f);
+            
+            // b == wmu:
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            setVector(&wmu, x, y, z, f);
+            
+            // m_N == NormDom
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            setVector(&NormDom, x, y, z, f);
+            
+            // m_N_norm == normcrvmuwmu
+            fread(&x, sizeof(fixedp), 1, fp);
+            fread(&y, sizeof(fixedp), 1, fp);
+            fread(&z, sizeof(fixedp), 1, fp);
+            setVector(&normcrvmuwmu, x, y, z, f);
+            
+            // nu
+            fread(&NUDom, sizeof(fixedp), 1, fp);
+            // nv
+            fread(&NVDom, sizeof(fixedp), 1, fp);
+            // nd
+            fread(&NDDom, sizeof(fixedp), 1, fp);
+            // bnu
+            fread(&BUDom, sizeof(fixedp), 1, fp);
+            // bnv
+            fread(&BVDom, sizeof(fixedp), 1, fp);
+            // cnu
+            fread(&CUDom, sizeof(fixedp), 1, fp);
+            // cnv
+            fread(&CVDom, sizeof(fixedp), 1, fp);
+            
             // Now commit this to a triangle
-            setUVTriangle(&triangle[i], u, v, w, uUV, vUV, wUV, m, f);
+            setPrecompTriangle(&triangle, u, v, w, uUV, vUV, wUV, vmu, wmu, normcrvmuwmu, DominantAxisIdx, NormDom, NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom, f)
         }
         // Triangles are now added. Read the associated material index
         fread(&matIdx, sizeof(int), 1, fp);
