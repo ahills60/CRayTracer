@@ -451,6 +451,29 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
     (*triangle).CVDom = -fp_div(cu, coeff);
 }
 
+void setPrecompTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV, UVCoord vUV, UVCoord wUV, Vector vmu, Vector wmu, Vector normcrvmuwmu, int DominantAxisIdx, Vector NormDom, fixedp NUDom, fixedp NVDom, fixedp NDDom, fixedp BUDom, fixedp BVDom, fixedp CUDom, fixedp CVDom, FuncStat *f)
+{
+    // Everything about the triangle is saved. Just take inputs and save them
+    (*triangle).u;
+    (*triangle).v;
+    (*triangle).w;
+    (*triangle).vmu;             // v - u
+    (*triangle).wmu;             // w - u
+    (*triangle).normcrvmuwmu;    // vecNormalised(cross(vmu, wmu))
+    (*triangle).uUV;
+    (*triangle).vUV;
+    (*triangle).wUV;
+    (*triangle).DominantAxisIdx;    // The dominant axis index
+    (*triangle).NormDom;         // Used for the normal.
+    (*triangle).NUDom;
+    (*triangle).NVDom;
+    (*triangle).NDDom;
+    (*triangle).BUDom;
+    (*triangle).BVDom;
+    (*triangle).CUDom;
+    (*triangle).CVDom;
+}
+
 /* Multiple a UV coordinate by a scalar value */
 UVCoord scalarUVMult(fixedp a, UVCoord u, MathStat *m)
 {
