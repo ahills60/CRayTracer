@@ -41,9 +41,9 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     int i, n, zeroCheck, matIdx, textIdx, noTriangles, noMaterials, noTextures;
     char *texturefn;
     // Variables for precomputing:
-    int DominantAxisIdx, NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom;
-    fixedp vmu, wmu;
-    Vector NormDom, normcrvmuwmu;
+    int DominantAxisIdx;
+    fixedp NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom;
+    Vector NormDom, normcrvmuwmu, vmu, wmu;
     
     // File initialisation
     printf("\nReading world \"%s\"...\n", inputFile);
@@ -221,7 +221,7 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             fread(&CVDom, sizeof(fixedp), 1, fp);
             
             // Now commit this to a triangle
-            setPrecompTriangle(&triangle, u, v, w, uUV, vUV, wUV, vmu, wmu, normcrvmuwmu, DominantAxisIdx, NormDom, NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom, f)
+            setPrecompTriangle(&triangle[i], u, v, w, uUV, vUV, wUV, vmu, wmu, normcrvmuwmu, DominantAxisIdx, NormDom, NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom, f);
         }
         // Triangles are now added. Read the associated material index
         fread(&matIdx, sizeof(int), 1, fp);
