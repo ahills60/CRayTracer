@@ -466,24 +466,24 @@ void setUVTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV
 void setPrecompTriangle(Triangle *triangle, Vector u, Vector v, Vector w, UVCoord uUV, UVCoord vUV, UVCoord wUV, Vector vmu, Vector wmu, Vector normcrvmuwmu, int DominantAxisIdx, Vector NormDom, fixedp NUDom, fixedp NVDom, fixedp NDDom, fixedp BUDom, fixedp BVDom, fixedp CUDom, fixedp CVDom, FuncStat *f)
 {
     // Everything about the triangle is saved. Just take inputs and save them
-    (*triangle).u;
-    (*triangle).v;
-    (*triangle).w;
-    (*triangle).vmu;             // v - u
-    (*triangle).wmu;             // w - u
-    (*triangle).normcrvmuwmu;    // vecNormalised(cross(vmu, wmu))
-    (*triangle).uUV;
-    (*triangle).vUV;
-    (*triangle).wUV;
-    (*triangle).DominantAxisIdx;    // The dominant axis index
-    (*triangle).NormDom;         // Used for the normal.
-    (*triangle).NUDom;
-    (*triangle).NVDom;
-    (*triangle).NDDom;
-    (*triangle).BUDom;
-    (*triangle).BVDom;
-    (*triangle).CUDom;
-    (*triangle).CVDom;
+    (*triangle).u = u;
+    (*triangle).v = v;
+    (*triangle).w = w;
+    (*triangle).vmu = vmu;             // v - u
+    (*triangle).wmu = wmu;             // w - u
+    (*triangle).normcrvmuwmu = normcrvmuwmu;    // vecNormalised(cross(vmu, wmu))
+    (*triangle).uUV = uUV;
+    (*triangle).vUV = vUV;
+    (*triangle).wUV = wUV;
+    (*triangle).DominantAxisIdx = DominantAxisIdx;    // The dominant axis index
+    (*triangle).NormDom = NormDom;         // Used for the normal.
+    (*triangle).NUDom = NUDom;
+    (*triangle).NVDom = NVDom;
+    (*triangle).NDDom = NDDom;
+    (*triangle).BUDom = BUDom;
+    (*triangle).BVDom = BVDom;
+    (*triangle).CUDom = CUDom;
+    (*triangle).CVDom = CVDom;
 }
 
 /* Multiple a UV coordinate by a scalar value */
