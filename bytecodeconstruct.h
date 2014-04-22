@@ -99,16 +99,18 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         exit(-1);
     }
     
+    printf("Loading materials...\n");
     // Everything looks okay. Let's continue to the material and indexing structures
     for (i = 0; i < noMaterials; i++)
     {
         // Read the material index and then read the texture index
         fread(&matIdx, sizeof(int), 1, fp);
         fread(&textIdx, sizeof(int), 1, fp);
-        
+        // printf("\tMaterial index: %i, Texture Index: %i\n", matIdx, textIdx);
         // Now create a material:
         setMaterial(&myMat[matIdx], lightSrc, lgrey, fp_Flt2FP(1.0), 0, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.2), 0, fp_Flt2FP(1.4), textIdx, m, f);
     }
+    printf("Done.\n");
     // Once agian, do a zero check:
     fread(&zeroCheck, sizeof(int), 1, fp);
     if (zeroCheck != 0)
@@ -118,14 +120,19 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         exit(-2);
     }
     
+    printf("Loading triangles...\n");
     // Next step is to go through triangles
     fread(&noTriangles, sizeof(int), 1, fp);
     // Whilst the EOF flag isn't raised:
     while(!feof(fp))
     {
+        // printf("Initialising triangle...");
         triangle = (Triangle *)malloc(sizeof(Triangle) * noTriangles);
+        // printf("Done.\n");
         for (i = 0; i < noTriangles; i++)
         {
+            // printf("Triangle %i of %i...\n", i + 1, noTriangles);
+            // printf("\tVector 1...");
             // Vector Values
             fread(&x, sizeof(fixedp), 1, fp);
             fread(&y, sizeof(fixedp), 1, fp);
@@ -141,6 +148,8 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             // Add to vector:
             setVector(&u, x, y, z, f);
             setUVCoord(&uUV, a, b);
+            
+            // printf("Done.\n\tVector 2...");
             
             // Vector Values
             fread(&x, sizeof(fixedp), 1, fp);
@@ -158,6 +167,8 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             setVector(&v, x, y, z, f);
             setUVCoord(&vUV, a, b);
             
+            // printf("Done.\n\tVector 3...");
+            
             // Vector Values
             fread(&x, sizeof(fixedp), 1, fp);
             fread(&y, sizeof(fixedp), 1, fp);
@@ -174,59 +185,88 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             setVector(&w, x, y, z, f);
             setUVCoord(&wUV, a, b);
             
+            // printf("Done.\n");
+            
             //
             // Now precomputed variables:
             //
-            
+            // printf("\tDom axis...");
             // k:
             fread(&DominantAxisIdx, sizeof(int), 1, fp);
-            
+            // printf("Done.\n");
+            // printf("\tDominant axis: %i\n", DominantAxisIdx);
+            // printf("\tvmu...");
             // c == vmu:
             fread(&x, sizeof(fixedp), 1, fp);
             fread(&y, sizeof(fixedp), 1, fp);
             fread(&z, sizeof(fixedp), 1, fp);
             setVector(&vmu, x, y, z, f);
-            
+            // printf("Done.\n");
+            // printf("\twmu...");
             // b == wmu:
             fread(&x, sizeof(fixedp), 1, fp);
             fread(&y, sizeof(fixedp), 1, fp);
             fread(&z, sizeof(fixedp), 1, fp);
             setVector(&wmu, x, y, z, f);
-            
+            // printf("Done.\n");
+            // printf("\tNormDom...");
             // m_N == NormDom
             fread(&x, sizeof(fixedp), 1, fp);
             fread(&y, sizeof(fixedp), 1, fp);
             fread(&z, sizeof(fixedp), 1, fp);
             setVector(&NormDom, x, y, z, f);
-            
+            // printf("Done.\n");
+            // printf("\tnormcrvmuwmu...");
             // m_N_norm == normcrvmuwmu
             fread(&x, sizeof(fixedp), 1, fp);
             fread(&y, sizeof(fixedp), 1, fp);
             fread(&z, sizeof(fixedp), 1, fp);
             setVector(&normcrvmuwmu, x, y, z, f);
-            
+            // printf("Done.\n");
+            // printf("\tnu...");
             // nu
             fread(&NUDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
+            // printf("\tnv...");
             // nv
             fread(&NVDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
+            // printf("\tnd...");
             // nd
             fread(&NDDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
+            // printf("\tbnu...");
             // bnu
             fread(&BUDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
+            // printf("\tbnv...");
             // bnv
             fread(&BVDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
+            // printf("\tcnu...");
             // cnu
             fread(&CUDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
+            // printf("\tcnv...");
             // cnv
             fread(&CVDom, sizeof(fixedp), 1, fp);
+            // printf("Done.\n");
             
+            // printf("\tCommitting triangle...");
             // Now commit this to a triangle
             setPrecompTriangle(&triangle[i], u, v, w, uUV, vUV, wUV, vmu, wmu, normcrvmuwmu, DominantAxisIdx, NormDom, NUDom, NVDom, NDDom, BUDom, BVDom, CUDom, CVDom, f);
+            // printf("Done.\n");
         }
         // Triangles are now added. Read the associated material index
+        // printf("Reading material...");
         fread(&matIdx, sizeof(int), 1, fp);
+        // printf("Done.\n");
+        // printf("Material index: %i\n", matIdx);
+        // printf("Creating object...");
         setObject(&myObj, myMat[matIdx], noTriangles, triangle, f);
+        // printf("Done.\nCommitting to scene...");
         addObject(scene, myObj, f);
+        // printf("Done.\n");
         // Now free up the space
         // free(triangle);
         
@@ -241,6 +281,7 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         // Now read the next number of triangles value. EOF will raise if this failed.
         fread(&noTriangles, sizeof(int), 1, fp);
     }
+    printf("Done.\n");
     fclose(fp);
 }
 
