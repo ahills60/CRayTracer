@@ -141,10 +141,6 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
             
-            x >>= 1;
-            y >>= 1;
-            z >>= 1;
-            
             // Add to vector:
             setVector(&u, x, y, z, f);
             setUVCoord(&uUV, a, b);
@@ -159,10 +155,6 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
             
-            x >>= 1;
-            y >>= 1;
-            z >>= 1;
-            
             // Add to vector:
             setVector(&v, x, y, z, f);
             setUVCoord(&vUV, a, b);
@@ -176,10 +168,6 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             // UV coords
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
-            
-            x >>= 1;
-            y >>= 1;
-            z >>= 1;
             
             // Add to vector:
             setVector(&w, x, y, z, f);
