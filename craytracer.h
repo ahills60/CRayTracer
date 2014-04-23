@@ -13,6 +13,10 @@
 #define	VERSION_BUILD	1
 #define	VERSION_DATE	"19/03/2014"
 
-#define MAXTHREADS 4
+#ifdef DEBUG
+    #define MAXTHREADS 1
+#else
+    #define MAXTHREADS 4
+#endif
 
 #endif /* CRAYTRACER_H_ */

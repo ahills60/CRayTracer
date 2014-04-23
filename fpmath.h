@@ -11,7 +11,9 @@
 #ifndef FPMATH_H_
 #define FPMATH_H_
 
-#define CHECK_RANGE
+#ifdef DEBUG
+    #define CHECK_RANGE
+#endif
 
 typedef int int32;
 typedef long long int int64;

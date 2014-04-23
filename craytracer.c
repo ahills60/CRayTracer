@@ -1,6 +1,12 @@
 /* This is a C version of the ray tracer that will be implemented
  * in DAMSON
  */
+// #define DEBUG
+#ifdef DEBUG
+#define DEBUG_PRINT printf
+#else
+#define DEBUG_PRINT(...)
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
