@@ -18,13 +18,14 @@ typedef struct Texture
     int width;
     int height;
     Vector *bitmap;
+    fixedp *alpha;
 }
 Texture;
 
 /* Open a texture file */
 void ReadTexture(Texture *texture, char *fileName, FuncStat *fs)
 {
-    int width, height, i, size;
+    int width, height, i, size, pixelbits, channels;
     Vector a;
     // Open the file
     FILE *f = fopen(fileName, "rb");
@@ -37,27 +38,35 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *fs)
         fread(buffer, 1, 20, f);
         width = *(buffer + 12) + 256 * *(buffer + 13);
         height = *(buffer + 14) + 256 * *(buffer + 15);
-        printf("Texture dimensions: %d x %d\n", width, height);
+        pixelbits = *(buffer + 16);
+        printf("Texture %s has dimensions %d x %d and %i bits per pixel.\n", fileName, width, height, pixelbits);
         fclose(f);
         size = height * width;
         
+        // Compute the number of channels to expect.
+        channels = (pixelbits == 32) ? 4 : 3;
+        
         // Now to read the pixel data
         f = fopen(fileName, "rb");
-        unsigned char *data = (unsigned char *)malloc(sizeof(unsigned char) * size * 3 + 1024);
-        fread(data, 1, size * 3 + 1024, f);
+        unsigned char *data = (unsigned char *)malloc(sizeof(unsigned char) * size * channels + 1024);
+        fread(data, 1, size * channels + 1024, f);
         fclose(f);
         
         // Convert 8 bits to fixed point
         Vector *bitmap = (Vector *)malloc(sizeof(Vector) * size);
+        int *alpha = (int *)malloc(sizeof(int) * size);
         for (i = 0; i < size; i++)
         {
             // shifting by 8 is equivalent to 256. Note that as 1 starts at bit 16 and char is up to 8 bits, shift by eight to left to align.
-            setVector(&a, ((int)data[i * 3 + 20]) << 8, ((int)data[i * 3 + 19]) << 8, ((int)data[i * 3 + 18]) << 8, fs);
+            setVector(&a, ((int)data[i * channels + 20]) << 8, ((int)data[i * channels + 19]) << 8, ((int)data[i * channels + 18]) << 8, fs);
             bitmap[i] = a;
+            // Then record alpha if necessary
+            alpha[i] = (channels == 4) ? ((int)data[i * channels + 21]) << 8 : fp_fp1;
         }
         (*texture).width = width;
         (*texture).height = height;
         (*texture).bitmap = bitmap;
+        (*texture).alpha = alpha;
     }
     else
     {
