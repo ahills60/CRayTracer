@@ -245,14 +245,14 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     DEBUG_PRINT(".\n");
     
     // If this is negative, early exit
-    if (beta < 0)
+    if (beta < 0 || beta > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1)))
         return 0;
     DEBUG_PRINT("6");
     // gamma = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
     gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
     DEBUG_PRINT(".\n");
     // Then exit if this is also negative
-    if (gamma < 0)
+    if (gamma < 0 || gamma > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1)))
         return 0;
     
     DEBUG_PRINT("7.\n");
