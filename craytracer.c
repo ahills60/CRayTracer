@@ -84,7 +84,9 @@ void *PixelDraw(void* inputPar)
     {
         // Reset the redraw flag as this counts as a redraw
         ForceRedraw[offset] = 0;
-        for (i = pixeloffset; i < noPixels && !ForceRedraw[offset]; i += MAXTHREADS)
+        // Initialise with pixeloffset. When the end is reached, it'll revert back to (0 + offset).
+        i = pixeloffset;
+        while (!ForceRedraw[offset])
         {
             // Decode index
             currX = i % ScreenWidth;
@@ -96,6 +98,11 @@ void *PixelDraw(void* inputPar)
             outputColour = vec2Colour(draw(ray, PrimaryScene, PrimaryLight, PrimaryRecursions, &PrimaryM, &PrimaryF));
             // Save pixel to output buffer, pausing if currently in use.
             setPixel(&PrimaryImage, currX, currY, outputColour);
+            // Increment pixel position
+            i += MAXTHREADS;
+            // Jump to start if the end is reached
+            if (i >= noPixels)
+                i = offset;
         }
     } while (!TerminateFlag);
     free(inputPar);
