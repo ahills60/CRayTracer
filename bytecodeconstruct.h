@@ -30,6 +30,7 @@ extern char *inputFile;
 /* Function to read the byte file */
 void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
+    fixedp minx = 0x7FFFFFFF, miny = 0x7FFFFFFF, minz = 0x7FFFFFFF, maxx = 0x80000000, maxy = 0x80000000, maxz = 0x80000000;
     // Variable declarations:
     FILE *fp;
     Vector lgrey = int2Vector(LIGHT_GREY);
@@ -135,8 +136,20 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             // printf("\tVector 1...");
             // Vector Values
             fread(&x, sizeof(fixedp), 1, fp);
+            if (x > maxx)
+                maxx = x;
+            if (x < minx)
+                minx = x;
             fread(&y, sizeof(fixedp), 1, fp);
+            if (y > maxy)
+                maxy = y;
+            if (y < miny)
+                miny = y;
             fread(&z, sizeof(fixedp), 1, fp);
+            if (z > maxz)
+                maxz = z;
+            if (z < minz)
+                minz = z;
             // UV coords
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
@@ -149,8 +162,20 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             
             // Vector Values
             fread(&x, sizeof(fixedp), 1, fp);
+            if (x > maxx)
+                maxx = x;
+            if (x < minx)
+                minx = x;
             fread(&y, sizeof(fixedp), 1, fp);
+            if (y > maxy)
+                maxy = y;
+            if (y < miny)
+                miny = y;
             fread(&z, sizeof(fixedp), 1, fp);
+            if (z > maxz)
+                maxz = z;
+            if (z < minz)
+                minz = z;
             // UV coords
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
@@ -163,8 +188,20 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
             
             // Vector Values
             fread(&x, sizeof(fixedp), 1, fp);
+            if (x > maxx)
+                maxx = x;
+            if (x < minx)
+                minx = x;
             fread(&y, sizeof(fixedp), 1, fp);
+            if (y > maxy)
+                maxy = y;
+            if (y < miny)
+                miny = y;
             fread(&z, sizeof(fixedp), 1, fp);
+            if (z > maxz)
+                maxz = z;
+            if (z < minz)
+                minz = z;
             // UV coords
             fread(&a, sizeof(fixedp), 1, fp);
             fread(&b, sizeof(fixedp), 1, fp);
@@ -270,6 +307,7 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         fread(&noTriangles, sizeof(int), 1, fp);
     }
     printf("Done.\n");
+    printf("\nScene stats:\n\tMin: x: %f\ty: %f\tz: %f\n\tMax: x: %f\ty: %f\tz: %f\n\n", fp_FP2Flt(minx), fp_FP2Flt(miny), fp_FP2Flt(minz), fp_FP2Flt(maxx), fp_FP2Flt(maxy), fp_FP2Flt(maxz));
     fclose(fp);
 }
 
