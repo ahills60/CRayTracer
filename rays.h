@@ -86,7 +86,15 @@ Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *Mu, fixedp *Mv, MathStat *m, FuncStat *f)
 {
     int ku, kv;
-    fixedp dk, du, dv, ok, ou, ov, denom, dist, beta, gamma, hu, hv, au, av;
+    fixedp dk, du, dv, ok, ou, ov, denom, dist, hu, hv, au, av, numer, beta, gamma;
+    // float beta, gamma;
+    // And some variables for bit shifting:
+    int shift1, msb1, msb2, bitdiff1, biteval;
+    fixedp tempVar1, tempVar2;
+    
+    // Determine if an error occurred when preprocessing this triangle.
+    if (triangle.DominantAxisIdx > 2 || triangle.DominantAxisIdx < 0)
+        return 0;
     
     // Firstly get the correct axes and offset using modulus array:
     ku = DomMod[triangle.DominantAxisIdx + 1];
@@ -102,36 +110,165 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     ov = (kv == 0) ? ray.source.x : ((kv == 1) ? ray.source.y : ray.source.z);
     
     // Compute demoninator:
+    DEBUG_PRINT("1");
     denom = dk + fp_mult(triangle.NUDom, du) + fp_mult(triangle.NVDom, dv);
-    denom = (denom == 0) ? fp_fp1 : denom;
-    dist = fp_div(triangle.NDDom - ok - fp_mult(triangle.NUDom, ou) - fp_mult(triangle.NVDom, ov), denom);
-    
-    // Early exit if the computed distances is greater than what we've already encountered
-    // and if it's not a valid distance.
-    if (!(CurDist > dist && dist > 0))
+    if (denom < 0x4 && denom > -0x4)
         return 0;
+    // denom = (denom == 0) ? fp_fp1 : denom;
+    DEBUG_PRINT(".\n2a");
+    numer = triangle.NDDom - ok - fp_mult(triangle.NUDom, ou) - fp_mult(triangle.NVDom, ov);
+    if (numer == 0)
+        return 0;
+    // Before we do the actual division, do a sign check:
+    if ((denom & 0x80000000) ^ (numer & 0x80000000))
+        return 0;
+    DEBUG_PRINT(".\n2x");
+    denom = fp_div(fp_fp1, denom);
+    
+    tempVar1 = fp_fabs(denom);
+    msb1 = 0;
+    // Work out where the msb is:
+    if (tempVar1 & 0xFFFF0000)
+    {
+        tempVar1 >>= 16;
+        msb1 += 16;
+    }
+    if (tempVar1 & 0x0000FF00)
+    {
+        tempVar1 >>= 8;
+        msb1 += 8;
+    }
+    if (tempVar1 & 0x000000F0)
+    {
+        tempVar1 >>= 4;
+        msb1 += 4;
+    }
+    if (tempVar1 & 0x0000000C)
+    {
+        tempVar1 >>= 2;
+        msb1 += 2;
+    }
+    if (tempVar1 & 0x00000002)
+    {
+        tempVar1 >>= 1;
+        msb1 += 1;
+    }
+    // Then add any remaining:
+    msb1 += tempVar1;
+    
+    // Now do the same to the numerator:
+    tempVar1 = fp_fabs(numer);
+    msb2 = 0;
+    if (tempVar1 & 0xFFFF0000)
+    {
+        tempVar1 >>= 16;
+        msb2 += 16;
+    }
+    if (tempVar1 & 0x0000FF00)
+    {
+        tempVar1 >>= 8;
+        msb2 += 8;
+    }
+    if (tempVar1 & 0x000000F0)
+    {
+        tempVar1 >>= 4;
+        msb2 += 4;
+    }
+    if (tempVar1 & 0x0000000C)
+    {
+        tempVar1 >>= 2;
+        msb2 += 2;
+    }
+    if (tempVar1 & 0x00000002)
+    {
+        tempVar1 >>= 1;
+        msb2 += 1;
+    }
+    // Finally, add any remaining:
+    msb2 += tempVar1;
+    
+    // Now evaluate the bit differences:
+    bitdiff1 = msb1 + msb2 - 47;
+    biteval = bitdiff1 <= 0; // if true, then bit shifting is not required.
+    if (biteval)
+    {
+        // do standard approach
+        DEBUG_PRINT(".\n2b");
+        dist = fp_mult(numer, denom);
+        DEBUG_PRINT(".\n");
+        // Early exit if the computed distances is greater than what we've already encountered
+        // and if it's not a valid distance.
+        if (CurDist < dist)
+            return 0;
+    }
+    else
+    {
+        // Now to look at the cases where one bitshift is greater than the other:
+        if (msb2 > msb1)
+        {
+            // Denominator is greater than the numerator
+            DEBUG_PRINT(".\n2c");
+            dist = fp_mult(numer >> bitdiff1, denom);
+        }
+        else
+        {
+            // Numerator is larger than the denominator:
+            DEBUG_PRINT(".\n2d");
+            dist = fp_mult(numer, denom >> bitdiff1);
+        }
+        DEBUG_PRINT(".\n");
+        // Finally, compute the early exit:
+        if ((CurDist >> bitdiff1) < dist)
+            return 0;
+    }
     
     // Extract points from primary vector:
     au = (ku == 0) ? triangle.u.x : ((ku == 1) ? triangle.u.y : triangle.u.z);
     av = (kv == 0) ? triangle.u.x : ((kv == 1) ? triangle.u.y : triangle.u.z);
     
     // Continue calculating intersections.
-    hu = ou + fp_mult(dist, du) - au;
-    hv = ov + fp_mult(dist, dv) - av;
+    
+    DEBUG_PRINT("3");
+    if (biteval)
+        hu = ou + fp_mult(dist, du) - au;
+    else
+        hu = (ou >> bitdiff1) + fp_mult(dist, du) - (au >> bitdiff1);
+    DEBUG_PRINT(".\n4");
+    if (biteval)
+        hv = ov + fp_mult(dist, dv) - av;
+    else
+        hv = (ov >> bitdiff1) + fp_mult(dist, dv) - (av >> bitdiff1);
+    DEBUG_PRINT(".\n5");
+    // beta = (((float) hv) / 65536.) * (((float)triangle.BUDom) / 65536.) + (((float) hu) / 65536.) * (((float)triangle.BVDom) / 65536.);
     beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.BVDom);
+      
+    DEBUG_PRINT(".\n");
     
     // If this is negative, early exit
     if (beta < 0)
         return 0;
-    
+    DEBUG_PRINT("6");
+    // gamma = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
     gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
+    DEBUG_PRINT(".\n");
     // Then exit if this is also negative
     if (gamma < 0)
         return 0;
     
+    DEBUG_PRINT("7.\n");
     // And exit if they add up to something greater than 1:
+    if (biteval)
+    {
+        // if ((gamma + beta) > 1)//fp_fp1)
     if ((gamma + beta) > fp_fp1)
-        return 0;
+            return 0;
+    }
+    else
+    {
+        if ((gamma + beta) > (fp_fp1 >> bitdiff1))
+            return 0;
+    }
+    DEBUG_PRINT("8.\n");
     
     *Mu = beta;
     *Mv = gamma;
