@@ -357,7 +357,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
                 newRay.direction = ray.direction;
                 newRay.source = hit.location;
                 // Next, emit a ray. Don't reduce the recursion count.
-                textureColour = draw(ray, scene, light, recursion, m, f);
+                textureColour = draw(newRay, scene, light, recursion, m, f);
             }
             else
                 textureColour = ColourAlpha.vector;
