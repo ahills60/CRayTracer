@@ -39,6 +39,13 @@ typedef struct Vector
 }
 Vector;
 
+typedef struct VectorAlpha
+{
+    Vector vector;
+    fixedp alpha;
+}
+VectorAlpha;
+
 typedef struct Matrix
 {
     fixedp m[4][4];
