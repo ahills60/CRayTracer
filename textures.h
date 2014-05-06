@@ -75,11 +75,13 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *fs)
 }
 
 /* Returns the bilinearly filtered result for a specific point in the texture */
-Vector getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat *f)
+VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat *f)
 {
     Vector c1, c2, c3, c4, result;
-    fixedp URem, VRem;
+    VectorAlpha aggResult
+    fixedp URem, VRem, alpha;
     int b1, b2, b3, b4;
+    fixedp a1, a2, a3, a4;
     // Locate pixel intersect
     // This is one method. The other is to use modulo operator: value % fp_fp1
     // Numbers are confined to 0 and 1 (albeit \neq 1) and we obtain the pixel location.
@@ -108,22 +110,43 @@ Vector getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat
     c4 = texture.bitmap[b4];    // offset: (1, 1)
     
     statGroupFlt(m, 0, 4, 4, 0);
-    c1 = scalarVecMult(fp_mult(fp_fp1 - URem, fp_fp1 - VRem), c1, m, f);
-    c2 = scalarVecMult(fp_mult(URem, fp_fp1 - VRem), c2, m, f);
-    c3 = scalarVecMult(fp_mult(fp_fp1 - URem, VRem), c3, m, f);
-    c4 = scalarVecMult(fp_mult(URem, VRem), c4, m, f);
+    a1 = fp_mult(fp_fp1 - URem, fp_fp1 - VRem);
+    a2 = fp_mult(URem, fp_fp1 - VRem);
+    a3 = fp_mult(fp_fp1 - URem, VRem);
+    a4 = fp_mult(URem, VRem);
     
+    c1 = scalarVecMult(a1, c1, m, f);
+    c2 = scalarVecMult(a2, c2, m, f);
+    c3 = scalarVecMult(a3, c3, m, f);
+    c4 = scalarVecMult(a4, c4, m, f);
+    
+    // Now compute alpha:
+    a1 = fp_mult(a1, texture.alpha[b1]);
+    a2 = fp_mult(a2, texture.alpha[b2]);
+    a3 = fp_mult(a3, texture.alpha[b3]);
+    a4 = fp_mult(a4, texture.alpha[b4]);
+    
+    // Sum up individual components:
     result = vecAdd(c1, vecAdd(c2, vecAdd(c3, c4, m, f), m, f), m, f);
+    alpha = a1 + a2 + a3 + a4;
+    
+    // Overflow check. Components are a maximum of 1
     result.x = (result.x <= fp_fp1) ? result.x : fp_fp1;
     result.y = (result.y <= fp_fp1) ? result.y : fp_fp1;
     result.z = (result.z <= fp_fp1) ? result.z : fp_fp1;
+    alpha = (alpha <= fp_fp1) ? alpha : fp_fp1;
+    
+    // Create a composite result
+    aggResult.vector = result;
+    aggResult.alpha = alpha;
+    
     // return bilinear filtered result
-    return result;
+    return aggResult;
     // return c1;
 }
 
 /* Return a colour based on interpolation of UV coordinates from a hit */
-Vector getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f)
+VectorAlpha getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncStat *f)
 {
     // fixedp a, a1, a2, a3;
     Triangle triangle;
