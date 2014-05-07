@@ -78,7 +78,7 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *fs)
 VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, FuncStat *f)
 {
     Vector c1, c2, c3, c4, result;
-    VectorAlpha aggResult
+    VectorAlpha aggResult;
     fixedp URem, VRem, alpha;
     int b1, b2, b3, b4;
     fixedp a1, a2, a3, a4;
