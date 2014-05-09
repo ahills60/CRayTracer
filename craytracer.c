@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
     printf("Scene initialised.\n");
     
     // Camera configuration
-    setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &PrimaryF);
+    setVector(&cameraLocation, fp_Int2FP(300), fp_Int2FP(450), fp_Int2FP(60), &PrimaryF);
     // setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
     CameraAngleTheta = 0x0001C4A8;
     CameraAnglePhi = 0xFFFE6DDE;
