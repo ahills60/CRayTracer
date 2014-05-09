@@ -350,14 +350,15 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
             ColourAlpha = getColour(Textures[scene.object[hit.objectIndex].material.textureIdx], scene, hit, m, f);
             
             // Check to see if we need to create a new ray from this point:
-            if (ColourAlpha.alpha < fp_fp1)
+            if (ColourAlpha.alpha < fp_fp1 && recursion >= 0)
             {
                 // Yes, the alpha channel is < 1, so create a new ray starting from the point of intersection.
                 // This ray has the same direction but a different source (the point of intersection).
                 newRay.direction = ray.direction;
-                newRay.source = hit.location;
+                // Recompute the source by adding a little extra to the distance.
+                newRay.source = vecAdd(ray.source, scalarVecMult(hit.distance + 0x80, ray.direction, m, f), m, f); // hit.location;
                 // Next, emit a ray. Don't reduce the recursion count.
-                textureColour = draw(newRay, scene, light, recursion, m, f);
+                textureColour = vecAdd(scalarVecMult(ColourAlpha.alpha, ColourAlpha.vector, m, f), scalarVecMult(fp_fp1 - ColourAlpha.alpha, draw(newRay, scene, light, recursion, m, f), m, f), m, f);
             }
             else
                 textureColour = ColourAlpha.vector;
