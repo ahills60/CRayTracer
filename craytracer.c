@@ -59,6 +59,7 @@ int ForceRedraw[MAXTHREADS];
 fixedp CameraAngleTheta;
 fixedp CameraAnglePhi;
 char *inputFile;
+int NoTransparencyFlag;
 
 pthread_t drawing_thread[MAXTHREADS];
 
@@ -129,6 +130,7 @@ int main(int argc, char *argv[])
     memset(ForceRedraw, 0, sizeof(ForceRedraw));
     TerminateFlag = 1;
     PrimaryRecursions = 2;
+    NoTransparencyFlag = 0;
 
 	parVal = "";
     filename = "output.ppm";
@@ -167,6 +169,8 @@ int main(int argc, char *argv[])
             // Check to see if this is an interactive declaration. If so, then set interactive flag:
             if (strcmp(parVal, "interactive") == 0)
                 interactive = 1;
+            if (strcmp(parVal, "notransparency") == 0)
+                NoTransparencyFlag = 1;
 		}
 		else
 		{

@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include "datatypes.h"
 
+extern int NoTransparencyFlag;
+
 typedef struct Texture
 {
     int width;
@@ -121,14 +123,19 @@ VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, Fun
     c4 = scalarVecMult(a4, c4, m, f);
     
     // Now compute alpha:
-    a1 = fp_mult(a1, texture.alpha[b1]);
-    a2 = fp_mult(a2, texture.alpha[b2]);
-    a3 = fp_mult(a3, texture.alpha[b3]);
-    a4 = fp_mult(a4, texture.alpha[b4]);
+    if (!NoTransparencyFlag)
+    {
+        a1 = fp_mult(a1, texture.alpha[b1]);
+        a2 = fp_mult(a2, texture.alpha[b2]);
+        a3 = fp_mult(a3, texture.alpha[b3]);
+        a4 = fp_mult(a4, texture.alpha[b4]);
+        alpha = a1 + a2 + a3 + a4;
+    }
+    else // Ignore alpha channel
+        alpha = fp_fp1;
     
     // Sum up individual components:
     result = vecAdd(c1, vecAdd(c2, vecAdd(c3, c4, m, f), m, f), m, f);
-    alpha = a1 + a2 + a3 + a4;
     
     // Overflow check. Components are a maximum of 1
     result.x = (result.x <= fp_fp1) ? result.x : fp_fp1;
