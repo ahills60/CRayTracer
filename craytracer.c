@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
     
     // Define lighting:
     setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &PrimaryF);
-    setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(4), &PrimaryF);
+    setVector(&lightLocation, -fp_fp1, fp_Int2FP(4), fp_Int2FP(40), &PrimaryF);
     setLight(&PrimaryLight, lightLocation, lightColour, fp_Flt2FP(0.3), &PrimaryF);
     printf("Lighting defined.\n");
     
