@@ -532,7 +532,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
         if (intersectionPoint > 0 && intersectionPoint < nearestIntersection)
         {
             // Ensure that only front facing triangles reply
-            if (dot(object.triangle[n].normcrvmuwmu, ray.direction, m, f) > EPS)
+            if (dot(object.triangle[n].normcrvmuwmu, ray.direction, m, f) < EPS)
             {
                 nearestIdx = n;
                 nearestIntersection = intersectionPoint;
