@@ -81,10 +81,15 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         // The variable texturefn is a pointer. Pass the pointer directly.
         fread(texturefn, sizeof(char), n, fp);
         // printf("Attempting to read \"%s\"", texturefn);
-        if (strcmp(texturefn, "terrain.tga") != 0)
+        if (strcmp(texturefn, "terrain.tga") != 0 && n != 25)
         {
             memcpy(texturefn, texturefn + 12, 36);
             memset(texturefn + 36, 0, sizeof(char) * 12);
+        }
+        else
+        {
+            if (n == 25)
+                texturefn[8] = '/';
         }
         ReadTexture(&Textures[i], texturefn, f);
         // printf("Texture read. Freeing memory.\n");
