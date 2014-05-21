@@ -598,6 +598,9 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat
         // Now all triangles within this object
         for (n = 0; n < scene.object[m].noTriangles; n++)
         {
+            // Make sure we're not intersecting with the same triangle
+            if (m == hit.objectIndex && n == hit.triangleIndex)
+                continue;
             statPlusInt(ma, 1); // For the loop
             // Is this significant?
             if (triangleIntersection(shadow, scene.object[m].triangle[n], tempDist, &tempMu, &tempMv, ma, f) > (EPS << 1))
