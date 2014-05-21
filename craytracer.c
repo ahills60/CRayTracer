@@ -90,8 +90,8 @@ void *PixelDraw(void* inputPar)
         while (!ForceRedraw[offset])
         {
             // Decode index
-            currX = i % ScreenWidth;
             currY = (int) (i / ScreenWidth);
+            currX = i - (currY * ScreenWidth);
             
             // Now create rays
             ray = createRay(currX, currY, PrimaryCamera, &PrimaryM, &PrimaryF);
