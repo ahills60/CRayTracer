@@ -257,17 +257,9 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     
     DEBUG_PRINT("7.\n");
     // And exit if they add up to something greater than 1:
-    if (biteval)
-    {
-        // if ((gamma + beta) > 1)//fp_fp1)
-    if ((gamma + beta) > fp_fp1 + EPS)
+    // if ((gamma + beta) > 1)//fp_fp1)
+    if ((gamma + beta) > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1)) + EPS)
             return 0;
-    }
-    else
-    {
-        if ((gamma + beta) > (fp_fp1 >> bitdiff1) + EPS)
-            return 0;
-    }
     DEBUG_PRINT("8.\n");
     
     *Mu = beta;
