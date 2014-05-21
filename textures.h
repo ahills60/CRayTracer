@@ -41,7 +41,7 @@ void ReadTexture(Texture *texture, char *fileName, FuncStat *fs)
         width = *(buffer + 12) + 256 * *(buffer + 13);
         height = *(buffer + 14) + 256 * *(buffer + 15);
         pixelbits = *(buffer + 16);
-        printf("Texture %s has dimensions %d x %d and %i bits per pixel.\n", fileName, width, height, pixelbits);
+        printf("\tTexture %s has dimensions %d x %d and %i bits per pixel.\n", fileName, width, height, pixelbits);
         fclose(f);
         size = height * width;
         
