@@ -600,7 +600,7 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat
         {
             statPlusInt(ma, 1); // For the loop
             // Is this significant?
-            if (triangleIntersection(shadow, scene.object[m].triangle[n], tempDist, &tempMu, &tempMv, ma, f) > 0x1000)
+            if (triangleIntersection(shadow, scene.object[m].triangle[n], tempDist, &tempMu, &tempMv, ma, f) > (EPS << 1))
                 return light.shadowFactor;
         }
     }
