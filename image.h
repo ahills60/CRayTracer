@@ -37,9 +37,9 @@ typedef struct Colour
 Colour vec2Colour(Vector u)
 {   // 255 is 0x00FF0000
     Colour col;
-    col.r = fp_mult(u.x, 0x00FF0000) >> 16; //(int)((u.x * 255.0)) & 255;
-    col.g = fp_mult(u.y, 0x00FF0000) >> 16; //(int)((u.y * 255.0)) & 255;
-    col.b = fp_mult(u.z, 0x00FF0000) >> 16; //(int)((u.z * 255.0)) & 255;
+    col.r = fp_mult((u.x > fp_fp1) ? fp_fp1 : u.x, 0x00FF0000) >> 16; //(int)((u.x * 255.0)) & 255;
+    col.g = fp_mult((u.y > fp_fp1) ? fp_fp1 : u.y, 0x00FF0000) >> 16; //(int)((u.y * 255.0)) & 255;
+    col.b = fp_mult((u.z > fp_fp1) ? fp_fp1 : u.z, 0x00FF0000) >> 16; //(int)((u.z * 255.0)) & 255;
     return col;
 }
 
