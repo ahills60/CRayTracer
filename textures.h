@@ -87,8 +87,8 @@ VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, Fun
     // Locate pixel intersect
     // This is one method. The other is to use modulo operator: value % fp_fp1
     // Numbers are confined to 0 and 1 (albeit \neq 1) and we obtain the pixel location.
-    UPos = fp_mult(fp_fabs(UPos) & 0x0000FFFF, texture.width << 16);
-    VPos = (texture.height << 16) - fp_mult(fp_fabs(VPos) & 0x0000FFFF, texture.height << 16);
+    UPos = fp_mult((0x03E80000 + UPos) & 0x0000FFFF, texture.width << 16);
+    VPos = fp_mult((VPos + 0x03E80000) & 0x0000FFFF, texture.height << 16); //(texture.height << 16) - fp_mult((VPos + 0x03E80000) & 0x0000FFFF, texture.height << 16);
     statGroupFlt(m, 0, 1, 2, 0);
     
     // Get the whole pixel value
