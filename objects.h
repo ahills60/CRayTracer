@@ -289,6 +289,8 @@ void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
 {
     int i;
     Triangle temp;
+    int uIdx, vIdx;
+    fixedp dk, du, dv, bu, bv, cu, cv, coeff;
     
     (*f).transformObject++;
     
@@ -305,7 +307,62 @@ void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
         // Update vmu, wmu and normcrvmuwmu
         (*object).triangle[i].vmu = vecSub(temp.v, temp.u, m, f);
         (*object).triangle[i].wmu = vecSub(temp.w, temp.u, m, f);
-        (*object).triangle[i].normcrvmuwmu = vecNormalised(cross((*object).triangle[i].vmu, (*object).triangle[i].wmu, m, f), m, f);
+        (*object).triangle[i].NormDom = cross((*object).triangle[i].vmu, (*object).triangle[i].wmu, m, f);
+        (*object).triangle[i].normcrvmuwmu = vecNormalised((*object).triangle[i].NormDom, m, f);
+    
+        if (fp_fabs((*object).triangle[i].NormDom.x) > fp_fabs((*object).triangle[i].NormDom.y))
+        {
+            if (fp_fabs((*object).triangle[i].NormDom.x) > fp_fabs((*object).triangle[i].NormDom.z))
+                (*object).triangle[i].DominantAxisIdx = 0;
+            else
+                (*object).triangle[i].DominantAxisIdx = 2;
+        }
+        else
+        {
+            if (fp_fabs((*object).triangle[i].NormDom.y) > fp_fabs((*object).triangle[i].NormDom.z))
+                (*object).triangle[i].DominantAxisIdx = 1;
+            else
+                (*object).triangle[i].DominantAxisIdx = 2;
+        }
+        uIdx = ((*object).triangle[i].DominantAxisIdx + 1) % 3;
+        vIdx = ((*object).triangle[i].DominantAxisIdx + 2) % 3;
+    
+        // This should make calculations easier...
+        dk = ((*object).triangle[i].DominantAxisIdx == 1) ? (*object).triangle[i].NormDom.y : (((*object).triangle[i].DominantAxisIdx == 2) ? (*object).triangle[i].NormDom.z : (*object).triangle[i].NormDom.x);
+        du = (uIdx == 1) ? (*object).triangle[i].NormDom.y : ((uIdx == 2) ? (*object).triangle[i].NormDom.z : (*object).triangle[i].NormDom.x);
+        dv = (vIdx == 1) ? (*object).triangle[i].NormDom.y : ((vIdx == 2) ? (*object).triangle[i].NormDom.z : (*object).triangle[i].NormDom.x);
+    
+        bu = (uIdx == 1) ? (*object).triangle[i].wmu.y : ((uIdx == 2) ? (*object).triangle[i].wmu.z : (*object).triangle[i].wmu.x);
+        bv = (vIdx == 1) ? (*object).triangle[i].wmu.y : ((vIdx == 2) ? (*object).triangle[i].wmu.z : (*object).triangle[i].wmu.x);
+        cu = (uIdx == 1) ? (*object).triangle[i].vmu.y : ((uIdx == 2) ? (*object).triangle[i].vmu.z : (*object).triangle[i].vmu.x);
+        cv = (vIdx == 1) ? (*object).triangle[i].vmu.y : ((vIdx == 2) ? (*object).triangle[i].vmu.z : (*object).triangle[i].vmu.x);
+    
+        /*
+        if (dk == 0)
+        {
+            printf("Odd output:\ndk: 0x%X\ndu: 0x%X\ndv: 0x%X\n\n", dk, du, dv);
+            printf("u.x: 0x%X\nu.y: 0x%X\nu.z: 0x%X\n", u.x, u.y, u.z);
+            printf("v.x: 0x%X\nv.y: 0x%X\nv.z: 0x%X\n", v.x, v.y, v.z);
+            printf("w.x: 0x%X\nw.y: 0x%X\nw.z: 0x%X\n\n", w.x, w.y, w.z);
+            printf("vmu.x: 0x%X\nvmu.y: 0x%X\nvmu.z: 0x%X\n", (*triangle).vmu.x, (*triangle).vmu.y, (*triangle).vmu.z);
+            printf("wmu.x: 0x%X\nwmu.y: 0x%X\nwmu.z: 0x%X\n", (*triangle).wmu.x, (*triangle).wmu.y, (*triangle).wmu.z);
+            printf("nd.x: 0x%X\nnd.y: 0x%X\nnd.z: 0x%X\n\n", (*triangle).NormDom.x, (*triangle).NormDom.y, (*triangle).NormDom.z);
+        }
+        */
+        // Now precompute components for Barycentric intersection
+        dk = (dk == 0) ? fp_fp1 : dk;
+        (*object).triangle[i].NUDom = fp_div(du, dk);
+        (*object).triangle[i].NVDom = fp_div(dv, dk);
+        (*object).triangle[i].NDDom = fp_div(dot((*object).triangle[i].NormDom, temp.u, m, f) , dk);
+    
+        // First line of the equation:
+        coeff = fp_mult(bu, cv) - fp_mult(bv, cu);
+        coeff = (coeff == 0) ? fp_fp1 : coeff;
+        (*object).triangle[i].BUDom = fp_div(bu, coeff);
+        (*object).triangle[i].BVDom = -fp_div(bv, coeff);
+        // Second line of the equation:
+        (*object).triangle[i].CUDom = fp_div(cv, coeff);
+        (*object).triangle[i].CVDom = -fp_div(cu, coeff);
     }
 }
 
