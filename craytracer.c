@@ -38,6 +38,7 @@
 
 // Define the construction instructions
 #include "bytecodeconstruct.h"
+// #include "construct.h"
 // #include "OFconstruct4.h"
 
 // Add math stats
@@ -214,6 +215,7 @@ int main(int argc, char *argv[])
     // Define lighting:
     setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &PrimaryF);
     setVector(&lightLocation, fp_Int2FP(100), fp_Int2FP(100), fp_Int2FP(200), &PrimaryF);
+    // setVector(&lightLocation, fp_Int2FP(-1), fp_Int2FP(4), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
     setLight(&PrimaryLight, lightLocation, lightColour, fp_Flt2FP(0.3), &PrimaryF);
     printf("Lighting defined.\n");
     
@@ -223,6 +225,7 @@ int main(int argc, char *argv[])
     
     // Camera configuration
     setVector(&cameraLocation, fp_Int2FP(300), fp_Int2FP(450), fp_Int2FP(60), &PrimaryF);
+    // setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
     // setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
     CameraAngleTheta = 0x0001C4A8;
     CameraAnglePhi = 0xFFFE6DDE;
