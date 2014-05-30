@@ -26,6 +26,10 @@
 
 // Add function stats
 #include "funcstats.h"
+#include "textures.h"
+
+Texture *Textures;
+extern char *inputFile;
 
 /* Populate a scene with set items */
 void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
