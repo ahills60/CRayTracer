@@ -315,7 +315,7 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     }
     printf("Done.\n");
     printf("\nScene stats:\n\tMin: x: %f\ty: %f\tz: %f\n\tMax: x: %f\ty: %f\tz: %f\n\n", fp_FP2Flt(minx), fp_FP2Flt(miny), fp_FP2Flt(minz), fp_FP2Flt(maxx), fp_FP2Flt(maxy), fp_FP2Flt(maxz));
-    pritnf("Total number of triangles: %lld\n\n", TotalTriangles);
+    printf("Total number of triangles: %lld\n\n", TotalTriangles);
     fclose(fp);
 }
 
