@@ -288,6 +288,8 @@ int main(int argc, char *argv[])
     // #pragma omp for schedule(dynamic, 1)
     // 
     // }
+    timer = time(NULL);
+    printf("\n\nRendering complete at: %s\n\n", asctime(localtime(&timer)));
     printf("Writing image... ");
     writeImageASC(PrimaryImage, filename);
     printf("Complete.\nResetting scene...");
