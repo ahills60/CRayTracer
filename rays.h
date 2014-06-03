@@ -46,6 +46,7 @@ typedef struct Hit
     int triangleIndex;          // The index of the triangle that was hit (useful for extracting UV information later)
     fixedp Mu;                  // Texture U-axis coefficient
     fixedp Mv;                  // Texture V-axis coefficient
+    int bitshift;               // The number of bits shifted for this hit.
 }
 Hit;
 
