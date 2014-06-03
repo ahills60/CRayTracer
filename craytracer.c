@@ -208,6 +208,10 @@ int main(int argc, char *argv[])
 	}
 	printf("Canvas set to resolution %i x %i\n\n", width, height);
     printf("Recursions to compute: %i\n\n", PrimaryRecursions);
+    if (NoTransparencyFlag)
+        printf("Texture transparency disabled.\n\n");
+    else
+        printf("Texture transparency enabled.\n\n");
     
     if (interactive)
         printf("Interactive mode enabled.\n\n");
