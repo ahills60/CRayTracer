@@ -218,8 +218,11 @@ int main(int argc, char *argv[])
     
     // Define lighting:
     setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &PrimaryF);
+#ifdef BYTECODECONSTRUCT_H_
     setVector(&lightLocation, fp_Int2FP(100), fp_Int2FP(100), fp_Int2FP(200), &PrimaryF);
-    // setVector(&lightLocation, fp_Int2FP(-1), fp_Int2FP(4), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
+#else
+    setVector(&lightLocation, fp_Int2FP(-1), fp_Int2FP(4), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
+#endif
     setLight(&PrimaryLight, lightLocation, lightColour, fp_Flt2FP(0.3), &PrimaryF);
     printf("Lighting defined.\n");
     
@@ -228,11 +231,17 @@ int main(int argc, char *argv[])
     printf("Scene initialised.\n");
     
     // Camera configuration
+#ifdef BYTECODECONSTRUCT_H_
     setVector(&cameraLocation, fp_Int2FP(300), fp_Int2FP(450), fp_Int2FP(60), &PrimaryF);
-    // setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
+    setVector(&cameraLocation, fp_Int2FP(300), fp_Int2FP(450), fp_Int2FP(200), &PrimaryF);
+    CameraAngleTheta = 0x000181A3;
+    CameraAnglePhi = 0xFFFF2096;
+#else
+    setVector(&cameraLocation, fp_Int2FP(1), fp_Int2FP(2), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
+    CameraAngleTheta = 0x0001C4A8;                                                           // Good for construct.h
+    CameraAnglePhi = 0xFFFE6DDE;                                                             // Good for construct.h
+#endif
     // setVector(&cameraDirection, fp_Int2FP(1), 0, -fp_Int2FP(6), &PrimaryF);
-    CameraAngleTheta = 0x0001C4A8;
-    CameraAnglePhi = 0xFFFE6DDE;
     // setVector(&cameraDirection, 0, 0xFFFFCEB6, 0xFFFF04CA, &PrimaryF);
     setVector(&cameraDirection, fp_mult(fp_sin(CameraAngleTheta), fp_cos(CameraAnglePhi)), fp_cos(CameraAngleTheta), fp_mult(fp_sin(CameraAngleTheta), fp_sin(CameraAnglePhi)), &PrimaryF);
     
