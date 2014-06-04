@@ -66,7 +66,7 @@ pthread_t drawing_thread[MAXTHREADS];
 
 void *PixelDraw(void* inputPar)
 {
-    int i, offset, pixeloffset;
+    int i, offset, pixeloffset;//, n;
     Colour outputColour;
     Ray ray;
     
@@ -82,12 +82,14 @@ void *PixelDraw(void* inputPar)
     // Let's give the impression that the ray tracer is doing more by separating across the height too:
     pixeloffset += (noPixels / MAXTHREADS) * pixeloffset;
     
+    // for (n = 0; n < 100; n++)
     do
     {
         // Reset the redraw flag as this counts as a redraw
         ForceRedraw[offset] = 0;
         // Initialise with pixeloffset. When the end is reached, it'll revert back to (0 + offset).
         i = pixeloffset;
+        // for(i = offset; i < noPixels; i += MAXTHREADS)
         while (!ForceRedraw[offset])
         {
             // Decode index
@@ -107,6 +109,7 @@ void *PixelDraw(void* inputPar)
                 i = offset;
         }
     } while (!TerminateFlag);
+    // }
     free(inputPar);
     return NULL;
 }
