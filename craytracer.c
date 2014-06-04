@@ -277,6 +277,8 @@ int main(int argc, char *argv[])
     }
     
     // Spawn a thread for drawing
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
     for (i = 0; i < MAXTHREADS; i++)
     {
         arg[i] = (int *)malloc(sizeof(int));
@@ -290,7 +292,9 @@ int main(int argc, char *argv[])
     else
         for (i = 0; i < MAXTHREADS; i++)
             pthread_join(drawing_thread[i], &status);
-    
+    gettimeofday(&stop, NULL);
+    long long usec_diff = (stop.tv_sec - start.tv_sec)*1000000 + (stop.tv_usec - start.tv_usec);
+    printf("\n\nTime taken: %llu\n\n", usec_diff);
     // #pragma omp parallel private(n)
     // {
     // // Now go through every pixel
