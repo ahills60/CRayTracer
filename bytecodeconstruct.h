@@ -115,7 +115,8 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
         fread(&textIdx, sizeof(int), 1, fp);
         // printf("\tMaterial index: %i, Texture Index: %i\n", matIdx, textIdx);
         // Now create a material:
-        setMaterial(&myMat[matIdx], lightSrc, lgrey, fp_Flt2FP(1.0), 0, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.2), 0, fp_Flt2FP(1.4), textIdx, m, f);
+        setMaterial(&myMat[matIdx], lightSrc, lgrey, fp_Flt2FP(1.0), 0, 0, fp_Flt2FP(0.1), fp_Flt2FP(0.2), 0, 0, textIdx, m, f);
+        //setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, int textureIdx, MathStat *m, FuncStat *f)
     }
     printf("Done.\n");
     // Once agian, do a zero check:
