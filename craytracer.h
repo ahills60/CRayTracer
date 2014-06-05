@@ -10,8 +10,8 @@
 
 #define	VERSION_MAJOR	0
 #define	VERSION_MINOR	1
-#define	VERSION_BUILD	1
-#define	VERSION_DATE	"19/03/2014"
+#define	VERSION_BUILD	2
+#define	VERSION_DATE	"05/06/2014"
 
 #ifdef DEBUG
     #define MAXTHREADS 1
