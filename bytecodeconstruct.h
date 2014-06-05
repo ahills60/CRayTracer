@@ -26,6 +26,7 @@
 
 Texture *Textures;
 extern char *inputFile;
+extern int GlobalLightingFlag;
 
 /* Function to read the byte file */
 void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
@@ -349,7 +350,7 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
     if (hit.objectIndex >= 0)
     {
         // There was a hit.
-        Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
+        Vector lightDirection = GlobalLightingFlag ? light.direction : vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
         
         // Determine whether this has a texture or not
         if (scene.object[hit.objectIndex].material.textureIdx < 0)

@@ -63,6 +63,7 @@ Scene;
 typedef struct Light
 {
     Vector location;            // Location of light source
+    Vector direction;           // Direction to this light source
     Vector colour;              // Colour of light
     fixedp shadowFactor;         // Shadow factor
 }
@@ -199,10 +200,11 @@ void resetScene(Scene *scene, FuncStat *f)
 }
 
 /* Set a light */
-void setLight(Light *light, Vector location, Vector colour, fixedp shadowFactor, FuncStat *f)
+void setLight(Light *light, Vector location, Vector direction, Vector colour, fixedp shadowFactor, FuncStat *f)
 {
     (*f).setLight++;
     (*light).location = location;
+    (*light).direction = direction;
     (*light).colour = colour;
     (*light).shadowFactor = shadowFactor;
 }

@@ -61,6 +61,7 @@ fixedp CameraAngleTheta;
 fixedp CameraAnglePhi;
 char *inputFile;
 int NoTransparencyFlag;
+int GlobalLightingFlag;
 
 pthread_t drawing_thread[MAXTHREADS];
 
@@ -121,7 +122,7 @@ int main(int argc, char *argv[])
 	int isParam;
 	char *parVal;
 	int i, n, a;
-    Vector lightColour, lightLocation, cameraLocation, cameraDirection;
+    Vector lightColour, lightLocation, lightDirection, cameraLocation, cameraDirection;
     char *filename;
 
     int width = 1024;
@@ -135,6 +136,7 @@ int main(int argc, char *argv[])
     TerminateFlag = 1;
     PrimaryRecursions = 2;
     NoTransparencyFlag = 0;
+    GlobalLightingFlag = 0;
 
 	parVal = "";
     filename = "output.ppm";
@@ -175,6 +177,8 @@ int main(int argc, char *argv[])
                 interactive = 1;
             if (strcmp(parVal, "notransparency") == 0)
                 NoTransparencyFlag = 1;
+            if (strcmp(parVal, "globallighting") == 0)
+                GlobalLightingFlag = 1;
 		}
 		else
 		{
@@ -216,6 +220,11 @@ int main(int argc, char *argv[])
     else
         printf("Texture transparency enabled.\n\n");
     
+    if (GlobalLightingFlag)
+        printf("Global lighting enabled. Spot lighting disabled.\n\n");
+    else
+        printf("Spot lighting enabled. Global lighting disabled.\n\n");
+    
     if (interactive)
         printf("Interactive mode enabled.\n\n");
     
@@ -223,10 +232,12 @@ int main(int argc, char *argv[])
     setVector(&lightColour, fp_fp1, fp_fp1, fp_fp1, &PrimaryF);
 #ifdef BYTECODECONSTRUCT_H_
     setVector(&lightLocation, fp_Int2FP(100), fp_Int2FP(100), fp_Int2FP(200), &PrimaryF);
+    setVector(&lightDirection, fp_Flt2FP(-0.4459765), fp_Flt2FP(-0.6689647), fp_Flt2FP(0.59463532), &PrimaryF);     // Light at 0, 0, 400; focus at 300, 450, 0
 #else
     setVector(&lightLocation, fp_Int2FP(-1), fp_Int2FP(4), fp_Int2FP(4), &PrimaryF);         // Good for construct.h
+    setVector(&lightDirection, fp_Flt2FP(-0.441128773), fp_Flt2FP(0.514650235), fp_Flt2FP(0.735214622), &PrimaryF); // Light at -1, 4, 4;  focus at 2, 0.5, -1
 #endif
-    setLight(&PrimaryLight, lightLocation, lightColour, fp_Flt2FP(0.3), &PrimaryF);
+    setLight(&PrimaryLight, lightLocation, lightDirection, lightColour, fp_Flt2FP(0.3), &PrimaryF);
     printf("Lighting defined.\n");
     
     // Build scene
