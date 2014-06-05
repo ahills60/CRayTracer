@@ -268,7 +268,49 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     *Mu = beta;
     *Mv = gamma;
     *bitshift = bitdiff1;
+    /*
+    // Now just do the same but with floats:
+    Vector edge1 = triangle.vmu;
+    Vector edge2 = triangle.wmu;
     
+    Vector fpu = cross(ray.direction, edge2, m, f);
+    float fla = ((float) dot(edge1, fpu, m, f)) / 65536.;
+    
+    if (fla > 0.00001 && fla < 0.00001)
+    {
+        if (isShadow)
+            printf("Fixed point intersection at: %f\tFloat at: A\n", ((float)dist) / 65536.);
+    }
+    
+    Vector fpv = vecSub(ray.source, triangle.u, m, f);
+    float flb = ((float) dot(fpv, fpu, m, f)) / 65536.;
+    float arecip = 1. / fla;
+    flb = flb * arecip;
+    if (flb > 1)
+    {
+        if (isShadow)
+            printf("Fixed point intersection at: %f\tFloat at: B\n", ((float)dist) / 65536.);
+    }
+    Vector fpw = cross(fpv, edge1, m, f);
+    float flc = ((float) dot(ray.direction, fpw, m, f))/ 65536.;
+    flc = flc * arecip;
+    if (flb + flc > 1.)
+    {
+        if (isShadow)
+            printf("Fixed point intersection at: %f\tFloat at: C\n", ((float)dist) / 65536.);
+    }
+    float intersection = (((float) dot(edge2, fpw, m, f))/65536.) * arecip;
+    if (intersection <= 0.00001)
+        if (isShadow)
+            printf("Fixed point intersection at: %f\tFloat at: D\n", ((float)dist) / 65536.);
+    
+    if (isShadow)
+    {
+        printf("\tFloat at: %f\thu: %f\thv: %f\tbu: %f\tbv: %f\tcu: %f\tcv: %f\tou: %f\tau: %f\tdu: %f\tov: %f\tav: %f\tdv: %f\tk: %i\tku: %i\tkv: %i\tdk: %f\tok: %f\tbiteval: %i\n", intersection, ((float)hu)/65536., ((float)hv)/65536., ((float)triangle.BUDom)/65536., ((float)triangle.BVDom)/65536., ((float)triangle.CUDom)/65536., ((float)triangle.CVDom)/65536., ((float)ou)/65536., ((float)au)/65536., ((float)du)/65536., ((float)ov)/65536., ((float)av)/65536., ((float)dv)/65536., triangle.DominantAxisIdx, ku, kv, ((float)dk)/65536., ((float)ok)/65536., biteval);
+    
+        printf("Fixed point intersection at: %f\tFloat at: %f\tDiff: %f\n", ((float)dist) / 65536., intersection, intersection - ((float)dist) / 65536.);
+}
+    */
     // If here, it looks like we have an intersection.
     return dist;
     
@@ -505,6 +547,57 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
         return 0;
     */
 }
+
+/*
+fixedp triangleIntersectionShadow(Ray ray, Triangle triangle, fixedp CurDist, fixedp *Mu, fixedp *Mv, int *bitshift, int isShadow, MathStat *m, FuncStat *f)
+{
+    // Now just do the same but with floats:
+    Vector edge1 = triangle.vmu;
+    Vector edge2 = triangle.wmu;
+    
+    Vector fpu = cross(ray.direction, edge2, m, f);
+    float fla = ((float) dot(edge1, fpu, m, f)) / 65536.;
+    
+    if (fla > 0.00001 && fla < 0.00001)
+    {
+            return 0;
+            // printf("Fixed point intersection at: %f\tFloat at: A\n", ((float)dist) / 65536.);
+    }
+    
+    Vector fpv = vecSub(ray.source, triangle.u, m, f);
+    float flb = ((float) dot(fpv, fpu, m, f)) / 65536.;
+    float arecip = 1. / fla;
+    flb = flb * arecip;
+    if (flb > 1.)
+    {
+        return 0;
+            // printf("Fixed point intersection at: %f\tFloat at: B\n", ((float)dist) / 65536.);
+    }
+    Vector fpw = cross(fpv, edge1, m, f);
+    float flc = ((float) dot(ray.direction, fpw, m, f))/ 65536.;
+    flc = flc * arecip;
+    if (flb + flc > 1.)
+    {
+        return 0;
+        // if (isShadow)
+        //     printf("Fixed point intersection at: %f\tFloat at: C\n", ((float)dist) / 65536.);
+    }
+    float intersection = (((float) dot(edge2, fpw, m, f))/65536.) * arecip;
+    if (intersection <= 0.00001)
+        return 0;
+        // if (isShadow)
+        //     printf("Fixed point intersection at: %f\tFloat at: D\n", ((float)dist) / 65536.);
+    
+//     if (isShadow)
+//     {
+//         printf("\tFloat at: %f\thu: %f\thv: %f\tbu: %f\tbv: %f\tcu: %f\tcv: %f\tou: %f\tau: %f\tdu: %f\tov: %f\tav: %f\tdv: %f\tk: %i\tku: %i\tkv: %i\tdk: %f\tok: %f\tbiteval: %i\n", intersection, ((float)hu)/65536., ((float)hv)/65536., ((float)triangle.BUDom)/65536., ((float)triangle.BVDom)/65536., ((float)triangle.CUDom)/65536., ((float)triangle.CVDom)/65536., ((float)ou)/65536., ((float)au)/65536., ((float)du)/65536., ((float)ov)/65536., ((float)av)/65536., ((float)dv)/65536., triangle.DominantAxisIdx, ku, kv, ((float)dk)/65536., ((float)ok)/65536., biteval);
+//     
+//         printf("Fixed point intersection at: %f\tFloat at: %f\tDiff: %f\n", ((float)dist) / 65536., intersection, intersection - ((float)dist) / 65536.);
+// }
+    // If here, it looks like we have an intersection.
+    return fp_Flt2FP(intersection);
+}
+*/
 
 /* Go through the triangles within an object and find one that intersects with this ray */
 Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, FuncStat *f)
