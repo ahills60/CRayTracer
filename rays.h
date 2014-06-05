@@ -87,8 +87,8 @@ Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *Mu, fixedp *Mv, int *bitshift, MathStat *m, FuncStat *f)
 {
     int ku, kv;
-    fixedp dk, du, dv, ok, ou, ov, denom, dist, hu, hv, au, av, numer, beta, gamma;
-    // float beta, gamma;
+    fixedp dk, du, dv, ok, ou, ov, denom, dist, hu, hv, au, av, numer, beta, gamma, cmpopt;
+    // float betafl, gammafl;
     // And some variables for bit shifting:
     int shift1, msb1, msb2, bitdiff1, biteval;
     fixedp tempVar1, tempVar2;
@@ -247,22 +247,27 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
       
     DEBUG_PRINT(".\n");
     
+    cmpopt = EPS + (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1));
+
     // If this is negative, early exit
-    if (beta < 0 || beta > EPS + (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1)))
+    if (beta < 0 || beta > cmpopt)
         return 0;
     DEBUG_PRINT("6");
     // gamma = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
     gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
     DEBUG_PRINT(".\n");
     // Then exit if this is also negative
-    if (gamma < 0 || gamma > EPS + (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1)))
+    if (gamma < 0 || gamma > cmpopt)
         return 0;
     
     DEBUG_PRINT("7.\n");
     // And exit if they add up to something greater than 1:
     // if ((gamma + beta) > 1)//fp_fp1)
-    if ((gamma + beta) > (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1)) + EPS)
-            return 0;
+    // if ((gammafl + betafl) > (((float)cmpopt) / 65536.))
+    //     return 0;
+    
+    if ((gamma + beta) > cmpopt)
+        return 0;
     DEBUG_PRINT("8.\n");
     
     *Mu = beta;
