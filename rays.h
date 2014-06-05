@@ -242,20 +242,28 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     else
         hv = (ov >> bitdiff1) + fp_mult(dist, dv) - (av >> bitdiff1);
     DEBUG_PRINT(".\n5");
-    // beta = (((float) hv) / 65536.) * (((float)triangle.BUDom) / 65536.) + (((float) hu) / 65536.) * (((float)triangle.BVDom) / 65536.);
+    //betafl = (((float) hv) / 65536.) * (((float)triangle.BUDom) / 65536.) + (((float) hu) / 65536.) * (((float)triangle.BVDom) / 65536.);
+
     beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.BVDom);
       
     DEBUG_PRINT(".\n");
     
     cmpopt = EPS + (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1));
 
+    // if (betafl < 0 || betafl > (((float)cmpopt) / 65536.))
+    //     return 0;
+    
     // If this is negative, early exit
     if (beta < 0 || beta > cmpopt)
         return 0;
     DEBUG_PRINT("6");
-    // gamma = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
+    // gammafl = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
     gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
     DEBUG_PRINT(".\n");
+    
+    // if (gammafl < 0 || gammafl > (((float)cmpopt) / 65536.))
+    //     return 0;
+    
     // Then exit if this is also negative
     if (gamma < 0 || gamma > cmpopt)
         return 0;
@@ -270,8 +278,8 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
         return 0;
     DEBUG_PRINT("8.\n");
     
-    *Mu = beta;
-    *Mv = gamma;
+    *Mu = beta; // fp_Flt2FP(betafl);// beta;
+    *Mv = gamma; // fp_Flt2FP(gammafl); // gamma;
     *bitshift = bitdiff1;
     /*
     // Now just do the same but with floats:
