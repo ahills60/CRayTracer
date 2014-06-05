@@ -124,9 +124,9 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     if ((denom & 0x80000000) ^ (numer & 0x80000000))
         return 0;
     DEBUG_PRINT(".\n2x");
-    denom = fp_div(fp_fp1, denom);
+    // denom = fp_div(fp_fp1, denom);
     
-    tempVar1 = fp_fabs(denom);
+    tempVar1 = fp_fabs(numer);
     msb1 = 0;
     // Work out where the msb is:
     if (tempVar1 & 0xFFFF0000)
@@ -158,7 +158,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     msb1 += tempVar1;
     
     // Now do the same to the numerator:
-    tempVar1 = fp_fabs(numer);
+    tempVar1 = fp_fabs(denom);
     msb2 = 0;
     if (tempVar1 & 0xFFFF0000)
     {
@@ -189,13 +189,13 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     msb2 += tempVar1;
     
     // Now evaluate the bit differences:
-    bitdiff1 = msb1 + msb2 - 47;
-    biteval = bitdiff1 <= 0; // if true, then bit shifting is not required.
+    bitdiff1 = 16 - msb2;
+    biteval = (msb1 - msb2) <= 14; // if true, then bit shifting is not required.
     if (biteval)
     {
         // do standard approach
         DEBUG_PRINT(".\n2b");
-        dist = fp_mult(numer, denom);
+        dist = fp_div(numer, denom);
         DEBUG_PRINT(".\n");
         // Early exit if the computed distances is greater than what we've already encountered
         // and if it's not a valid distance.
@@ -204,21 +204,21 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     }
     else
     {
-        return 0;
+        dist = fp_div(numer, denom << bitdiff1);
         
-        // Now to look at the cases where one bitshift is greater than the other:
-        if (msb2 > msb1)
-        {
-            // Denominator is greater than the numerator
-            DEBUG_PRINT(".\n2c");
-            dist = fp_mult(numer >> bitdiff1, denom);
-        }
-        else
-        {
-            // Numerator is larger than the denominator:
-            DEBUG_PRINT(".\n2d");
-            dist = fp_mult(numer, denom >> bitdiff1);
-        }
+        // // Now to look at the cases where one bitshift is greater than the other:
+//         if (msb2 > msb1)
+//         {
+//             // Denominator is greater than the numerator
+//             DEBUG_PRINT(".\n2c");
+//             dist = fp_mult(numer >> bitdiff1, denom);
+//         }
+//         else
+//         {
+//             // Numerator is larger than the denominator:
+//             DEBUG_PRINT(".\n2d");
+//             dist = fp_mult(numer, denom >> bitdiff1);
+//         }
         DEBUG_PRINT(".\n");
         // Finally, compute the early exit:
         if ((CurDist >> bitdiff1) < dist)
