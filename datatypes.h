@@ -220,6 +220,7 @@ Vector vecNormalised(Vector u, MathStat *m, FuncStat *f)
             statDivideFlt(m, 1);
             statSqrtFlt(m, 1);
             return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f);
+            // return scalarVecMult(fp_Flt2FP(1. / sqrtf(fp_FP2Flt(tempVar))), u, m, f);
         } // return scalarVecMult(fp_sqrt(fp_div(fp_fp1, tempVar)), u, m, f);
     /*
     fixedp a = vecLength(u, m, f);
