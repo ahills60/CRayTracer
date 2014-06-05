@@ -6,16 +6,16 @@
  *      Author: andrew
  */
 
+#ifndef IMAGE_H_
+#define IMAGE_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "craytracer.h"
 #include "datatypes.h"
-
+#include "interactive.h"
 #define IMG_COMMENT "# This image was generated with the CRayTracer application."
-
-#ifndef IMAGE_H_
-#define IMAGE_H_
 
 /* Define a container for an image */
 typedef struct Image
@@ -35,29 +35,29 @@ typedef struct Colour
 
 /* Convert a vector to a colour array */
 Colour vec2Colour(Vector u)
-{
+{   // 255 is 0x00FF0000
     Colour col;
-    col.r = (int)((u.x * 255.0)) & 255;
-    col.g = (int)((u.y * 255.0)) & 255;
-    col.b = (int)((u.z * 255.0)) & 255;
+    col.r = fp_mult((u.x > fp_fp1) ? fp_fp1 : u.x, 0x00FF0000) >> 16; //(int)((u.x * 255.0)) & 255;
+    col.g = fp_mult((u.y > fp_fp1) ? fp_fp1 : u.y, 0x00FF0000) >> 16; //(int)((u.y * 255.0)) & 255;
+    col.b = fp_mult((u.z > fp_fp1) ? fp_fp1 : u.z, 0x00FF0000) >> 16; //(int)((u.z * 255.0)) & 255;
     return col;
 }
 
-Colour int2Colour(int *array)
+Colour int2Colour(int *array) // This doesn't make sense! RGB are stored as ints and you've got decimal values!
 {
     Colour col;
-    col.r = (float)array[0] / 255.0;
-    col.g = (float)array[1] / 255.0;
-    col.b = (float)array[2] / 255.0;
+    col.r = fp_div(fp_Int2FP(array[0]), fp_Int2FP(255));
+    col.g = fp_div(fp_Int2FP(array[1]), fp_Int2FP(255));
+    col.b = fp_div(fp_Int2FP(array[2]), fp_Int2FP(255));
     return col;
 }
 
 Vector int2Vector(int *array)
 {
     Vector u;
-    u.x = (float)array[0] / 255.0;
-    u.y = (float)array[1] / 255.0;
-    u.z = (float)array[2] / 255.0;
+    u.x = fp_div(fp_Int2FP(array[0]), fp_Int2FP(255));
+    u.y = fp_div(fp_Int2FP(array[1]), fp_Int2FP(255));
+    u.z = fp_div(fp_Int2FP(array[2]), fp_Int2FP(255));
     return u;
 }
 
@@ -70,6 +70,13 @@ void initialiseImage(Image *img, int width, int height)
     // multiplier here as there's rgb.
     (*img).data = (int *)malloc(sizeof(int) * width * height * 3);
     memset((*img).data, 0, sizeof(int) * width * height * 3);
+}
+
+/* Reset the space used to store the image */
+void resetImage(Image *img)
+{
+    // Simply set the memory to 0 based on the intial image setup conditions
+    memset((*img).data, 0, sizeof(int) * (*img).width * (*img).height * 3);
 }
 
 /* Set a pixel for a specific image */
@@ -86,6 +93,8 @@ void setPixel(Image *img, int x, int y, Colour col)
     // Then offset for G and B
     (*img).data[idx + 1] = col.g;
     (*img).data[idx + 2] = col.b;
+    PixelStore[y * width + x] = col.r | (col.g << 8) | (col.b << 16);
+    ActivityStore[y * width + x] = 0 | 255 << 8 | 0 << 16 | 255 << 24;
 }
 
 /* Function to output image in PPM ASCII format (P3) */

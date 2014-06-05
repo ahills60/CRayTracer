@@ -10,6 +10,8 @@
 #ifndef LIGHTING_H_
 #define LIGHTING_H_
 
+#include "fpmath.h"
+
 #include "rays.h"
 
 // Add math stats
@@ -18,36 +20,99 @@
 // Add function stats
 #include "funcstats.h"
 
+// void checkColour(Vector colour, int stage)
+// {
+//     if (colour.x < 0)
+//     {
+//         printf("Red is negative at stage %d: 0x%X\n", stage, (unsigned int) colour.x);
+//     }
+//     if (colour.y < 0)
+//     {
+//         printf("Green is negative at stage %d: 0x%X\n", stage, (unsigned int) colour.y);
+//     }
+//     if (colour.z < 0)
+//     {
+//         printf("Red is negative at stage %d: 0x%X\n", stage, (unsigned int) colour.z);
+//     }
+// }
+
 /* Creates ambiance effect given a hit, a scene and some light */
-Vector ambiance(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
+Vector ambiance(Hit hit, Scene scene, Light light, Vector textureColour, MathStat *m, FuncStat *f)
 {
     (*f).ambiance++;
-    return scalarVecMult(scene.object[hit.objectIndex].material.ambiance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
+    Vector outputColour;
+    
+    // Check to see if there's a texture
+    if (textureColour.x < 0)
+        outputColour = scene.object[hit.objectIndex].material.compAmbianceColour; // No texture. Apply material colour
+    else
+        outputColour = scalarVecMult(scene.object[hit.objectIndex].material.ambiance, textureColour, m, f); // Texture. Apply texture colour
+    
+    return outputColour;
 }
 
 /* Creates diffusion effect given a hit, a scene and some light */
-Vector diffusion(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
+Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, Vector textureColour, MathStat *m, FuncStat *f)
 {
     (*f).diffusion++;
-    // Need to compute the direction of light
-    Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
-    float distance = dot(hit.normal, lightDirection, m, f) * scene.object[hit.objectIndex].material.diffusivity;
-    statMultiplyFlt(m, 1);
+    Vector outputColour;
     
-    return scalarVecMult(distance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
+    setVector(&outputColour, 0, 0, 0, f);
+    
+    if (scene.object[hit.objectIndex].material.diffusivity > 0)
+    {
+        // Need to compute the direction of light
+        fixedp dotProduct = dot(hit.normal, lightDirection, m, f);
+        
+        // If the dot product is negative, this term shouldn't be included.
+        if (dotProduct < 0)
+            return outputColour;
+        
+        // Dot product is positive, so continue
+        fixedp distance = fp_mult(dotProduct, scene.object[hit.objectIndex].material.diffusivity);
+        
+        statMultiplyFlt(m, 1);
+        
+        // Has a texture been defined?
+        if (textureColour.x < 0)
+            outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f); // No texture defined
+        else
+            outputColour = scalarVecMult(distance, vecMult(textureColour, light.colour, m, f), m, f);
+    }
+    
+    return outputColour;
 }
 
 /* Creates specular effect given a hit, a scene and some light */
-Vector specular(Hit hit, Scene scene, Light light, MathStat *m, FuncStat *f)
+Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, Vector textureColour, MathStat *m, FuncStat *f)
 {
     (*f).specular++;
-    // Reflective ray:
-    Ray reflection = reflectRay(hit, m, f);
-    Vector lightDirection = vecNormalised(vecSub(light.location, hit.location, m, f), m, f);
-    float distance = pow(dot(lightDirection, reflection.direction, m, f), scene.object[hit.objectIndex].material.shininess) * scene.object[hit.objectIndex].material.specular;
-    statMultiplyFlt(m, 1);
-    statPower(m, 1);
-    return scalarVecMult(distance, vecMult(scene.object[hit.objectIndex].material.colour, light.colour, m, f), m, f);
+    Vector outputColour;
+    
+    setVector(&outputColour, 0, 0, 0, f);
+    
+    if (scene.object[hit.objectIndex].material.specular > 0)
+    {
+        fixedp dotProduct;
+    
+        // Reflective ray:
+        Ray reflection = reflectRay(hit, m, f);
+        dotProduct = dot(lightDirection, reflection.direction, m, f);
+    
+        if (dotProduct < 0)
+            return outputColour;
+    
+        fixedp distance = fp_mult(fp_pow(dotProduct, scene.object[hit.objectIndex].material.shininess), scene.object[hit.objectIndex].material.specular);
+        statMultiplyFlt(m, 1);
+        statPower(m, 1);
+    
+        // Has a texture been defined?
+        if (textureColour.x < 0)
+            outputColour = scalarVecMult(distance, scene.object[hit.objectIndex].material.matLightColour, m, f); // No texture defined
+        else
+            outputColour = scalarVecMult(distance, vecMult(textureColour, light.colour, m, f), m, f);
+    }
+    return outputColour;
 }
 
 #endif
