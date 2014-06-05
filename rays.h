@@ -648,6 +648,7 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
         hit.distance = nearestIntersection;
         hit.Mu = Mu;
         hit.Mv = Mv;
+        hit.bitshift = nearestbitshift;
         return hit;
     }
     
