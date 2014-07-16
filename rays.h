@@ -132,7 +132,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     if (numer == 0)
         return 0;
     // Before we do the actual division, do a sign check:
-    if ((denom & 0x80000000) ^ (numer & 0x80000000))
+    if ((denom ^ numer) < 0)
         return 0;
     DEBUG_PRINT(".\n2x");
     // denom = fp_div(fp_fp1, denom);
