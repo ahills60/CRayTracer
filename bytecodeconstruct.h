@@ -338,7 +338,9 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
     fixedp reflection, refraction;
     Ray newRay;
     
+#ifdef DEBUG
     (*f).draw++;
+#endif
     
     // Default is black. We can add to this (if there's a hit) 
     // or just return it (if there's no object)
@@ -384,19 +386,19 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
             // Yes, we should
             // Get the reflection
             reflectiveColour = draw(reflectRay(hit, m, f), scene, light, recursion - 1, m, f);
-            statSubtractInt(m, 1);
+            DEBUG_statSubtractInt(m, 1);
             reflection = scene.object[hit.objectIndex].material.reflectivity;
             outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour, m, f), m, f);
             
             // Get the refraction
             refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.inverserefractivity, scene.object[hit.objectIndex].material.squareinverserefractivity, m, f), scene, light, recursion - 1, m, f);
-            statSubtractInt(m, 1);
+            DEBUG_statSubtractInt(m, 1);
             refraction = scene.object[hit.objectIndex].material.opacity;
             outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m, f), m, f);
         }
         
         // We've got what we needed after the hit, so return
-        statSubtractFlt(m, 1);
+        DEBUG_statSubtractFlt(m, 1);
         // printf("Hit at: %f, %f, %f\nRay Direction: %f, %f, %f\nLight direction: %f, %f, %f\n", fp_FP2Flt(hit.location.x), fp_FP2Flt(hit.location.y), fp_FP2Flt(hit.location.z), fp_FP2Flt(ray.direction.x), fp_FP2Flt(ray.direction.y), fp_FP2Flt(ray.direction.z), fp_FP2Flt(lightDirection.x), fp_FP2Flt(lightDirection.y), fp_FP2Flt(lightDirection.z));
         return scalarVecMult(fp_fp1 - traceShadow(hit, scene, light, lightDirection, m, f), outputColour, m, f);
     }

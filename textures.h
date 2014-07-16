@@ -89,7 +89,7 @@ VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, Fun
     // Numbers are confined to 0 and 1 (albeit \neq 1) and we obtain the pixel location.
     UPos = fp_mult((0x03E80000 + UPos) & 0x0000FFFF, texture.width << 16);
     VPos = fp_mult((VPos + 0x03E80000) & 0x0000FFFF, texture.height << 16); //(texture.height << 16) - fp_mult((VPos + 0x03E80000) & 0x0000FFFF, texture.height << 16);
-    statGroupFlt(m, 0, 1, 2, 0);
+    DEBUG_statGroupFlt(m, 0, 2, 2, 0);
     
     // Get the whole pixel value
     int TextUPos = UPos >> 16;
@@ -111,7 +111,7 @@ VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, Fun
     c3 = texture.bitmap[b3];    // offset: (0, 1)
     c4 = texture.bitmap[b4];    // offset: (1, 1)
     
-    statGroupFlt(m, 0, 4, 4, 0);
+    DEBUG_statGroupFlt(m, 0, 4, 4, 0);
     a1 = fp_mult(fp_fp1 - URem, fp_fp1 - VRem);
     a2 = fp_mult(URem, fp_fp1 - VRem);
     a3 = fp_mult(fp_fp1 - URem, VRem);
@@ -125,6 +125,7 @@ VectorAlpha getTexel(Texture texture, fixedp UPos, fixedp VPos, MathStat *m, Fun
     // Now compute alpha:
     if (!NoTransparencyFlag)
     {
+        DEBUG_statGroupFlt(m, 3, 0, 4, 0);
         a1 = fp_mult(a1, texture.alpha[b1]);
         a2 = fp_mult(a2, texture.alpha[b2]);
         a3 = fp_mult(a3, texture.alpha[b3]);
@@ -180,7 +181,6 @@ VectorAlpha getColour(Texture texture, Scene scene, Hit hit, MathStat *m, FuncSt
     // Now we can get U and V:
     UV = uvAdd(scalarUVMult(a1, triangle.uUV, m), uvAdd(scalarUVMult(a2, triangle.vUV, m), scalarUVMult(a3, triangle.wUV, m), m), m);
     */
-    
     UV = uvAdd(triangle.uUV, uvAdd(scalarUVMult(hit.Mu, uvSub(triangle.vUV, triangle.uUV, m), m), scalarUVMult(hit.Mv, uvSub(triangle.wUV, triangle.uUV, m), m), m), m);
     
     return getTexel(texture, UV.U, UV.V, m, f);

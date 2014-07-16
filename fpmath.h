@@ -418,10 +418,12 @@ fixedp fp_sin(fixedp a)
     a += (a < -FP_PI) * FP_2PI;
     // printf("  Step 2: 0x%X, %f\n", a, fp_FP2Flt(a) * 180. / 3.141592653589793238);
     
+#ifdef DEBUG
     if (a > FP_PI)
         printf("Sine function out of range: 0x%X\n", a);
     if (a < -FP_PI)
         printf("Sine function out of range: 0x%X\n", a);
+#endif
     
     // Use fast sine parabola approximation
     fixedp output = (fp_mult(FP_CONST_B, a)) + (fp_mult((fp_mult(FP_CONST_C, a)), fp_fabs(a)));

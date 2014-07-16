@@ -91,7 +91,9 @@ Camera;
 /* Set the material */
 void setMaterial(Material *matObj, Light lightSrc, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity, int textureIdx, MathStat *m, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).setMaterial++;
+#endif
     (*matObj).colour = colour;
     (*matObj).reflectivity = reflectivity;
     (*matObj).opacity = opacity;
@@ -124,13 +126,17 @@ void setObject(Object *object, Material material, int noTriangles, Triangle *tri
     (*object).material = material;
     (*object).noTriangles = noTriangles;
     (*object).triangle = triangle;
+#ifdef DEBUG
     (*f).setObject++;
+#endif
 }
 
 /* Initialise the scene */
 void initialiseScene(Scene *scene, int maxObjects, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).initialiseScene++;
+#endif
     (*scene).noObjects = 0;
     (*scene).maxObjects = maxObjects;
     // Allocate memory for the maximum number of objects
@@ -140,7 +146,9 @@ void initialiseScene(Scene *scene, int maxObjects, FuncStat *f)
 /* Get the total number triangles in a scene */
 int getTriangleTotal(Scene scene, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).getTriangleTotal++;
+#endif
     int n, total = 0;
     
     for (n = 0; n < scene.noObjects; n++)
@@ -153,7 +161,9 @@ int getTriangleTotal(Scene scene, FuncStat *f)
 /* Add an object to a scene */
 void addObject(Scene *scene, Object object, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).addObject++;
+#endif
     
     // Make sure we have enough memory to allocate the object
     if ((*scene).noObjects < (*scene).maxObjects)
@@ -170,7 +180,9 @@ void addObject(Scene *scene, Object object, FuncStat *f)
 /* Delete a specific object and free memory */
 void deleteObject(Object *object, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).deleteObject++;
+#endif
     // Clear memory
     free((*object).triangle);
     
@@ -182,8 +194,9 @@ void deleteObject(Object *object, FuncStat *f)
 void resetScene(Scene *scene, FuncStat *f)
 {
     int n;
-    
+#ifdef DEBUG
     (*f).resetScene++;
+#endif
 
     // Go through each object and delete the object
     for (n = 0; n < (*scene).maxObjects; n++)
@@ -202,7 +215,9 @@ void resetScene(Scene *scene, FuncStat *f)
 /* Set a light */
 void setLight(Light *light, Vector location, Vector direction, Vector colour, fixedp shadowFactor, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).setLight++;
+#endif
     (*light).location = location;
     (*light).direction = direction;
     (*light).colour = colour;
@@ -214,7 +229,9 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
 {
     Vector up, horizontal;
     
+#ifdef DEBUG
     (*f).setCamera++;
+#endif
     
     // Standard up vector
     setVector(&up, 0, fp_fp1, 0, f);
@@ -232,14 +249,14 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     // Field of view and aspect ratio
     (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fov >> 1), m, f));
     (*camera).ar = fp_div(fp_Int2FP(width), fp_Int2FP(height));
-    statDivideFlt(m, 1);
+    DEBUG_statDivideFlt(m, 1);
     
     // Height and width
     (*camera).width = width;
     (*camera).height = height;
     
     // Compute the coefficients used in creating a ray:
-    statGroupFlt(m, 0, 0, 3, 2);
+    DEBUG_statGroupFlt(m, 0, 0, 3, 2);
     (*camera).dfovardw = fp_div(fp_mult(fp_mult(fp_fp2, (*camera).ar), (*camera).fov), fp_Int2FP(width));
     (*camera).fovar = fp_mult((*camera).fov, (*camera).ar);
     (*camera).dfovdh = fp_div((*camera).fov << 1, fp_Int2FP(height));
@@ -293,8 +310,10 @@ void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
     Triangle temp;
     int uIdx, vIdx;
     fixedp dk, du, dv, bu, bv, cu, cv, coeff;
-    
+
+#ifdef DEBUG
     (*f).transformObject++;
+#endif
     
     for (i = 0; i < (*object).noTriangles; i++)
     {

@@ -4,8 +4,32 @@
 // #define DEBUG
 #ifdef DEBUG
 #define DEBUG_PRINT printf
+#define DEBUG_statGroupFlt statGroupFlt
+#define DEBUG_statGroupInt statGroupInt
+#define DEBUG_statDivideFlt statDivideFlt
+#define DEBUG_statPlusInt statPlusInt
+#define DEBUG_statPlusFlt statPlusFlt
+#define DEBUG_statSqrtFlt statSqrtFlt
+#define DEBUG_statMultiplyFlt statMultiplyFlt
+#define DEBUG_statSubtractInt statSubtractInt
+#define DEBUG_statSubtractFlt statSubtractFlt
+#define DEBUG_statSine statSine
+#define DEBUG_statCosine statCosine
+#define DEBUG_statPower statPower
 #else
 #define DEBUG_PRINT(...)
+#define DEBUG_statGroupFlt(...)
+#define DEBUG_statGroupInt(...)
+#define DEBUG_statDivideFlt(...)
+#define DEBUG_statPlusInt(...)
+#define DEBUG_statPlusFlt(...)
+#define DEBUG_statSqrtFlt(...)
+#define DEBUG_statMultiplyFlt(...)
+#define DEBUG_statSubtractInt(...)
+#define DEBUG_statSubtractFlt(...)
+#define DEBUG_statSine(...)
+#define DEBUG_statCosine(...)
+#define DEBUG_statPower(...)
 #endif
 
 #include <stdio.h>
@@ -108,9 +132,11 @@ void *PixelDraw(void* inputPar)
             // Jump to start if the end is reached
             if (i >= noPixels)
                 i = offset;
+                // ForceRedraw[offset] = 1;
         }
     } while (!TerminateFlag);
     // }
+    printf("Thread with offset %i terminated.\n", offset);
     free(inputPar);
     return NULL;
 }

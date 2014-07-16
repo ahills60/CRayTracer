@@ -39,7 +39,9 @@
 /* Creates ambiance effect given a hit, a scene and some light */
 Vector ambiance(Hit hit, Scene scene, Light light, Vector textureColour, MathStat *m, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).ambiance++;
+#endif
     Vector outputColour;
     
     // Check to see if there's a texture
@@ -54,7 +56,9 @@ Vector ambiance(Hit hit, Scene scene, Light light, Vector textureColour, MathSta
 /* Creates diffusion effect given a hit, a scene and some light */
 Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, Vector textureColour, MathStat *m, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).diffusion++;
+#endif
     Vector outputColour;
     
     setVector(&outputColour, 0, 0, 0, f);
@@ -71,7 +75,7 @@ Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, Vecto
         // Dot product is positive, so continue
         fixedp distance = fp_mult(dotProduct, scene.object[hit.objectIndex].material.diffusivity);
         
-        statMultiplyFlt(m, 1);
+        DEBUG_statMultiplyFlt(m, 1);
         
         // Has a texture been defined?
         if (textureColour.x < 0)
@@ -86,7 +90,9 @@ Vector diffusion(Hit hit, Scene scene, Light light, Vector lightDirection, Vecto
 /* Creates specular effect given a hit, a scene and some light */
 Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, Vector textureColour, MathStat *m, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).specular++;
+#endif
     Vector outputColour;
     
     setVector(&outputColour, 0, 0, 0, f);
@@ -103,8 +109,8 @@ Vector specular(Hit hit, Scene scene, Light light, Vector lightDirection, Vector
             return outputColour;
     
         fixedp distance = fp_mult(fp_pow(dotProduct, scene.object[hit.objectIndex].material.shininess), scene.object[hit.objectIndex].material.specular);
-        statMultiplyFlt(m, 1);
-        statPower(m, 1);
+        DEBUG_statMultiplyFlt(m, 1);
+        DEBUG_statPower(m, 1);
     
         // Has a texture been defined?
         if (textureColour.x < 0)

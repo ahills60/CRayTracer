@@ -55,18 +55,22 @@ void setRay(Ray *ray, Vector source, Vector direction, FuncStat *f)
 {
     (*ray).source = source;
     (*ray).direction = direction;
+#ifdef DEBUG
     (*f).setRay++;
+#endif
 }
 
 /* Create a ray at this point from this camera */
 Ray createRay(int x, int y, Camera camera, MathStat *m, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).createRay++;
+#endif
 //    printf("Establishing dimensions... ");
     fixedp sx = fp_mult(fp_Int2FP(x), camera.dfovardw) - camera.fovar;
-    statGroupFlt(m, 0, 1, 1, 0);
+    DEBUG_statGroupFlt(m, 0, 1, 1, 0);
     fixedp sy = fp_mult(fp_Int2FP(y), camera.dfovdh) - camera.fov;
-    statGroupFlt(m, 0, 1, 1, 0);
+    DEBUG_statGroupFlt(m, 0, 1, 1, 0);
 //    printf("Dimensions established.\nSetting views...");
     
     Vector shorizontal, svertical, sview;
@@ -93,11 +97,16 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     int shift1, msb1, msb2, bitdiff1, biteval;
     fixedp tempVar1, tempVar2;
     
+#ifdef DEBUG
+    (*f).triangleIntersection++;
+#endif
+    
     // Determine if an error occurred when preprocessing this triangle.
     if (triangle.DominantAxisIdx > 2 || triangle.DominantAxisIdx < 0)
         return 0;
     
     // Firstly get the correct axes and offset using modulus array:
+    DEBUG_statPlusInt(m, 2);
     ku = DomMod[triangle.DominantAxisIdx + 1];
     kv = DomMod[triangle.DominantAxisIdx + 2];
     
@@ -112,11 +121,13 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     
     // Compute demoninator:
     DEBUG_PRINT("1");
+    DEBUG_statGroupFlt(m, 2, 0, 2, 0);
     denom = dk + fp_mult(triangle.NUDom, du) + fp_mult(triangle.NVDom, dv);
     if (denom < 0x4 && denom > -0x4)
         return 0;
     // denom = (denom == 0) ? fp_fp1 : denom;
     DEBUG_PRINT(".\n2a");
+    DEBUG_statGroupFlt(m, 0, 3, 2, 0);
     numer = triangle.NDDom - ok - fp_mult(triangle.NUDom, ou) - fp_mult(triangle.NVDom, ov);
     if (numer == 0)
         return 0;
@@ -191,6 +202,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     // Now evaluate the bit differences:
     bitdiff1 = 16 - msb2;
     biteval = (msb1 - msb2) <= 14; // if true, then bit shifting is not required.
+    DEBUG_statDivideFlt(m, 1);
     if (biteval)
     {
         // do standard approach
@@ -231,6 +243,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     
     // Continue calculating intersections.
     
+    DEBUG_statGroupFlt(m, 1, 1, 1, 0);
     DEBUG_PRINT("3");
     if (biteval)
         hu = ou + fp_mult(dist, du) - au;
@@ -243,7 +256,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
         hv = (ov >> bitdiff1) + fp_mult(dist, dv) - (av >> bitdiff1);
     DEBUG_PRINT(".\n5");
     //betafl = (((float) hv) / 65536.) * (((float)triangle.BUDom) / 65536.) + (((float) hu) / 65536.) * (((float)triangle.BVDom) / 65536.);
-
+    DEBUG_statGroupFlt(m, 2, 0, 2, 0);
     beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.BVDom);
       
     DEBUG_PRINT(".\n");
@@ -258,6 +271,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
         return 0;
     DEBUG_PRINT("6");
     // gammafl = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
+    DEBUG_statGroupFlt(m, 1, 0, 2, 0);
     gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
     DEBUG_PRINT(".\n");
     
@@ -619,14 +633,16 @@ Hit objectIntersection(Ray ray, Object object, int objectIndex, MathStat *m, Fun
     int n, nearestIdx, bitshift, nearestbitshift = 32;
     Hit hit;
     
+#ifdef DBEUG
     (*f).objectIntersection++;
+#endif
     
     // Default distance is 0 just in case there's no hit
     hit.distance = 0;
     
     for (n = 0; n < object.noTriangles; n++)
     {
-        statPlusInt(m, 1); // For the loop
+        DEBUG_statPlusInt(m, 1); // For the loop
         intersectionPoint = triangleIntersection(ray, object.triangle[n], nearestIntersection, &tempMu, &tempMv, &bitshift, 0, m, f);
         
         // Determine whether there was an intersection and whether this was
@@ -673,12 +689,14 @@ Hit sceneIntersection(Ray ray, Scene scene, MathStat *m, FuncStat *f)
     Hit nearestHit;
     nearestHit.distance = FURTHEST_RAY;
     
+#ifdef DEBUG
     (*f).sceneIntersection++;
+#endif
     
     // Go through all objects within this scene
     for (n = 0; n < scene.noObjects; n++)
     {
-        statPlusInt(m, 1); // For the loop
+        DEBUG_statPlusInt(m, 1); // For the loop
         hit = objectIntersection(ray, scene.object[n], n, m, f);
         
         // determine if there was an intersection and that it's the closest one
@@ -699,21 +717,23 @@ fixedp traceShadow(Hit hit, Scene scene, Light light, Vector direction, MathStat
     int n, m;
     fixedp tempMu, tempMv, tempDist = FURTHEST_RAY, bitshift;
     
+#ifdef DEBUG
     (*f).traceShadow++;
+#endif
     
     setRay(&shadow, hit.location, direction, f);
     
     // Now send the shadow ray back to the light. If it intersects, then the ray is a shadow
     for (m = 0; m < scene.noObjects; m++)
     {
-        statPlusInt(ma, 1); // For the loop
+        DEBUG_statPlusInt(ma, 1); // For the loop
         // Now all triangles within this object
         for (n = 0; n < scene.object[m].noTriangles; n++)
         {
             // Make sure we're not intersecting with the same triangle
             if (m == hit.objectIndex && n == hit.triangleIndex)
                 continue;
-            statPlusInt(ma, 1); // For the loop
+            DEBUG_statPlusInt(ma, 1); // For the loop
             // Is this significant?
             if (triangleIntersection(shadow, scene.object[m].triangle[n], tempDist, &tempMu, &tempMv, &bitshift, 1, ma, f) > (EPS << 1))//0x28F) // Equivalent to 0.01
                 return light.shadowFactor;
@@ -728,13 +748,15 @@ Ray reflectRay(Hit hit, MathStat *m, FuncStat *f)
 {
     Vector viewDirection;
     Ray reflection;
-    
+
+#ifdef DEBUG    
     (*f).reflectRay++;
+#endif
     
     // 2 (n . v) * n - v
     viewDirection = negVec(hit.ray.direction, f);
     reflection.direction = vecSub(scalarVecMult(dot(hit.normal, viewDirection, m, f) << 1, hit.normal, m, f), viewDirection, m, f);
-    statMultiplyFlt(m, 1);
+    DEBUG_statMultiplyFlt(m, 1);
     reflection.source = hit.location;
     
     return reflection;
@@ -743,15 +765,17 @@ Ray reflectRay(Hit hit, MathStat *m, FuncStat *f)
 /* Compute a refraction ray */
 Ray refractRay(Hit hit, fixedp inverserefractivity, fixedp squareinverserefractivity, MathStat *m, FuncStat *f)
 {
+#ifdef DEBUG
     (*f).refractRay++;
+#endif
     
     Vector incidence = negVec(hit.ray.direction, f);
     Ray refraction;
     
     fixedp c = dot(incidence, hit.normal, m, f);
     fixedp s = fp_mult(inverserefractivity, c) - fp_sqrt(fp_fp1 - fp_mult(squareinverserefractivity, (fp_fp1 - fp_mult(c, c))));
-    statGroupFlt(m, 0, 3, 3, 0);
-    statSqrtFlt(m, 1);
+    DEBUG_statGroupFlt(m, 0, 3, 3, 0);
+    DEBUG_statSqrtFlt(m, 1);
     
     // Direction of refractive ray
     refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal, m, f), scalarVecMult(inverserefractivity, incidence, m, f), m, f), m, f);
