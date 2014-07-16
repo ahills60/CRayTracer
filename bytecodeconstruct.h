@@ -23,6 +23,7 @@
 #include "mathstats.h"
 #include "funcstats.h"
 #include "textures.h"
+#include "shapes.h"
 
 Texture *Textures;
 extern char *inputFile;
@@ -321,12 +322,63 @@ void ReadByteFile(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
     fclose(fp);
 }
 
+/* Populate a scene with set items */
+void populateDefaultScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
+{
+    Object cube, planeBase, planeLeft, planeRight, planeTop, planeBack, mirrCube;
+    Material redGlass, nonreflBlue, nonreflGreen, nonreflPurple, mirror;
+    Vector red = int2Vector(RED);
+    Vector blue = int2Vector(BLUE);
+    Vector green = int2Vector(GREEN);
+    Vector purple = int2Vector(PURPLE);
+    Vector white = int2Vector(WHITE);
+    
+    // Set material types
+    //setMaterial(*matObj, light, Vector colour, fixedp ambiance, fixedp diffusivity, fixedp specular, fixedp shininess, fixedp reflectivity, fixedp opacity, fixedp refractivity)
+    setMaterial(&redGlass, lightSrc, red, fp_Flt2FP(0.0), fp_Flt2FP(0.5), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(0.8), fp_Flt2FP(1.4), -1, m, f);
+    setMaterial(&nonreflBlue, lightSrc, blue, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), -1, m, f);
+    setMaterial(&nonreflGreen, lightSrc, green, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), -1, m, f);
+    setMaterial(&nonreflPurple, lightSrc, purple, fp_Flt2FP(0.1), fp_Flt2FP(0.5), fp_Flt2FP(0.4), fp_Flt2FP(2.0), fp_Flt2FP(0.0), fp_Flt2FP(0.0), fp_Flt2FP(1.4), -1, m, f);
+    setMaterial(&mirror, lightSrc, white, fp_Flt2FP(0.1), fp_Flt2FP(0.0), fp_Flt2FP(0.9), fp_Flt2FP(32.0), fp_Flt2FP(0.6), fp_Flt2FP(0.0), fp_Flt2FP(1.4), -1, m, f);
+    
+    // Create objects
+    createCube(&cube, redGlass, fp_Flt2FP(1.0), m, f);
+    createPlaneXZ(&planeBase, nonreflPurple, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeTop, nonreflPurple, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeLeft, nonreflGreen, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeRight, nonreflGreen, fp_Flt2FP(10.0), m, f);
+    createPlaneXZ(&planeBack, nonreflBlue, fp_Flt2FP(10.0), m, f);
+    createCube(&mirrCube, mirror, fp_Flt2FP(1.5), m, f);
+    
+    // Arrange
+    transformObject(&cube, matMult(genTransMatrix(fp_Flt2FP(2), fp_Flt2FP(0.5), -fp_Flt2FP(1), m, f), genYRotateMat(fp_Flt2FP(45), m, f), m, f), m, f);
+    transformObject(&planeBase, genTransMatrix(fp_Flt2FP(1), 0, -fp_Flt2FP(4), m, f), m, f);
+    transformObject(&planeLeft, matMult(genTransMatrix(-fp_Flt2FP(2), 0, -fp_Flt2FP(4), m, f), genZRotateMat(-fp_Flt2FP(90), m, f), m, f), m, f);
+    transformObject(&planeRight, matMult(genTransMatrix(fp_Flt2FP(4), 0, -fp_Flt2FP(4), m, f), genZRotateMat(fp_Flt2FP(90), m, f), m, f), m, f);
+    transformObject(&planeBack, matMult(genTransMatrix(fp_Flt2FP(1), 0, -fp_Flt2FP(6), m, f), genXRotateMat(fp_Flt2FP(90), m, f), m, f), m, f);
+    transformObject(&planeTop, matMult(genTransMatrix(fp_Flt2FP(1), fp_Flt2FP(5), -fp_Flt2FP(4), m, f), genZRotateMat(fp_Flt2FP(180), m, f), m, f), m, f);
+    transformObject(&mirrCube, matMult(genTransMatrix(fp_Flt2FP(0), fp_Flt2FP(0.9), -fp_Flt2FP(2.7), m, f), genYRotateMat(fp_Flt2FP(20), m, f), m, f), m, f);
+    
+    // Create the scene
+    initialiseScene(scene, 6, f);
+    addObject(scene, cube, f);
+    addObject(scene, planeBase, f);
+    addObject(scene, planeLeft, f);
+    addObject(scene, planeRight, f);
+    addObject(scene, planeBack, f);
+    addObject(scene, mirrCube, f);
+    // addObject(scene, planeTop);
+}
+
 /* The populateScene function calls the ReadByteFile function. This is here mainly
    for compatibility with older generations of the OFconstruct header file.        */
 void populateScene(Scene *scene, Light lightSrc, MathStat *m, FuncStat *f)
 {
-    // Pass all inputs to the byte file reader.
-    ReadByteFile(scene, lightSrc, m, f);
+    // Should the default scene be loaded?
+    if (inputFile[0] == '\0')
+        populateDefaultScene(scene, lightSrc, m, f); // Pass inputs to the default scene.
+    else
+        ReadByteFile(scene, lightSrc, m, f); // Pass all inputs to the byte file reader.
 }
 
 /* And then the standard draw function that's been previously constructed */
