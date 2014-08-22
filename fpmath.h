@@ -378,11 +378,11 @@ fixedp fp_sqrt(fixedp ina)
     
     // Andrew special:
     output = k;
-    output += fp_div(ina / output);
+    output += fp_div(ina, output);
     k = output;
     k >>= 1;
     output = k;
-    output += fp_div(ina / output);
+    output += fp_div(ina, output);
     k = output;
     k >>= 1;
     
