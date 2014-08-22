@@ -306,7 +306,7 @@ void updateCameraAngle(Camera *camera, fixedp theta, fixedp phi, MathStat *m, Fu
 /* Transform object by transformation matrix T */
 void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
 {
-    int i;
+    int i, j;
     Triangle temp;
     int uIdx, vIdx;
     fixedp dk, du, dv, bu, bv, cu, cv, coeff;
@@ -314,6 +314,10 @@ void transformObject(Object *object, Matrix T, MathStat *m, FuncStat *f)
 #ifdef DEBUG
     (*f).transformObject++;
 #endif
+    
+    // for (i = 0; i < 4; i++)
+    //     for (j = 0; j < 4; j++)
+    //         printf("T[%i][%i] = %f\n", i, j, fp_FP2Flt(T.m[i][j]));
     
     for (i = 0; i < (*object).noTriangles; i++)
     {
