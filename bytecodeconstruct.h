@@ -437,16 +437,22 @@ Vector draw(Ray ray, Scene scene, Light light, int recursion, MathStat *m, FuncS
         {
             // Yes, we should
             // Get the reflection
-            reflectiveColour = draw(reflectRay(hit, m, f), scene, light, recursion - 1, m, f);
-            DEBUG_statSubtractInt(m, 1);
             reflection = scene.object[hit.objectIndex].material.reflectivity;
-            outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour, m, f), m, f);
+            if (reflection > 0)
+            {
+                reflectiveColour = draw(reflectRay(hit, m, f), scene, light, recursion - 1, m, f);
+                DEBUG_statSubtractInt(m, 1);
+                outputColour = vecAdd(outputColour, scalarVecMult(reflection, reflectiveColour, m, f), m, f);
+            }
             
             // Get the refraction
-            refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.inverserefractivity, scene.object[hit.objectIndex].material.squareinverserefractivity, m, f), scene, light, recursion - 1, m, f);
-            DEBUG_statSubtractInt(m, 1);
             refraction = scene.object[hit.objectIndex].material.opacity;
-            outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m, f), m, f);
+            if (refraction > 0)
+            {
+                refractiveColour = draw(refractRay(hit, scene.object[hit.objectIndex].material.inverserefractivity, scene.object[hit.objectIndex].material.squareinverserefractivity, m, f), scene, light, recursion - 1, m, f);
+                DEBUG_statSubtractInt(m, 1);
+                outputColour = vecAdd(outputColour, scalarVecMult(refraction, refractiveColour, m, f), m, f);
+            }
         }
         
         // We've got what we needed after the hit, so return
