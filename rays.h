@@ -781,7 +781,7 @@ Ray refractRay(Hit hit, fixedp inverserefractivity, fixedp squareinverserefracti
     refraction.direction = vecNormalised(vecSub(scalarVecMult(s, hit.normal, m, f), scalarVecMult(inverserefractivity, incidence, m, f), m, f), m, f);
     
     // The refraction occurs from the point where it hit the object
-    refraction.source = hit.location;
+    refraction.source = vecAdd(hit.location, scalarVecMult(0x10, hit.ray.direction, m, f), m, f);
     
     return refraction;
 }
