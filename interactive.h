@@ -15,6 +15,8 @@
 
 #include <GL/glut.h>
 #include "objects.h"
+// For PNG files
+#include <png.h>
 
 // Make a variable for storing pixels accessible to all functions
 unsigned int *PixelStore;
@@ -88,6 +90,85 @@ void fadeActivity(void)
     }
 }
 
+// Function to write PNG files
+void writePNGFile(char *filename)
+{
+    int x, y, pixel_size = 3, depth = 8;
+    FILE *fp;
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
+    png_byte **row_pointers;
+    
+    // Now write the PNG file
+    fp = fopen(filename, "wb");
+    if (!fp)
+    {
+        printf("Error opening file for PNG creation.\n\n");
+        return;
+    }
+    
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (png_ptr == NULL)
+    {
+        printf("Error writing PNG structure\n\n");
+        goto png_create_write_struct_fail;
+    }
+    
+    info_ptr = png_create_info_struct(png_ptr);
+    if (info_ptr == NULL)
+    {
+        printf("Error creating PNG information structure.\n\n");
+        goto png_create_info_struct_fail;
+    }
+    
+    // Set up error handling
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        printf("Error encountered when writing PNG file.\n\n");
+        goto png_fail;
+    }
+    
+    // Set the image attributes
+    png_set_IHDR(png_ptr, info_ptr, ScreenWidth, ScreenHeight, depth, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    
+    // Initialise rows of PNG file:
+    row_pointers = png_malloc(png_ptr, ScreenHeight * sizeof(png_byte *));
+    
+    for (y = 0; y < ScreenHeight; ++y)
+    {
+        png_byte *row = png_malloc(png_ptr, sizeof(uint8_t) * ScreenWidth * pixel_size);
+        row_pointers[y] = row;
+        for (x = 0; x < ScreenWidth; ++x)
+        {
+            *row++ = (uint8_t) (PixelStore[(ScreenHeight - y) * ScreenWidth + x] & 0xFF); // R
+            *row++ = (uint8_t) ((PixelStore[(ScreenHeight - y) * ScreenWidth + x] >> 8) & 0xFF); // G
+            *row++ = (uint8_t) ((PixelStore[(ScreenHeight - y) * ScreenWidth + x] >> 16) & 0xFF); // B
+        }
+    }
+    
+    // Write the image data to the file pointer:
+    png_init_io(png_ptr, fp);
+    png_set_rows(png_ptr, info_ptr, row_pointers);
+    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+    
+    // File has been written to by this point. Tidy up.
+    printf("PNG file created.\n\n");
+    
+    // Now free memory:
+    for (y = 0; y < ScreenHeight; y++)
+    {
+        png_free(png_ptr, row_pointers[y]);
+    }
+    png_free(png_ptr, row_pointers);
+    
+png_fail:
+png_create_info_struct_fail:
+    // Finally destroy the structure in memory:
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+png_create_write_struct_fail:
+    // Close file pointer
+    fclose(fp);
+}
 
 /* Function to take control of user input elements */
 void keyboardFunc(unsigned char key, int xmouse, int ymouse)
@@ -127,6 +208,11 @@ void keyboardFunc(unsigned char key, int xmouse, int ymouse)
             // Now force a scene redraw
             memset(ForceRedraw, 1, sizeof(ForceRedraw));
             // ForceRedraw = 1;
+            break;
+        case 's':
+        case 'S':
+            // Save image as PNG
+            writePNGFile("output.png");
             break;
         default:
             break;
