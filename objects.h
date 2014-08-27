@@ -247,7 +247,7 @@ void setCamera(Camera *camera, Vector location, Vector view, fixedp fov, int wid
     (*camera).vertical = cross(horizontal, (*camera).view, m, f);
     
     // Field of view and aspect ratio
-    (*camera).fov = fp_Flt2FP(deg2rad(fp_FP2Flt(fov >> 1), m, f));
+    (*camera).fov = deg2rad(fov >> 1, m, f);
     (*camera).ar = fp_div(fp_Int2FP(width), fp_Int2FP(height));
     DEBUG_statDivideFlt(m, 1);
     

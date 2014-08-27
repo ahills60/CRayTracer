@@ -115,13 +115,16 @@ void setMatrix(Matrix *F, fixedp *m, MathStat *ma, FuncStat *f)
 }
 
 /* Convert from degrees to radians */
-float deg2rad(float deg, MathStat *m, FuncStat *f)
+fixedp deg2rad(fixedp deg, MathStat *m, FuncStat *f)
 {
 #ifdef DEBUG
     (*f).deg2rad++;
 #endif
-    DEBUG_statGroupFlt(m, 0, 0, 1, 1);
-    return deg * M_PI / 180.0;
+    DEBUG_statMultiplyFlt(m, 1);
+    // 0x000477D1 is equivalent to 4.468042886 = pi / 180 * 256
+    deg = fp_mult(0x000477D1, deg);
+    deg >>= 8;
+    return deg;
 }
 
 /* Vector multiply */
@@ -330,12 +333,9 @@ Matrix genXRotateMat(fixedp a, MathStat *ma, FuncStat *f)
     (*f).genXRotateMat++;
 #endif
     Matrix H;
-    float cosa = cos(deg2rad(fp_FP2Flt(a), ma, f)), sina = sin(deg2rad(fp_FP2Flt(a), ma, f));
+    fixedp fpcosa = fp_cos(deg2rad(a, ma, f)), fpsina = fp_sin(deg2rad(a, ma, f));
     DEBUG_statSine(ma, 1);
     DEBUG_statCosine(ma, 1);
-    
-    fixedp fpcosa = fp_Flt2FP(cosa);
-    fixedp fpsina = fp_Flt2FP(sina);
     
     fixedp m[16] = {fp_fp1, 0, 0, 0,
                     0, fpcosa, -fpsina, 0,
@@ -352,12 +352,9 @@ Matrix genYRotateMat(fixedp a, MathStat *ma, FuncStat *f)
     (*f).genYRotateMat++;
 #endif
     Matrix H;
-    float cosa = cos(deg2rad(fp_FP2Flt(a), ma, f)), sina = sin(deg2rad(fp_FP2Flt(a), ma, f));
+    fixedp fpcosa = fp_cos(deg2rad(a, ma, f)), fpsina = fp_sin(deg2rad(a, ma, f));
     DEBUG_statSine(ma, 1);
     DEBUG_statCosine(ma, 1);
-    
-    fixedp fpcosa = fp_Flt2FP(cosa);
-    fixedp fpsina = fp_Flt2FP(sina);
     
     fixedp m[16] = {fpcosa, 0, fpsina, 0,
                    0, fp_fp1, 0, 0,
@@ -374,12 +371,9 @@ Matrix genZRotateMat(fixedp a, MathStat *ma, FuncStat *f)
     (*f).genZRotateMat++;
 #endif
     Matrix H;
-    float cosa = cos(deg2rad(fp_FP2Flt(a), ma, f)), sina = sin(deg2rad(fp_FP2Flt(a), ma, f));
+    fixedp fpcosa = fp_cos(deg2rad(a, ma, f)), fpsina = fp_sin(deg2rad(a, ma, f));
     DEBUG_statSine(ma, 1);
     DEBUG_statCosine(ma, 1);
-    
-    fixedp fpcosa = fp_Flt2FP(cosa);
-    fixedp fpsina = fp_Flt2FP(sina);
     
     fixedp m[16] = {fpcosa, -fpsina, 0, 0,
                    fpsina, fpcosa, 0, 0,
