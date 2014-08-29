@@ -120,13 +120,11 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     ov = (kv == 0) ? ray.source.x : ((kv == 1) ? ray.source.y : ray.source.z);
     
     // Compute demoninator:
-    DEBUG_PRINT("1");
     DEBUG_statGroupFlt(m, 2, 0, 2, 0);
     denom = dk + fp_mult(triangle.NUDom, du) + fp_mult(triangle.NVDom, dv);
     if (denom < 0x4 && denom > -0x4)
         return 0;
     // denom = (denom == 0) ? fp_fp1 : denom;
-    DEBUG_PRINT(".\n2a");
     DEBUG_statGroupFlt(m, 0, 3, 2, 0);
     numer = triangle.NDDom - ok - fp_mult(triangle.NUDom, ou) - fp_mult(triangle.NVDom, ov);
     if (numer == 0)
@@ -134,7 +132,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     // Before we do the actual division, do a sign check:
     if ((denom ^ numer) < 0)
         return 0;
-    DEBUG_PRINT(".\n2x");
     // denom = fp_div(fp_fp1, denom);
     
     tempVar1 = fp_fabs(numer);
@@ -206,9 +203,7 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     if (biteval)
     {
         // do standard approach
-        DEBUG_PRINT(".\n2b");
         dist = fp_div(numer, denom);
-        DEBUG_PRINT(".\n");
         // Early exit if the computed distances is greater than what we've already encountered
         // and if it's not a valid distance.
         if (CurDist < dist)
@@ -231,7 +226,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
 //             DEBUG_PRINT(".\n2d");
 //             dist = fp_mult(numer, denom >> bitdiff1);
 //         }
-        DEBUG_PRINT(".\n");
         // Finally, compute the early exit:
         if ((CurDist >> bitdiff1) < dist)
             return 0;
@@ -244,22 +238,17 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     // Continue calculating intersections.
     
     DEBUG_statGroupFlt(m, 1, 1, 1, 0);
-    DEBUG_PRINT("3");
     if (biteval)
         hu = ou + fp_mult(dist, du) - au;
     else
         hu = (ou >> bitdiff1) + fp_mult(dist, du) - (au >> bitdiff1);
-    DEBUG_PRINT(".\n4");
     if (biteval)
         hv = ov + fp_mult(dist, dv) - av;
     else
         hv = (ov >> bitdiff1) + fp_mult(dist, dv) - (av >> bitdiff1);
-    DEBUG_PRINT(".\n5");
     //betafl = (((float) hv) / 65536.) * (((float)triangle.BUDom) / 65536.) + (((float) hu) / 65536.) * (((float)triangle.BVDom) / 65536.);
     DEBUG_statGroupFlt(m, 2, 0, 2, 0);
     beta = fp_mult(hv, triangle.BUDom) + fp_mult(hu, triangle.BVDom);
-      
-    DEBUG_PRINT(".\n");
     
     cmpopt = EPS + (biteval ? fp_fp1 : (fp_fp1 >> bitdiff1));
 
@@ -269,11 +258,9 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     // If this is negative, early exit
     if (beta < 0 || beta > cmpopt)
         return 0;
-    DEBUG_PRINT("6");
     // gammafl = (((float) hu) / 65536.) * (((float)triangle.CUDom) / 65536.) + (((float) hv) / 65536.) * (((float)triangle.CVDom) / 65536.);
     DEBUG_statGroupFlt(m, 1, 0, 2, 0);
     gamma = fp_mult(hu, triangle.CUDom) + fp_mult(hv, triangle.CVDom);
-    DEBUG_PRINT(".\n");
     
     // if (gammafl < 0 || gammafl > (((float)cmpopt) / 65536.))
     //     return 0;
@@ -282,7 +269,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     if (gamma < 0 || gamma > cmpopt)
         return 0;
     
-    DEBUG_PRINT("7.\n");
     // And exit if they add up to something greater than 1:
     // if ((gamma + beta) > 1)//fp_fp1)
     // if ((gammafl + betafl) > (((float)cmpopt) / 65536.))
@@ -290,7 +276,6 @@ fixedp triangleIntersection(Ray ray, Triangle triangle, fixedp CurDist, fixedp *
     
     if ((gamma + beta) > cmpopt)
         return 0;
-    DEBUG_PRINT("8.\n");
     
     *Mu = beta; // fp_Flt2FP(betafl);// beta;
     *Mv = gamma; // fp_Flt2FP(gammafl); // gamma;
